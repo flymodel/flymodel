@@ -1,0 +1,21 @@
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "AGPLv3 AND MIT AND BSD-2-Clause"
+rust-version = "1.71.1"
+authors = ["Joshua A. <joshua.auchincloss@proton.me>"]
+homepage = "https://github.com/joshua-auchincloss/flymodel"
+documentation = "https://github.com/joshua-auchincloss/flymodel"
+repository = "https://github.com/joshua-auchincloss/flymodel"
+description = "ml model registry"
+
+
+[workspace.dependencies]
+anyhow = "1.0.75"
+tracing = "0.1"
+sea-orm = "0.12.7"
+sea-orm-migration  = "0.12.6"

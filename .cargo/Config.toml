@@ -1,0 +1,21 @@
+[alias]
+migrate-up = "cli migrate up --database-url postgresql://postgres:postgres@localhost:5432/mlops"
+migrate-down = "cli migrate down --database-url postgresql://postgres:postgres@localhost:5432/mlops"
+serve = "cli serve"
+cli = "run --package flymodel-cli --bin flymodel"
+
+[target.x86_64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+  "-C", "link-args=-L/usr/local/opt/llvm/lib,-I/usr/local/opt/llvm/include",
+  "-C", "link-args=-Wl,-rpath,/Library/Developer/CommandLineTools/Library/Frameworks",
+]
+
+[target.aarch64-apple-darwin]
+rustflags = [
+  "-C", "link-arg=-undefined",
+  "-C", "link-arg=dynamic_lookup",
+  "-C", "link-args=-L/usr/local/opt/llvm/lib,-I/usr/local/opt/llvm/include",
+  "-C", "link-args=-Wl,-rpath,/Library/Developer/CommandLineTools/Library/Frameworks",
+]

@@ -1,0 +1,25 @@
+[package]
+name = "flymodel"
+release = true
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+documentation.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme = "README.md"
+license.workspace = true
+
+[features]
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[package.metadata.release]
+shared-version = true
+
+[dependencies]
+flymodel-registry = { path = "../registry" }
+thiserror = "1.0.50"

@@ -1,0 +1,32 @@
+[lifecycles]
+[[lifecycles.test]]
+[[lifecycles.qa]]
+[[lifecycles.staging]]
+[[lifecycles.prod]]
+
+
+[storage]
+
+[[storage.s3]]
+bucket = "ml-test"
+role = "test"
+region = "ca-local"
+endpoint = "http://localhost:9000"
+
+[[storage.s3]]
+bucket = "ml-qa"
+role = "qa"
+region = "ca-local"
+endpoint = "http://localhost:9000"
+
+[[storage.s3]]
+bucket = "ml-stage"
+role = "staging"
+region = "ca-local"
+endpoint = "http://localhost:9000"
+
+[[storage.s3]]
+bucket = "ml-prod"
+role = "prod"
+region = "ca-local"
+endpoint = "http://localhost:9000"
