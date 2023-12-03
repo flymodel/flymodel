@@ -4,26 +4,37 @@ use flymodel_cli::{
     config::ServeConfig,
 };
 use flymodel_registry::storage::{StorageConfig, StorageProvider};
+use flymodel_service::app::start_server;
 use futures_util::FutureExt;
 
-use migration::Migrator;
+use flymodel_migration::Migrator;
 use tracing::{debug, Level};
 
 use dotenv::dotenv;
-#[derive(serde::Deserialize, Debug)]
-struct Conf {
-    storage: StorageConfig,
-}
 
-async fn serve(server: ServeConfig) -> anyhow::Result<()> {
-    let bs = std::fs::read("./flymodel.toml")?;
-    let utf = String::from_utf8(bs)?;
-    let conf: Conf = toml::from_str(&utf)?;
+fn get_conf() {}
 
+async fn setup_storage(cli: Cli) -> anyhow::Result<()> {
+    let conf = cli.load_config()?;
     let storage = conf.storage.build().await?;
     storage.setup().await?;
-
     Ok(())
+}
+
+async fn serve_server(server: ServeConfig) -> anyhow::Result<()> {
+    start_server(
+        server.db.to_connection().await?,
+        format!("{}:{}", server.bind, server.port),
+    )
+    .await
+}
+
+async fn run(cmd: Cli) -> anyhow::Result<()> {
+    match cmd.command {
+        Commands::Serve(server) => serve_server(server).await,
+        Commands::Migrate(migrate) => migrate.run().await,
+        Commands::SetupStorage => setup_storage(cmd).await,
+    }
 }
 
 #[tokio::main]
@@ -32,21 +43,16 @@ async fn main() -> anyhow::Result<()> {
         .with_max_level(Level::DEBUG)
         .init();
     dotenv().ok();
-    let cmd = Cli::parse();
-    let result = (|| async move {
-        match cmd.command {
-            Commands::Serve(server) => serve(server).await,
-            Commands::Migrate(migrate) => migrate.run().await,
-        }
-    })()
-    .then(|res| async {
-        debug!("done");
-        res
-    })
-    .await;
-
-    Ok(match result {
-        Ok(()) => (),
-        Err(e) => tracing::error!("{e}"),
-    })
+    Ok(
+        match run(Cli::parse())
+            .then(|res| async {
+                debug!("done");
+                res
+            })
+            .await
+        {
+            Ok(()) => (),
+            Err(e) => tracing::error!("{e}"),
+        },
+    )
 }

@@ -7,27 +7,6 @@ use crate::minio::{S3Configuration, S3Storage};
 type StorageMap = HashMap<String, Box<dyn StorageProvider>>;
 
 #[derive(serde::Deserialize, Debug)]
-#[serde(rename_all = "lowercase")]
-pub enum StorageRole {
-    Test,
-    Qa,
-    Staging,
-    Prod,
-}
-
-impl ToString for StorageRole {
-    fn to_string(&self) -> String {
-        match self {
-            Self::Test => "test",
-            Self::Qa => "qa",
-            Self::Staging => "staging",
-            Self::Prod => "prod",
-        }
-        .into()
-    }
-}
-
-#[derive(serde::Deserialize, Debug)]
 pub struct StorageConfig {
     s3: Option<Vec<S3Configuration>>,
 }

@@ -1,20 +1,24 @@
-[package]
-name = "migration"
-version = "0.1.0"
-edition = "2021"
-publish = false
-
-[lib]
-name = "migration"
-path = "src/lib.rs"
-
 [dependencies]
-async-std = { version = "1", features = ["attributes", "tokio1"] }
+async-std = {version = "1", features = ["attributes", "tokio1"]}
+flymodel-entities = {path = "../entities"}
+anyhow.workspace = true
 sea-orm.workspace = true
 
 [dependencies.sea-orm-migration]
+features = ["runtime-tokio-native-tls", "sqlx-postgres"]
 workspace = true
-features = [
-  "runtime-tokio-native-tls", 
-  "sqlx-postgres",
-]
+serde.workspace = true
+serde_yaml.workspace = true
+
+[package]
+name = "flymodel-migration"
+readme = "README.md"
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true

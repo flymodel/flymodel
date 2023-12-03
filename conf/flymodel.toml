@@ -1,32 +1,39 @@
-[lifecycles]
-[[lifecycles.test]]
-[[lifecycles.qa]]
-[[lifecycles.staging]]
-[[lifecycles.prod]]
+[retention]
 
+[[retention.prod]]
+
+[[retention.qa]]
+models = 365
+
+[[retention.staging]]
+models = 365
+
+[[retention.test]]
+models = 365
+runs = 28
 
 [storage]
 
 [[storage.s3]]
 bucket = "ml-test"
-role = "test"
-region = "ca-local"
 endpoint = "http://localhost:9000"
+region = "ca-local"
+role = "test"
 
 [[storage.s3]]
 bucket = "ml-qa"
-role = "qa"
-region = "ca-local"
 endpoint = "http://localhost:9000"
+region = "ca-local"
+role = "qa"
 
 [[storage.s3]]
 bucket = "ml-stage"
-role = "staging"
-region = "ca-local"
 endpoint = "http://localhost:9000"
+region = "ca-local"
+role = "staging"
 
 [[storage.s3]]
 bucket = "ml-prod"
-role = "prod"
-region = "ca-local"
 endpoint = "http://localhost:9000"
+region = "ca-local"
+role = "prod"

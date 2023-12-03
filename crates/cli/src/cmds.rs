@@ -1,13 +1,19 @@
-use crate::config::{MigrationConfig, ServeConfig};
+use crate::config::{DatabaseConfig, MigrationConfig, ServeConfig};
 use clap::{Parser, Subcommand};
-use migration::{Migrator, MigratorTrait};
+use flymodel_migration::Migrator;
+use flymodel_registry::storage::StorageConfig;
 use sea_orm::DatabaseConnection;
+use sea_orm_migration::MigratorTrait;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
+
+    #[arg(short, long, global = true, default_value = "./flymodel.toml")]
+    pub config: PathBuf,
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -15,6 +21,7 @@ pub enum Commands {
     Serve(ServeConfig),
     #[command(subcommand)]
     Migrate(Migration),
+    SetupStorage,
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -25,15 +32,64 @@ pub enum Migration {
 
 impl Migration {
     pub async fn run(self) -> anyhow::Result<()> {
-        let conn = sea_orm::Database::connect(match &self {
-            Self::Down(conf) => conf.database_url.clone(),
-            Self::Up(conf) => conf.database_url.clone(),
-        })
-        .await?;
+        let conf = match &self {
+            Self::Down(c) => c,
+            Self::Up(c) => c,
+        };
+
+        if conf.test_data {
+            std::env::set_var("TEST_DATA", "true");
+        }
+
+        let conn = conf.db.to_connection().await?;
         match self {
             Self::Up(config) => Migrator::up(&conn, None).await,
             Self::Down(config) => Migrator::down(&conn, None).await,
         }?;
+        Ok(())
+    }
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct Conf {
+    pub storage: StorageConfig,
+}
+
+impl Cli {
+    pub fn load_config(&self) -> anyhow::Result<Conf> {
+        let ext = match self.config.extension() {
+            Some(ext) => ext,
+            None => anyhow::bail!("no extension detected"),
+        }
+        .to_str();
+        if let Some(ext) = ext {
+            let config = std::fs::read_to_string(&self.config)?;
+            let conf: Conf = match ext {
+                "toml" => toml::from_str(&config)?,
+                "yaml" => serde_yaml::from_str(&config)?,
+                ext => anyhow::bail!("invalid format: {}", ext),
+            };
+            Ok(conf)
+        } else {
+            anyhow::bail!("no extension detected")
+        }
+    }
+}
+
+mod test {
+
+    #[test]
+    fn test_server_load_conf() -> anyhow::Result<()> {
+        let cli = super::Cli {
+            command: super::Commands::SetupStorage,
+            config: "../../flymodel.toml".into(),
+        };
+        let _ = cli.load_config()?;
+        let cli = super::Cli {
+            command: super::Commands::SetupStorage,
+            config: "../../flymodel.yaml".into(),
+        };
+        let _ = cli.load_config()?;
         Ok(())
     }
 }

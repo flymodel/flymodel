@@ -1,22 +1,14 @@
-use crate::storage::{StorageProvider, StorageRole};
-
+use crate::storage::StorageProvider;
 use anyhow::bail;
-use aws_config::environment::EnvironmentVariableCredentialsProvider;
-
-use aws_config::{AppName, Region};
-
+use aws_config::{environment::EnvironmentVariableCredentialsProvider, AppName, Region};
 use aws_sdk_s3::{
     primitives::ByteStream,
     types::{BucketVersioningStatus, VersioningConfiguration},
     Client,
 };
 use bytes::Bytes;
+use flymodel::storage::StorageRole;
 use tracing::trace;
-// use s3::bucket::Bucket;
-// use s3::creds::Credentials;
-// use s3::error::S3Error;
-// use s3::region::Region;
-// use s3::BucketConfiguration;
 
 fn default_path() -> String {
     "/".to_string()

@@ -2,21 +2,11 @@
 maintenance = {status = "actively-developed"}
 
 [dependencies]
-serde = {workspace = true, features = ["derive"]}
-sea-orm.workspace = true
-
-[dependencies.sea-orm-migration]
-features = [
-  "runtime-tokio-native-tls",
-  "sqlx-postgres"
-]
-workspace = true
-thiserror.workspace = true
 
 [features]
 
 [package]
-name = "flymodel"
+name = "flymodel-client"
 readme = "README.md"
 authors.workspace = true
 description.workspace = true

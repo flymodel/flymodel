@@ -1,0 +1,30 @@
+retention:
+  test:
+    runs: 28
+    models: 365
+  qa:
+    runs: 28
+    models: 365
+  staging:
+  prod:
+storage:
+  s3:
+  - bucket: ml-test
+    role: test
+    region: ca-local
+    endpoint: http://localhost:9000
+
+  - bucket: ml-qa
+    role: qa
+    region: ca-local
+    endpoint: http://localhost:9000
+
+  - bucket: ml-stage
+    role: staging
+    region: ca-local
+    endpoint: http://localhost:9000
+
+  - bucket: ml-prod
+    role: prod
+    region: ca-local
+    endpoint: http://localhost:9000

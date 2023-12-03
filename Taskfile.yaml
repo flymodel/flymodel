@@ -1,0 +1,9 @@
+version: '3'
+
+tasks:
+  fly:
+    cmds:
+    - seaography-cli postgres://postgres:postgres@localhost:5432/mlops graphql-ents ./crates/graphql-ents
+  env:
+    cmds:
+    - docker-compose up

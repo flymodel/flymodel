@@ -1,21 +1,31 @@
 [alias]
-migrate-up = "cli migrate up --database-url postgresql://postgres:postgres@localhost:5432/mlops"
-migrate-down = "cli migrate down --database-url postgresql://postgres:postgres@localhost:5432/mlops"
-serve = "cli serve"
 cli = "run --package flymodel-cli --bin flymodel"
-
-[target.x86_64-apple-darwin]
-rustflags = [
-  "-C", "link-arg=-undefined",
-  "-C", "link-arg=dynamic_lookup",
-  "-C", "link-args=-L/usr/local/opt/llvm/lib,-I/usr/local/opt/llvm/include",
-  "-C", "link-args=-Wl,-rpath,/Library/Developer/CommandLineTools/Library/Frameworks",
-]
+migrate-down = "cli migrate down --config ./conf/flymodel.toml"
+migrate-up = "cli migrate up --config ./conf/flymodel.toml"
+serve = "cli serve --config ./conf/flymodel.toml"
+storage = "cli setup-storage --config ./conf/flymodel.toml"
+yamlconf = "cli setup-storage --config ./conf/flymodel.yaml"
 
 [target.aarch64-apple-darwin]
 rustflags = [
-  "-C", "link-arg=-undefined",
-  "-C", "link-arg=dynamic_lookup",
-  "-C", "link-args=-L/usr/local/opt/llvm/lib,-I/usr/local/opt/llvm/include",
-  "-C", "link-args=-Wl,-rpath,/Library/Developer/CommandLineTools/Library/Frameworks",
+  "-C",
+  "link-arg=-undefined",
+  "-C",
+  "link-arg=dynamic_lookup",
+  "-C",
+  "link-args=-L/usr/local/opt/llvm/lib,-I/usr/local/opt/llvm/include",
+  "-C",
+  "link-args=-Wl,-rpath,/Library/Developer/CommandLineTools/Library/Frameworks"
+]
+
+[target.x86_64-apple-darwin]
+rustflags = [
+  "-C",
+  "link-arg=-undefined",
+  "-C",
+  "link-arg=dynamic_lookup",
+  "-C",
+  "link-args=-L/usr/local/opt/llvm/lib,-I/usr/local/opt/llvm/include",
+  "-C",
+  "link-args=-Wl,-rpath,/Library/Developer/CommandLineTools/Library/Frameworks"
 ]
