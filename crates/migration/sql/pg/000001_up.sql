@@ -8,9 +8,9 @@ create sequence namespace_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE NO MINV
 create table namespace (
     id integer primary key default nextval('namespace_id_seq' :: regclass) not null,
     name text not null,
-    description text default 'ML Namespace'::text not null,
-    created_at timestamp with time zone default now(),
-    last_modified timestamp with time zone default now()
+    description text default 'ML Namespace' :: text not null,
+    created_at timestamptz not null default now(),
+    last_modified timestamptz not null default now()
 );
 
 create index on namespace using btree(name);
@@ -24,10 +24,9 @@ create table bucket (
     region text not null,
     role lifecycle not null,
     shard integer not null,
-    created_at timestamp with time zone default now(),
-    last_modified timestamp with time zone default now()
+    created_at timestamptz not null default now(),
+    last_modified timestamptz not null default now()
 );
-
 
 create index bucket_btree_name on bucket using btree(name);
 
@@ -41,8 +40,8 @@ create table model (
     id integer primary key default nextval('model_id_seq' :: regclass) not null,
     namespace integer references namespace(id) on delete cascade on update cascade not null,
     name text not null,
-    created_at timestamp with time zone default now(),
-    last_modified timestamp with time zone default now()
+    created_at timestamptz not null default now(),
+    last_modified timestamptz not null default now()
 );
 
 create index model_btree_name on model using btree(name);
@@ -63,7 +62,7 @@ create table model_states (
     id integer primary key default nextval('model_states_seq' :: regclass) not null,
     version_id integer references model_version(id) on delete cascade on update cascade not null,
     state lifecycle not null,
-    last_modified timestamp with time zone default now()
+    last_modified timestamptz not null default now()
 );
 
 create sequence model_artifacts_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE NO MINVALUE CACHE 1;
@@ -73,5 +72,5 @@ create table model_artifacts (
     version_id integer references model_version(id) on delete cascade on update cascade not null,
     bucket_id integer references bucket(id) on delete cascade on update cascade not null,
     key text not null,
-    created_at timestamp with time zone default now()
+    created_at timestamptz not null default now()
 );

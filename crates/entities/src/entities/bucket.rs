@@ -1,5 +1,6 @@
 use super::enums::Lifecycle;
 use async_graphql::{ComplexObject, Interface, SimpleObject};
+use chrono::{Local, Utc};
 use sea_orm::entity::prelude::*;
 
 #[derive(
@@ -25,8 +26,10 @@ pub struct Model {
     pub region: String,
     pub role: Lifecycle,
     pub shard: i32,
-    pub created_at: Option<DateTimeWithTimeZone>,
-    pub last_modified: Option<DateTimeWithTimeZone>,
+    #[serde(default = "chrono::offset::Utc::now")]
+    pub created_at: chrono::DateTime<Utc>,
+    #[serde(default = "chrono::offset::Utc::now")]
+    pub last_modified: chrono::DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

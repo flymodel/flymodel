@@ -1,6 +1,6 @@
 use sea_orm_migration::prelude::*;
 
-use crate::hooks::Fixtures;
+use crate::{hooks::Fixtures, FIXTURES};
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -12,9 +12,9 @@ static DOWN: &str = include_str!("../sql/pg/000001_down.sql");
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager.get_connection().execute_unprepared(UP).await?;
-        if std::env::var("TEST_DATA").is_ok() {
-            Fixtures::insert_models(manager.get_connection(), Fixtures::load(Fixtures::basic()))
-                .await?;
+        let fixture = FIXTURES.lock().expect("ok mutex").clone();
+        if let Some(fixture) = fixture {
+            fixture.insert_models(manager.get_connection()).await?;
         }
         Ok(())
     }

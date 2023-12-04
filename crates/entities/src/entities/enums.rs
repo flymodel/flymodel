@@ -14,6 +14,7 @@ use sea_orm::entity::prelude::*;
     serde::Deserialize,
 )]
 #[serde(rename_all = "lowercase")]
+#[graphql(name = "Lifecycle")]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "lifecycle")]
 pub enum Lifecycle {
     #[sea_orm(string_value = "prod")]

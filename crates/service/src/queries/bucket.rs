@@ -18,8 +18,8 @@ impl BucketQueries {
             region: "".to_string(),
             role: entities::enums::Lifecycle::Test,
             shard: 0,
-            created_at: None,
-            last_modified: None,
+            created_at: Default::default(),
+            last_modified: Default::default(),
         }
     }
 }

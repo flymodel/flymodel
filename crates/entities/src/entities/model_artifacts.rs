@@ -1,8 +1,18 @@
 use async_graphql::{Interface, SimpleObject};
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    DeriveEntityModel,
+    Eq,
+    serde::Serialize,
+    serde::Deserialize,
+    SimpleObject,
+)]
 #[sea_orm(table_name = "model_artifacts")]
+#[graphql(name = "ModelArtifacts")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -10,7 +20,7 @@ pub struct Model {
     pub bucket_id: i32,
     #[sea_orm(column_type = "Text")]
     pub key: String,
-    pub created_at: Option<DateTimeWithTimeZone>,
+    pub created_at: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -12,6 +12,8 @@ use sea_orm::entity::prelude::*;
     serde::Deserialize,
 )]
 #[sea_orm(table_name = "model_version")]
+#[graphql(name = "ModelVersion")]
+
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,

@@ -11,21 +11,27 @@ pub struct FixtureData {
     pub buckets: Vec<entities::bucket::Model>,
 }
 
-pub struct Fixtures;
+#[derive(Debug, Clone, clap::ValueEnum)]
+#[clap(rename_all = "snake_case")]
+pub enum Fixtures {
+    Basic,
+    MultiRegion,
+}
 
 impl Fixtures {
-    pub const fn basic() -> &'static str {
-        include_str!("../seeds/basic.yaml")
+    pub const fn fixture(&self) -> &'static str {
+        match self {
+            Self::Basic => include_str!("../seeds/basic.yaml"),
+            Self::MultiRegion => include_str!("../seeds/multi-region.yaml"),
+        }
     }
 
-    pub fn load(base: &'static str) -> FixtureData {
-        serde_yaml::from_str(base).unwrap()
+    pub fn load(&self) -> FixtureData {
+        serde_yaml::from_str(self.fixture()).unwrap()
     }
 
-    pub async fn insert_models(
-        conn: &'_ SchemaManagerConnection<'_>,
-        fixture: FixtureData,
-    ) -> Result<(), DbErr> {
+    pub async fn insert_models(&self, conn: &'_ SchemaManagerConnection<'_>) -> Result<(), DbErr> {
+        let fixture = self.load();
         let act: Vec<_> = fixture
             .namespaces
             .iter()
@@ -47,8 +53,14 @@ impl Fixtures {
 mod test {
 
     #[test]
-    fn test() {
+    fn test_basic() {
         use super::Fixtures;
-        println!("loaded: {:#?}", Fixtures::load(Fixtures::basic()));
+        println!("loaded: {:#?}", Fixtures::Basic.load());
+    }
+
+    #[test]
+    fn test_multi_region() {
+        use super::Fixtures;
+        println!("loaded: {:#?}", Fixtures::MultiRegion.load());
     }
 }

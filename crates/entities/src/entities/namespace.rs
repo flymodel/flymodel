@@ -1,5 +1,12 @@
-use async_graphql::SimpleObject;
-use sea_orm::entity::prelude::*;
+use std::collections::HashMap;
+
+use crate::db::{Database, OrmDataloader};
+use async_graphql::{dataloader::Loader, SimpleObject};
+use chrono::Utc;
+use sea_orm::{
+    entity::{prelude::*, *},
+    query::*,
+};
 
 #[derive(
     Clone,
@@ -12,6 +19,7 @@ use sea_orm::entity::prelude::*;
     serde::Deserialize,
 )]
 #[sea_orm(table_name = "namespace")]
+#[graphql(name = "Namespace")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -19,8 +27,10 @@ pub struct Model {
     pub name: String,
     #[sea_orm(column_type = "Text")]
     pub description: String,
-    pub created_at: Option<DateTimeWithTimeZone>,
-    pub last_modified: Option<DateTimeWithTimeZone>,
+    #[serde(default = "chrono::offset::Utc::now")]
+    pub created_at: chrono::DateTime<Utc>,
+    #[serde(default = "chrono::offset::Utc::now")]
+    pub last_modified: chrono::DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -51,4 +61,19 @@ pub enum RelatedEntity {
     Buckets,
     #[sea_orm(entity = "super::model::Entity")]
     Model,
+}
+
+#[async_trait::async_trait]
+impl Loader<i32> for OrmDataloader {
+    type Value = Model;
+    type Error = std::sync::Arc<DbErr>;
+
+    async fn load(&self, keys: &[i32]) -> Result<HashMap<i32, Model>, Self::Error> {
+        Entity::find()
+            .filter(Column::Id.is_in(keys.iter().map(|it| *it as i32).collect::<Vec<_>>()))
+            .all(&self.db)
+            .await
+            .map(|re| HashMap::from_iter(re.iter().map(|it| (it.id as i32, it.to_owned()))))
+            .map_err(std::sync::Arc::new)
+    }
 }

@@ -1,20 +1,3 @@
-[badges]
-maintenance = {status = "actively-developed"}
-
-[dependencies]
-serde = {workspace = true, features = ["derive"]}
-sea-orm.workspace = true
-
-[dependencies.sea-orm-migration]
-features = [
-  "runtime-tokio-native-tls",
-  "sqlx-postgres"
-]
-workspace = true
-thiserror.workspace = true
-
-[features]
-
 [package]
 name = "flymodel"
 readme = "README.md"
@@ -24,9 +7,26 @@ documentation.workspace = true
 edition.workspace = true
 homepage.workspace = true
 license.workspace = true
+version.workspace = true
 
 [package.metadata.release]
 shared-version = true
 repository.workspace = true
 rust-version.workspace = true
-version.workspace = true
+
+[badges]
+maintenance = {status = "actively-developed"}
+
+[dependencies]
+serde = {workspace = true, features = ["derive"]}
+sea-orm.workspace = true
+thiserror.workspace = true
+
+[dependencies.sea-orm-migration]
+features = [
+  "runtime-tokio-native-tls",
+  "sqlx-postgres"
+]
+workspace = true
+
+[features]

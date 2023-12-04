@@ -1,5 +1,5 @@
 [badges]
-maintenance = {status = "actively-developed"}
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 
@@ -14,9 +14,9 @@ documentation.workspace = true
 edition.workspace = true
 homepage.workspace = true
 license.workspace = true
+version.workspace = true
 
 [package.metadata.release]
 shared-version = true
 repository.workspace = true
 rust-version.workspace = true
-version.workspace = true

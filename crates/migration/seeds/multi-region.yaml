@@ -3,6 +3,10 @@ namespaces:
   name: canada
   description: Flymodel Canada
 
+- id: 2
+  name: usa
+  description: Flymodel USA
+
 buckets:
 - id: 1
   namespace: 1
@@ -27,6 +31,34 @@ buckets:
 
 - id: 4
   namespace: 1
+  name: ml-prod
+  region: ca-local
+  role: prod
+  shard: 0
+
+- id: 5
+  namespace: 2
+  name: ml-test
+  region: ca-local
+  role: test
+  shard: 0
+
+- id: 6
+  namespace: 2
+  name: ml-qa
+  region: ca-local
+  role: qa
+  shard: 0
+
+- id: 7
+  namespace: 2
+  name: ml-stage
+  region: ca-local
+  role: stage
+  shard: 0
+
+- id: 8
+  namespace: 2
   name: ml-prod
   region: ca-local
   role: prod

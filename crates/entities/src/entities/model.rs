@@ -12,14 +12,15 @@ use sea_orm::entity::prelude::*;
     serde::Deserialize,
 )]
 #[sea_orm(table_name = "model")]
+#[graphql(name = "Model")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub namespace: i32,
     #[sea_orm(column_type = "Text")]
     pub name: String,
-    pub created_at: Option<DateTimeWithTimeZone>,
-    pub last_modified: Option<DateTimeWithTimeZone>,
+    pub created_at: DateTimeWithTimeZone,
+    pub last_modified: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

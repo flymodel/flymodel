@@ -3,7 +3,7 @@ use clap::{Parser, Subcommand};
 use flymodel_migration::Migrator;
 use flymodel_registry::storage::StorageConfig;
 use sea_orm::DatabaseConnection;
-use sea_orm_migration::MigratorTrait;
+use sea_orm_migration::{migrator, MigratorTrait};
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Parser)]
@@ -37,16 +37,16 @@ impl Migration {
             Self::Up(c) => c,
         };
 
-        if conf.test_data {
-            std::env::set_var("TEST_DATA", "true");
-        }
-
         let conn = conf.db.to_connection().await?;
-        match self {
-            Self::Up(config) => Migrator::up(&conn, None).await,
-            Self::Down(config) => Migrator::down(&conn, None).await,
-        }?;
-        Ok(())
+        let conf = match &self {
+            Self::Up(c) => c,
+            Self::Down(c) => c,
+        };
+        Migrator::init(conf.test_data.clone());
+        Ok(match self {
+            Self::Up(..) => Migrator::up(&conn, None).await,
+            Self::Down(..) => Migrator::down(&conn, None).await,
+        }?)
     }
 }
 

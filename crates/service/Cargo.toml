@@ -1,12 +1,29 @@
+[package]
+name = "flymodel-service"
+readme = "README.md"
+authors.workspace = true
+version.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+
+[package.metadata.release]
+shared-version = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+
 [badges]
-maintenance = {status = "actively-developed"}
+maintenance = { status = "actively-developed" }
 
 [dependencies]
-async-graphql = {workspace = true, features = ["tracing", "dataloader"]}
-flymodel-entities = {path = "../entities"}
-serde = {workspace = true, features = ["derive"]}
-tokio = {workspace = true, features = ["full"]}
-tokio-stream = {version = "0.1.14", features = ["full"]}
+async-graphql = { workspace = true, features = ["tracing", "dataloader"] }
+flymodel-entities = { path = "../entities" }
+serde = { workspace = true, features = ["derive"] }
+tokio = { workspace = true, features = ["full"] }
+tokio-stream = { version = "0.1.14", features = ["full"] }
 actix.workspace = true
 actix-web.workspace = true
 anyhow.workspace = true
@@ -19,19 +36,3 @@ serde_json.workspace = true
 tracing.workspace = true
 
 [features]
-
-[package]
-name = "flymodel-service"
-readme = "README.md"
-authors.workspace = true
-description.workspace = true
-documentation.workspace = true
-edition.workspace = true
-homepage.workspace = true
-license.workspace = true
-
-[package.metadata.release]
-shared-version = true
-repository.workspace = true
-rust-version.workspace = true
-version.workspace = true

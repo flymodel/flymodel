@@ -1,39 +1,42 @@
+[package]
+name = "flymodel-entities"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+documentation.workspace = true
+description.workspace = true
+homepage.workspace = true
+repository.workspace = true
+readme = "README.md"
+license.workspace = true
+
+[features]
+
 [badges]
-maintenance = {status = "actively-developed"}
+maintenance = { status = "actively-developed" }
+
+[package.metadata.release]
+shared-version = true
 
 [dependencies]
-async-graphql = {workspace = true, features = [
+flymodel = { path = "../flymodel" }
+tokio.workspace = true
+thiserror.workspace = true
+async-graphql = { workspace = true, features = [
   "tracing",
   "decimal",
   "chrono",
   "dataloader",
-  "dynamic-schema"
-]}
-flymodel = {path = "../flymodel"}
-juniper = "0.15.11"
+  "dynamic-schema",
+] }
+serde.workspace = true
+chrono.workspace = true
+sea-orm = { workspace = true, features = ["chrono"] }
 lazy_static = "1.4.0"
-sea-orm = {workspace = true, features = ["chrono"]}
+juniper = "0.15.11"
+
 
 [dependencies.sea-orm-migration]
-features = ["runtime-tokio-native-tls", "sqlx-postgres"]
 workspace = true
-serde.workspace = true
-thiserror.workspace = true
-
-[features]
-
-[package]
-name = "flymodel-entities"
-readme = "README.md"
-authors.workspace = true
-description.workspace = true
-documentation.workspace = true
-edition.workspace = true
-homepage.workspace = true
-license.workspace = true
-
-[package.metadata.release]
-shared-version = true
-repository.workspace = true
-rust-version.workspace = true
-version.workspace = true
+features = ["runtime-tokio-native-tls", "sqlx-postgres"]

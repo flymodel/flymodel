@@ -1,5 +1,6 @@
 use clap::Args;
 use flymodel::errs::{FlymodelError, FlymodelResult};
+use flymodel_migration::hooks::Fixtures;
 use sea_orm::DatabaseConnection;
 
 #[derive(Debug, Clone, Args)]
@@ -23,7 +24,7 @@ pub struct MigrationConfig {
     #[clap(flatten)]
     pub db: DatabaseConfig,
     #[arg(long)]
-    pub test_data: bool,
+    pub test_data: Option<Fixtures>,
 }
 
 impl DatabaseConfig {
