@@ -29,6 +29,10 @@ jobs:
         with:
           path: |
             target/
+            crates/
+            Cargo.toml
+            docker-compose.yaml
+            dev/
           key: ${{ hashFiles('crates/**') }}
 
       - uses: isbang/compose-action@v1.5.1
@@ -61,7 +65,3 @@ jobs:
       - name: Test Migration Down
         run: |
           target/debug/flymodel migrate down
-
-      - name: Clean Temp Data
-        run: |
-          rm -rf ./tmp
