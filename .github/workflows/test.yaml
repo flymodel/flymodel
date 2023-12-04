@@ -25,6 +25,10 @@ jobs:
         mkdir -p ./tmp/minio
         chmod -R g+rwx ./tmp
 
+    - uses: isbang/compose-action@v1.5.1
+      with:
+        compose-file: ./docker-compose.yaml
+
     - uses: actions/cache@v3
       with:
         path: |
@@ -53,10 +57,6 @@ jobs:
     - name: Pre Build & Cache
       run: |
         RUSTFLAGS="-Awarnings" cargo build
-
-    - uses: isbang/compose-action@v1.5.1
-      with:
-        compose-file: ./docker-compose.yaml
 
     - name: Test Migration Up
       run: |
