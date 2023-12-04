@@ -7,7 +7,7 @@ tasks:
 
   schema:
     cmds:
-    - cynic introspect http://localhost:9000/graphql -o crates/graphql/schema/flymodel.graphql
+    - cynic introspect http://localhost:9009/graphql -o crates/graphql/schema/flymodel.graphql
 
   schema_diff:
     cmds:

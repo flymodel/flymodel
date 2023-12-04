@@ -63,3 +63,4 @@ type Query {
   bucket(id: [Int!], page: Page, namespace: [Int!], role: [Lifecycle!]): PaginatedBucket!
   namespace(id: [Int!], page: Page): PaginatedNamespace!
 }
+

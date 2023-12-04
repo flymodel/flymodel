@@ -5,7 +5,7 @@ use sea_orm::DatabaseConnection;
 
 #[derive(Debug, Clone, Args)]
 pub struct ServeConfig {
-    #[arg(short, long, default_value = "9000")]
+    #[arg(short, long, default_value = "9009")]
     pub port: u16,
     #[arg(short, long, default_value = "localhost")]
     pub bind: String,
