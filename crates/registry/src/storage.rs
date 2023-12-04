@@ -33,10 +33,7 @@ impl StorageConfig {
         let mut storage = StorageMap::new();
         if let Some(confmap) = self.s3 {
             for config in confmap {
-                storage.insert(
-                    config.bucket.clone(),
-                    Box::new(S3Storage::new(config).await?),
-                );
+                storage.insert(config.bucket.clone(), Box::new(S3Storage::new(config)?));
             }
         } else {
             anyhow::bail!("no storage provided")

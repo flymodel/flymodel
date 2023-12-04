@@ -3,6 +3,8 @@ services:
     container_name: minio
     volumes:
       - ./tmp/minio:/data
+    environment:
+      - MINIO_REGION=ca-local
     ports:
       - 9000:9000
       - 9090:9090

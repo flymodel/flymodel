@@ -15,6 +15,7 @@ version = "0.1.0"
 
 [workspace.dependencies]
 actix = "0.13.1"
+dotenv = "0.15.0"
 actix-web = "4.4.0"
 anyhow = "1.0.75"
 async-graphql = "6.0.11"

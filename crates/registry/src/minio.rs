@@ -41,7 +41,7 @@ pub struct S3Storage {
 }
 
 impl S3Storage {
-    pub async fn new<'a>(conf: S3Configuration) -> anyhow::Result<Self> {
+    pub fn new<'a>(conf: S3Configuration) -> anyhow::Result<Self> {
         let mut builder = aws_sdk_s3::config::Builder::new().force_path_style(conf.path_style);
         if !conf.public {
             builder = builder.credentials_provider(EnvironmentVariableCredentialsProvider::new())
@@ -169,5 +169,41 @@ impl StorageProvider for S3Storage {
             .key(key)
             .set_version_id(version_id);
         Ok(base.send().await?.body.collect().await?.into_bytes())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use bytes::Bytes;
+    use flymodel::storage::StorageRole;
+
+    use super::S3Storage;
+    use crate::storage::StorageProvider;
+
+    fn new_minio_test_client() -> S3Storage {
+        dotenv::dotenv().ok();
+        S3Storage::new(super::S3Configuration {
+            endpoint: Some("http://localhost:9000".into()),
+            public: false,
+            region: Some("ca-local".into()),
+            prefix: "".into(),
+            bucket: "ml-dev".into(),
+            role: StorageRole::Test,
+            path_style: true,
+        })
+        .expect("storage")
+    }
+
+    #[tokio::test]
+    async fn test_minio_integration() -> anyhow::Result<()> {
+        let client = new_minio_test_client();
+        client.setup().await?;
+
+        let expect = Bytes::from_static(b"abc");
+        client.put("test.txt".into(), expect.clone()).await?;
+        let resp = client.get("test.txt".into(), None).await?;
+        assert_eq!(resp, expect);
+
+        Ok(())
     }
 }

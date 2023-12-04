@@ -4,7 +4,7 @@ name = "flymodel"
 
 [dependencies]
 clap = {workspace = true, features = ["derive", "env"]}
-dotenv = "0.15.0"
+dotenv.workspace = true
 flymodel = {path = "../flymodel"}
 flymodel-migration = {path = "../migration"}
 flymodel-registry = {path = "../registry"}
