@@ -9,22 +9,22 @@ retention:
   prod:
 storage:
   s3:
-    - bucket: ml-test
-      role: test
-      region: ca-local
-      endpoint: http://localhost:9000
+  - bucket: ml-test
+    role: test
+    region: ca-local
+    endpoint: http://localhost:9000
 
-    - bucket: ml-qa
-      role: qa
-      region: ca-local
-      endpoint: http://localhost:9000
+  - bucket: ml-qa
+    role: qa
+    region: ca-local
+    endpoint: http://localhost:9000
 
-    - bucket: ml-stage
-      role: stage
-      region: ca-local
-      endpoint: http://localhost:9000
+  - bucket: ml-stage
+    role: stage
+    region: ca-local
+    endpoint: http://localhost:9000
 
-    - bucket: ml-prod
-      role: prod
-      region: ca-local
-      endpoint: http://localhost:9000
+  - bucket: ml-prod
+    role: prod
+    region: ca-local
+    endpoint: http://localhost:9000

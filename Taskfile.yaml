@@ -7,3 +7,13 @@ tasks:
   env:
     cmds:
     - docker-compose up
+
+  schema:
+    cmds:
+    - cynic introspect http://localhost:9000/graphql -o crates/graphql/schema/flymodel.graphql
+
+  schema_diff:
+    cmds:
+    - cp crates/graphql/schema/flymodel.graphql crates/graphql/schema/flymodel.graphql.bk
+    - task: schema
+    - diff crates/graphql/schema/flymodel.graphql.bk crates/graphql/schema/flymodel.graphql

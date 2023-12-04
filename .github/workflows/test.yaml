@@ -11,57 +11,67 @@ jobs:
       fail-fast: false
       matrix:
         linux_target:
-          - aarch64-unknown-linux-gnu
-          - aarch64-unknown-linux-musl
-          - x86_64-unknown-linux-gnu
-          - x86_64-unknown-linux-musl
+        - aarch64-unknown-linux-gnu
+        - aarch64-unknown-linux-musl
+        - x86_64-unknown-linux-gnu
+        - x86_64-unknown-linux-musl
 
     steps:
-      - uses: actions/checkout@v3
+    - uses: actions/checkout@v3
 
-      - name: Setup Temp Data
-        run: |
-          mkdir -p ./tmp/postgres
-          mkdir -p ./tmp/minio
-          chmod -R g+rwx ./tmp
+    - name: Setup Temp Data
+      run: |
+        mkdir -p ./tmp/postgres
+        mkdir -p ./tmp/minio
+        chmod -R g+rwx ./tmp
 
-      - uses: actions/cache@v3
-        with:
-          path: |
-            target/
-            crates/
-            Cargo.toml
-            docker-compose.yaml
-            dev/
-          key: ${{ hashFiles('crates/**') }}
+    - uses: actions/cache@v3
+      with:
+        path: |
+          target/
+          crates/
+          Cargo.toml
+          docker-compose.yaml
+          dev/
+        key: ${{ hashFiles('crates/**') }}
 
-      - uses: isbang/compose-action@v1.5.1
-        with:
-          compose-file: ./docker-compose.yaml
+    - name: Install Task
+      uses: arduino/setup-task@v1
 
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: 1.74.0
-          components: rustfmt
-          cache: false
-          target: ${{ matrix.linux_target }}
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: 1.74.0
+        components: rustfmt
+        cache: false
+        target: ${{ matrix.linux_target }}
 
-      - name: Install tools
-        run: |
-          sudo apt-get install -y libpq-dev
+    - name: Install tools
+      run: |
+        sudo apt-get install -y libpq-dev
+        cargo install --locked cynic-cli
 
-      - name: Pre Build & Cache
-        run: |
-          RUSTFLAGS="-Awarnings" cargo build
+    - name: Pre Build & Cache
+      run: |
+        RUSTFLAGS="-Awarnings" cargo build
 
-      - name: Test Migration Up
-        run: |
-          target/debug/flymodel migrate up --test-data multi_region
+    - uses: isbang/compose-action@v1.5.1
+      with:
+        compose-file: ./docker-compose.yaml
 
-      - name: Test
-        run: |
-          cargo test --all-features
+    - name: Test Migration Up
+      run: |
+        target/debug/flymodel migrate up --test-data multi_region
 
-      - name: Test Migration Down
-        run: |
-          target/debug/flymodel migrate down
+    - name: Test
+      run: |
+        cargo test --all-features
+
+    - name: Startup Server & Validate Client Introspection
+      run: |
+        target/debug/flymodel serve  --config ./conf/flymodel.toml &
+        sleep 15
+        task schema_diff
+
+    - name: Test Migration Down
+      run: |
+        target/debug/flymodel migrate down

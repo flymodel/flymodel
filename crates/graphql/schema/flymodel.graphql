@@ -1,0 +1,66 @@
+type Bucket {
+  id: Int!
+  namespace: Int!
+  name: String!
+  region: String!
+  role: Lifecycle!
+  shard: Int!
+  createdAt: DateTime!
+  lastModified: DateTime!
+}
+
+type CurrentPage {
+  size: Int!
+  page: Int!
+}
+
+"""
+Implement the DateTime<Utc> scalar
+
+The input/output is a string in RFC3339 format.
+"""
+scalar DateTime
+
+enum Lifecycle {
+  prod
+  qa
+  stage
+  test
+}
+
+type Mutation {
+  rootMutation: String!
+}
+
+type Namespace {
+  id: Int!
+  name: String!
+  description: String!
+  createdAt: DateTime!
+  lastModified: DateTime!
+}
+
+input Page {
+  size: Int! = 25
+  page: Int!
+}
+
+type PaginatedBucket {
+  page: CurrentPage!
+  totalPages: Int!
+  totalItems: Int!
+  data: [Bucket!]!
+}
+
+type PaginatedNamespace {
+  page: CurrentPage!
+  totalPages: Int!
+  totalItems: Int!
+  data: [Namespace!]!
+}
+
+type Query {
+  bucket(id: [Int!], page: Page, namespace: [Int!], role: [Lifecycle!]): PaginatedBucket!
+  namespace(id: [Int!], page: Page): PaginatedNamespace!
+}
+
