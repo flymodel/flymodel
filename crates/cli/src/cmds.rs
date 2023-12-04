@@ -1,9 +1,9 @@
-use crate::config::{DatabaseConfig, MigrationConfig, ServeConfig};
+use crate::config::{MigrationConfig, ServeConfig};
 use clap::{Parser, Subcommand};
 use flymodel_migration::Migrator;
 use flymodel_registry::storage::StorageConfig;
-use sea_orm::DatabaseConnection;
-use sea_orm_migration::{migrator, MigratorTrait};
+
+use sea_orm_migration::MigratorTrait;
 use std::path::PathBuf;
 
 #[derive(Debug, Clone, Parser)]
@@ -82,12 +82,12 @@ mod test {
     fn test_server_load_conf() -> anyhow::Result<()> {
         let cli = super::Cli {
             command: super::Commands::SetupStorage,
-            config: "../../flymodel.toml".into(),
+            config: "../../conf/flymodel.toml".into(),
         };
         let _ = cli.load_config()?;
         let cli = super::Cli {
             command: super::Commands::SetupStorage,
-            config: "../../flymodel.yaml".into(),
+            config: "../../conf/flymodel.yaml".into(),
         };
         let _ = cli.load_config()?;
         Ok(())

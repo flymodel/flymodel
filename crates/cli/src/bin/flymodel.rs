@@ -1,18 +1,16 @@
+use std::process::ExitCode;
+
 use clap::Parser;
 use flymodel_cli::{
     cmds::{Cli, Commands},
     config::ServeConfig,
 };
-use flymodel_registry::storage::{StorageConfig, StorageProvider};
 use flymodel_service::app::start_server;
 use futures_util::FutureExt;
 
-use flymodel_migration::Migrator;
 use tracing::{debug, Level};
 
 use dotenv::dotenv;
-
-fn get_conf() {}
 
 async fn setup_storage(cli: Cli) -> anyhow::Result<()> {
     let conf = cli.load_config()?;
@@ -38,21 +36,22 @@ async fn run(cmd: Cli) -> anyhow::Result<()> {
 }
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> ExitCode {
     tracing_subscriber::fmt()
         .with_max_level(Level::DEBUG)
         .init();
     dotenv().ok();
-    Ok(
-        match run(Cli::parse())
-            .then(|res| async {
-                debug!("done");
-                res
-            })
-            .await
-        {
-            Ok(()) => (),
-            Err(e) => tracing::error!("{e}"),
-        },
-    )
+    match run(Cli::parse())
+        .then(|res| async {
+            debug!("done");
+            res
+        })
+        .await
+    {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            tracing::error!("{e}");
+            ExitCode::FAILURE
+        }
+    }
 }

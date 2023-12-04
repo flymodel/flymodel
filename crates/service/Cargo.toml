@@ -25,6 +25,7 @@ serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 tokio-stream = { version = "0.1.14", features = ["full"] }
 actix.workspace = true
+tracing-actix-web.workspace = true
 actix-web.workspace = true
 anyhow.workspace = true
 async-graphql-actix-web.workspace = true

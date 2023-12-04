@@ -21,7 +21,7 @@ impl StorageOrchestrator {
     }
 
     pub async fn setup(&self) -> anyhow::Result<()> {
-        for (_, store) in self.storage.as_ref() {
+        for store in self.storage.as_ref().values() {
             store.setup().await?;
             store
                 .put("abc".into(), Bytes::from_static(b"abcdef"))
@@ -58,10 +58,10 @@ pub trait StorageProvider {
     fn prefix(&self) -> String;
     fn resolve_path(&self, path: String) -> String {
         let pre = self.prefix();
-        if pre.ends_with("/") {
+        if pre.ends_with('/') {
             return pre + &path;
         }
-        return pre + "/" + &path;
+        pre + '/' + &path
     }
 
     async fn put(&self, path: String, bs: bytes::Bytes) -> anyhow::Result<()>;

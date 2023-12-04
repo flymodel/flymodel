@@ -1,12 +1,10 @@
-use std::collections::HashMap;
-
-use crate::db::{Database, OrmDataloader};
+use crate::db::OrmDataloader;
 use async_graphql::{dataloader::Loader, SimpleObject};
 use chrono::Utc;
-use sea_orm::{
-    entity::{prelude::*, *},
-    query::*,
-};
+use sea_orm::entity::prelude::*;
+use std::{collections::HashMap, sync::Arc};
+
+use super::page::{PageInput, Paginated};
 
 #[derive(
     Clone,
@@ -75,5 +73,27 @@ impl Loader<i32> for OrmDataloader {
             .await
             .map(|re| HashMap::from_iter(re.iter().map(|it| (it.id as i32, it.to_owned()))))
             .map_err(std::sync::Arc::new)
+    }
+}
+
+impl OrmDataloader {
+    pub async fn bulk_paginated_namespaces(
+        &self,
+        page: PageInput,
+    ) -> Result<Paginated<Model>, Arc<DbErr>> {
+        let selector = Entity::find().paginate(&self.db, page.size as u64);
+        let items_pg = selector.num_items_and_pages().await?;
+        selector
+            .fetch_page(page.page as u64)
+            .await
+            .map_err(Arc::new)
+            .map(|it| {
+                Paginated::new(
+                    page,
+                    items_pg.number_of_pages as usize,
+                    items_pg.number_of_items,
+                    it,
+                )
+            })
     }
 }

@@ -1,4 +1,4 @@
-use std::fmt::{Debug, Display};
+use std::fmt::Display;
 
 // use crate::schema::{build_schema, };
 use actix_web::{
@@ -7,11 +7,12 @@ use actix_web::{
     App, HttpRequest, HttpResponse, HttpServer, Result,
 };
 use async_graphql::{http::GraphiQLSource, Schema};
-use async_graphql_actix_web::{GraphQL, GraphQLRequest, GraphQLResponse, GraphQLSubscription};
+use async_graphql_actix_web::{GraphQL, GraphQLSubscription};
 use sea_orm::DbConn;
 use tracing::info;
 
 use crate::schema::{build_schema, FlymodelSchema};
+use tracing_actix_web::TracingLogger;
 
 const SUBSCRIPTION: &str = "/graphql";
 
@@ -43,6 +44,7 @@ where
 
     HttpServer::new(move || {
         App::new()
+            .wrap(TracingLogger::default())
             .service(
                 web::resource(SUBSCRIPTION)
                     .guard(guard::Post())

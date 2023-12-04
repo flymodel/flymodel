@@ -40,6 +40,18 @@ jobs:
         yum install -y epel-release
         yum install -y clang-devel clang lld
 
+    - name: Pre Build & Cache
+      run: |
+        cargo build
+
+    - name: Test Migration Up
+      run: |
+        cargo migrate-up --test-data multi_region
+
     - name: Test
       run: |
         cargo test
+
+    - name: Test Migration Down
+      run: |
+        cargo migrate-down

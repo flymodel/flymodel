@@ -1,9 +1,6 @@
 use flymodel_entities::{entities, prelude::*};
-use sea_orm::{Database, DbConn, DbErr};
-use sea_orm_migration::{
-    sea_orm::{entity::*, query::*},
-    SchemaManagerConnection,
-};
+use sea_orm::DbErr;
+use sea_orm_migration::{sea_orm::entity::*, SchemaManagerConnection};
 
 #[derive(Debug, Clone, serde::Deserialize)]
 pub struct FixtureData {

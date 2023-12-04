@@ -4,19 +4,25 @@ use async_graphql::*;
 #[graphql(concrete(name = "Page", params()))]
 pub struct PageInput {
     #[graphql(default = 25)]
-    size: usize,
-    page: usize,
+    pub size: usize,
+    pub page: u64,
+}
+
+impl Default for PageInput {
+    fn default() -> Self {
+        Self { size: 25, page: 0 }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, SimpleObject)]
 #[graphql(concrete(name = "CurrentPage", params()))]
 pub struct PageOutput {
-    size: usize,
-    page: usize,
+    pub size: usize,
+    pub page: u64,
 }
 
-impl From<(usize, usize)> for PageOutput {
-    fn from((size, page): (usize, usize)) -> Self {
+impl From<(usize, u64)> for PageOutput {
+    fn from((size, page): (usize, u64)) -> Self {
         Self { size, page }
     }
 }
@@ -31,7 +37,7 @@ impl From<PageInput> for PageOutput {
 }
 
 impl PageOutput {
-    pub fn new(size: usize, page: usize) -> Self {
+    pub fn new(size: usize, page: u64) -> Self {
         Self { size, page }
     }
 }
@@ -44,6 +50,7 @@ where
 {
     page: PageOutput,
     total_pages: usize,
+    total_items: u64,
     data: Vec<T>,
 }
 
@@ -51,13 +58,15 @@ impl<T> Paginated<T>
 where
     T: OutputType + Send + Clone,
 {
-    pub fn new<P>(page: P, total_pages: usize, data: Vec<T>) -> Self
+    pub fn new<P, I>(page: P, total_pages: I, total_items: u64, data: Vec<T>) -> Self
     where
+        I: Into<usize>,
         P: Into<PageOutput> + Send + Clone,
     {
         Self {
             page: page.into(),
-            total_pages,
+            total_pages: total_pages.into(),
+            total_items,
             data,
         }
     }

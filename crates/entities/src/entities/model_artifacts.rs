@@ -1,4 +1,4 @@
-use async_graphql::{Interface, SimpleObject};
+use async_graphql::SimpleObject;
 use sea_orm::entity::prelude::*;
 
 #[derive(

@@ -3,7 +3,7 @@ use anyhow::Context as ErrContext;
 use async_graphql::{dataloader::Loader, *};
 use flymodel_entities::{
     entities,
-    entities::page::{PageInput, PageOutput, Paginated},
+    entities::page::{PageInput, Paginated},
 };
 
 #[derive(Clone, Default)]
@@ -22,16 +22,17 @@ impl NamespaceQueries {
         if let Some(id) = id {
             return Ok(Paginated::new(
                 (id.len(), 0),
-                1,
+                1 as usize,
+                id.len() as u64,
                 db.loader()
                     .load(&id)
                     .await?
-                    .iter()
-                    .map(|(_, ns)| ns.to_owned())
+                    .values()
+                    .map(|ns| ns.to_owned())
                     .collect(),
             ));
         }
-
-        Ok(Paginated::new((0, 0), 0, vec![]))
+        let page = page.unwrap_or_default();
+        Ok(db.loader().bulk_paginated_namespaces(page).await?)
     }
 }

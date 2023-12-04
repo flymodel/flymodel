@@ -1,16 +1,16 @@
 use async_graphql::Object;
-use flymodel_entities::{entities, prelude::*};
+use flymodel_entities::entities;
 
 #[derive(Clone, Default)]
 pub struct BucketQueries;
 
 #[Object]
 impl BucketQueries {
-    async fn list_buckets(&self, namespace: u32) -> Vec<entities::bucket::Model> {
+    async fn list_buckets(&self, _namespace: u32) -> Vec<entities::bucket::Model> {
         vec![]
     }
 
-    async fn bucket(&self, id: Option<String>) -> entities::bucket::Model {
+    async fn bucket(&self, _id: Option<String>) -> entities::bucket::Model {
         entities::bucket::Model {
             id: 0,
             namespace: 0,

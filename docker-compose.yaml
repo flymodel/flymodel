@@ -2,10 +2,10 @@ services:
   minio:
     container_name: minio
     volumes:
-    - ./tmp/minio:/data
+      - ./tmp/minio:/data
     ports:
-    - 9000:9000
-    - 9090:9090
+      - 9000:9000
+      - 9090:9090
     image: quay.io/minio/minio
     command: server /data --console-address ":9090"
 
@@ -14,9 +14,10 @@ services:
     container_name: postgres
     restart: always
     environment:
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     ports:
-    - 5432:5432
+      - 5432:5432
     volumes:
-    - ./tmp/postgres:/var/lib/postgresql/data
+      - ./tmp/postgres:/var/lib/postgresql/data
+      - ./dev/setup-docker.sql:/docker-entrypoint-initdb.d/create_tables.sql

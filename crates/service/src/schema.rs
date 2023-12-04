@@ -1,5 +1,5 @@
-use async_graphql::{dataloader::DataLoader, extensions::Tracing, EmptySubscription, Schema};
-use sea_orm::{DatabaseConnection, DbConn};
+use async_graphql::{extensions::Tracing, EmptySubscription, Schema};
+use sea_orm::DbConn;
 
 use crate::{
     db::{Database, OrmDataloader},

@@ -1,6 +1,6 @@
 use sea_orm_migration::prelude::*;
 
-use crate::{hooks::Fixtures, FIXTURES};
+use crate::FIXTURES;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;

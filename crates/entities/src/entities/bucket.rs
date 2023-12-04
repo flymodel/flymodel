@@ -1,6 +1,6 @@
 use super::enums::Lifecycle;
-use async_graphql::{ComplexObject, Interface, SimpleObject};
-use chrono::{Local, Utc};
+use async_graphql::{ComplexObject, SimpleObject};
+use chrono::Utc;
 use sea_orm::entity::prelude::*;
 
 #[derive(

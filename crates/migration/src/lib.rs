@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, sync::Mutex};
+use std::sync::Mutex;
 
 use hooks::Fixtures;
 use sea_orm_migration::prelude::*;
