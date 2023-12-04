@@ -61,7 +61,7 @@ pub trait StorageProvider {
         if pre.ends_with('/') {
             return pre + &path;
         }
-        pre + '/' + &path
+        pre + "/" + &path
     }
 
     async fn put(&self, path: String, bs: bytes::Bytes) -> anyhow::Result<()>;
