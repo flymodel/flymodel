@@ -23,6 +23,7 @@ jobs:
         run: |
           mkdir -p ./tmp/postgres
           mkdir -p ./tmp/minio
+          chmod -R g+rwx ./tmp 
 
       - uses: actions/cache@v3
         with:
@@ -38,6 +39,7 @@ jobs:
         with:
           toolchain: 1.74.0
           components: rustfmt
+          cache: false
           target: ${{ matrix.linux_target }}
 
       - name: Install tools
