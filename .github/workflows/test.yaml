@@ -52,7 +52,7 @@ jobs:
 
       - name: Test Migration Up
         run: |
-          cargo migrate-up --test-data multi_region
+          target/debug/flymodel migrate up --test-data multi_region
 
       - name: Test
         run: |
@@ -60,7 +60,7 @@ jobs:
 
       - name: Test Migration Down
         run: |
-          cargo migrate-down
+          target/debug/flymodel migrate down
 
       - name: Clean Temp Data
         run: |
