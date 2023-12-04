@@ -37,7 +37,7 @@ jobs:
           Cargo.toml
           docker-compose.yaml
           dev/
-        key: ${{ hashFiles('crates/**,Cargo.toml,docker-compose.yaml,dev/**') }}
+        key: ${{ hashFiles('crates/**') }}
 
     - name: Install Task
       uses: arduino/setup-task@v1
