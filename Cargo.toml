@@ -10,7 +10,7 @@ edition = "2021"
 homepage = "https://github.com/joshua-auchincloss/flymodel"
 license = "AGPLv3 AND MIT AND BSD-2-Clause"
 repository = "https://github.com/joshua-auchincloss/flymodel"
-rust-version = "1.71.1"
+rust-version = "1.74.0"
 version = "0.1.0"
 
 [workspace.dependencies]
