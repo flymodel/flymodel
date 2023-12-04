@@ -1,5 +1,4 @@
 use crate::storage::StorageProvider;
-use anyhow::bail;
 use aws_config::{environment::EnvironmentVariableCredentialsProvider, AppName, Region};
 use aws_sdk_s3::{
     primitives::ByteStream,
@@ -37,7 +36,7 @@ pub struct S3Configuration {
 pub struct S3Storage {
     cli: Client,
     prefix: String,
-    role: StorageRole,
+    pub role: StorageRole,
     bucket: String,
 }
 
@@ -134,6 +133,10 @@ impl S3Storage {
 
 #[async_trait::async_trait]
 impl StorageProvider for S3Storage {
+    fn role(&self) -> StorageRole {
+        self.role.clone()
+    }
+
     fn prefix(&self) -> String {
         self.prefix.clone()
     }
@@ -142,51 +145,29 @@ impl StorageProvider for S3Storage {
         self.setup_bucket().await
     }
 
-    async fn put(&self, path: String, bs: bytes::Bytes) -> anyhow::Result<()> {
-        self.cli
+    async fn put(&self, path: String, bs: bytes::Bytes) -> anyhow::Result<Option<String>> {
+        let key = self.resolve_path(path);
+        trace!("putting object: {}", key);
+        Ok(self
+            .cli
             .put_object()
             .bucket(self.bucket.clone())
-            .key(self.resolve_path(path))
+            .key(key)
             .body(ByteStream::from(bs))
             .send()
-            .await?;
-        Ok(())
+            .await?
+            .version_id)
     }
-    async fn get(&self, path: String, version: Option<usize>) -> anyhow::Result<Bytes> {
+
+    async fn get(&self, path: String, version_id: Option<String>) -> anyhow::Result<Bytes> {
         let key = self.resolve_path(path);
+        trace!("getting object: {}", key);
         let base = self
             .cli
             .get_object()
             .bucket(self.bucket.clone())
-            .key(key.clone());
-        Ok(if let Some(version) = version {
-            let ver = self
-                .cli
-                .list_object_versions()
-                .bucket(self.bucket.clone())
-                .key_marker(key.clone())
-                .send()
-                .await?;
-
-            let mut vers = ver.versions.unwrap();
-            if vers.len() < version {
-                bail!("does not have the version")
-            }
-            vers.sort_by(|a, b| {
-                a.last_modified
-                    .expect("datetimes")
-                    .cmp(&b.last_modified.expect("dates"))
-            });
-            trace!("{:#?}", vers);
-            base.set_version_id(vers.get(version).expect("it").version_id.clone())
-                .send()
-                .await?
-                .body
-                .collect()
-                .await?
-                .into_bytes()
-        } else {
-            base.send().await?.body.collect().await?.into_bytes()
-        })
+            .key(key)
+            .set_version_id(version_id);
+        Ok(base.send().await?.body.collect().await?.into_bytes())
     }
 }

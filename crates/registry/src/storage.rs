@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use bytes::Bytes;
+use flymodel::storage::StorageRole;
 
 use crate::minio::{S3Configuration, S3Storage};
 
@@ -23,11 +24,6 @@ impl StorageOrchestrator {
     pub async fn setup(&self) -> anyhow::Result<()> {
         for store in self.storage.as_ref().values() {
             store.setup().await?;
-            store
-                .put("abc".into(), Bytes::from_static(b"abcdef"))
-                .await?;
-
-            store.get("abc".into(), Some(2)).await?;
         }
         Ok(())
     }
@@ -53,6 +49,8 @@ impl StorageConfig {
 
 #[async_trait::async_trait]
 pub trait StorageProvider {
+    fn role(&self) -> StorageRole;
+
     async fn setup(&self) -> anyhow::Result<()>;
 
     fn prefix(&self) -> String;
@@ -64,6 +62,6 @@ pub trait StorageProvider {
         pre + "/" + &path
     }
 
-    async fn put(&self, path: String, bs: bytes::Bytes) -> anyhow::Result<()>;
-    async fn get(&self, path: String, version: Option<usize>) -> anyhow::Result<Bytes>;
+    async fn put(&self, path: String, bs: bytes::Bytes) -> anyhow::Result<Option<String>>;
+    async fn get(&self, path: String, version_id: Option<String>) -> anyhow::Result<Bytes>;
 }

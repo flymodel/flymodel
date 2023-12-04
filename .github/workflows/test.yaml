@@ -23,7 +23,7 @@ jobs:
         run: |
           mkdir -p ./tmp/postgres
           mkdir -p ./tmp/minio
-          chmod -R g+rwx ./tmp 
+          chmod -R g+rwx ./tmp
 
       - uses: actions/cache@v3
         with:
@@ -48,7 +48,7 @@ jobs:
 
       - name: Pre Build & Cache
         run: |
-          cargo build
+          RUSTFLAGS="-Awarnings" cargo build
 
       - name: Test Migration Up
         run: |
