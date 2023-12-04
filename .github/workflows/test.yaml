@@ -44,7 +44,7 @@ jobs:
 
       - name: Install tools
         run: |
-          apt-get install -y libpq-dev
+          sudo apt-get install -y libpq-dev
 
       - name: Pre Build & Cache
         run: |
