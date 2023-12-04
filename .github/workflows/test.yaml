@@ -36,8 +36,7 @@ jobs:
 
     - name: Install tools
       run: |
-        yum install -y epel-release
-        yum install -y clang-devel clang lld
+        apt-get install -y libpq-dev
 
     - name: Pre Build & Cache
       run: |
