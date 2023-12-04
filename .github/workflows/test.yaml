@@ -6,7 +6,7 @@ on:
 
 jobs:
   linux:
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest]
     strategy:
       fail-fast: false
       matrix:
@@ -37,7 +37,7 @@ jobs:
           Cargo.toml
           docker-compose.yaml
           dev/
-        key: ${{ hashFiles('crates/**') }}
+        key: ${{ hashFiles('crates/**,Cargo.toml,docker-compose.yaml,dev/**') }}
 
     - name: Install Task
       uses: arduino/setup-task@v1

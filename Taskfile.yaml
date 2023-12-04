@@ -1,9 +1,6 @@
 version: '3'
 
 tasks:
-  fly:
-    cmds:
-    - seaography-cli postgres://postgres:postgres@localhost:5432/mlops graphql-ents ./crates/graphql-ents
   env:
     cmds:
     - docker-compose up
@@ -15,5 +12,5 @@ tasks:
   schema_diff:
     cmds:
     - cp crates/graphql/schema/flymodel.graphql crates/graphql/schema/flymodel.graphql.bk
-    - task: schema
-    - diff crates/graphql/schema/flymodel.graphql.bk crates/graphql/schema/flymodel.graphql
+    - task schema
+    - diff -bB crates/graphql/schema/flymodel.graphql.bk crates/graphql/schema/flymodel.graphql
