@@ -6,7 +6,7 @@ use aws_sdk_s3::{
     Client,
 };
 use bytes::Bytes;
-use flymodel::storage::StorageRole;
+use flymodel_entities::entities::enums::Lifecycle;
 use tracing::trace;
 
 fn default_path() -> String {
@@ -28,7 +28,7 @@ pub struct S3Configuration {
     #[serde(default = "default_path")]
     prefix: String,
     pub bucket: String,
-    role: StorageRole,
+    role: Lifecycle,
     #[serde(default = "default_pathstyle")]
     path_style: bool,
 }
@@ -36,7 +36,7 @@ pub struct S3Configuration {
 pub struct S3Storage {
     cli: Client,
     prefix: String,
-    pub role: StorageRole,
+    pub role: Lifecycle,
     bucket: String,
 }
 
@@ -133,7 +133,7 @@ impl S3Storage {
 
 #[async_trait::async_trait]
 impl StorageProvider for S3Storage {
-    fn role(&self) -> StorageRole {
+    fn role(&self) -> Lifecycle {
         self.role.clone()
     }
 
@@ -175,9 +175,8 @@ impl StorageProvider for S3Storage {
 #[cfg(test)]
 mod test {
     use bytes::Bytes;
-    use flymodel::storage::StorageRole;
 
-    use super::S3Storage;
+    use super::{Lifecycle, S3Storage};
     use crate::storage::StorageProvider;
 
     fn new_minio_test_client() -> S3Storage {
@@ -188,7 +187,7 @@ mod test {
             region: Some("ca-local".into()),
             prefix: "".into(),
             bucket: "ml-dev".into(),
-            role: StorageRole::Test,
+            role: Lifecycle::Test,
             path_style: true,
         })
         .expect("storage")

@@ -5,7 +5,7 @@
 [[retention.qa]]
 models = 365
 
-[[retention.staging]]
+[[retention.stage]]
 models = 365
 
 [[retention.test]]
@@ -30,7 +30,7 @@ role = "qa"
 bucket = "ml-stage"
 endpoint = "http://localhost:9000"
 region = "ca-local"
-role = "staging"
+role = "stage"
 
 [[storage.s3]]
 bucket = "ml-prod"

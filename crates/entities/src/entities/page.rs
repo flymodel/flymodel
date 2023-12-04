@@ -44,6 +44,7 @@ impl PageOutput {
 
 #[derive(Clone, Debug, PartialEq, Eq, SimpleObject)]
 #[graphql(concrete(name = "PaginatedNamespace", params(crate::entities::namespace::Model)))]
+#[graphql(concrete(name = "PaginatedBucket", params(crate::entities::bucket::Model)))]
 pub struct Paginated<T>
 where
     T: OutputType + Send + Clone,

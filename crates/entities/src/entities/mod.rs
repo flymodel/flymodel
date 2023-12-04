@@ -2,6 +2,7 @@ pub mod prelude;
 
 pub mod bucket;
 pub mod enums;
+pub mod macros;
 pub mod model;
 pub mod model_artifacts;
 pub mod model_states;

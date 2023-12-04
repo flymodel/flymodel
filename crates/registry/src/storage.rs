@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use bytes::Bytes;
-use flymodel::storage::StorageRole;
+use flymodel_entities::entities::enums::Lifecycle;
 
 use crate::minio::{S3Configuration, S3Storage};
 
@@ -46,7 +46,7 @@ impl StorageConfig {
 
 #[async_trait::async_trait]
 pub trait StorageProvider {
-    fn role(&self) -> StorageRole;
+    fn role(&self) -> Lifecycle;
 
     async fn setup(&self) -> anyhow::Result<()>;
 

@@ -17,7 +17,7 @@ impl NamespaceQueries {
         id: Option<Vec<i32>>,
         page: Option<PageInput>,
     ) -> anyhow::Result<Paginated<entities::namespace::Model>> {
-        let db: &Database = ctx.data_opt().context("no database")?;
+        let db: &Database<entities::namespace::Model> = ctx.data_opt().context("no database")?;
 
         if let Some(id) = id {
             return Ok(Paginated::new(
