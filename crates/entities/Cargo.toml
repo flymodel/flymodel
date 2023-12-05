@@ -23,6 +23,7 @@ shared-version = true
 flymodel = { path = "../flymodel" }
 tokio.workspace = true
 thiserror.workspace = true
+tracing.workspace = true
 async-graphql = { workspace = true, features = [
   "tracing",
   "decimal",
@@ -35,6 +36,7 @@ chrono.workspace = true
 sea-orm = { workspace = true, features = ["chrono"] }
 lazy_static = "1.4.0"
 juniper = "0.15.11"
+sea-query = "0.30.4"
 
 
 [dependencies.sea-orm-migration]

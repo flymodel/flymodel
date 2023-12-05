@@ -30,3 +30,25 @@ pub enum Lifecycle {
     #[graphql(name = "test")]
     Test,
 }
+
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Enum,
+    EnumIter,
+    DeriveActiveEnum,
+    serde::Serialize,
+    serde::Deserialize,
+)]
+#[serde(rename_all = "lowercase")]
+#[graphql(name = "ArchivalFormat")]
+#[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "archival_format")]
+pub enum ArchivalFormat {
+    #[sea_orm(string_value = "tgz")]
+    Tgz,
+    #[sea_orm(string_value = "zip")]
+    Zip,
+}

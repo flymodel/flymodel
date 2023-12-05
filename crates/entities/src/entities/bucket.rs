@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-
 use super::{
     enums::Lifecycle,
     page::{PageInput, Paginated},
 };
 use crate::{bulk_loader, db::DbLoader, paginated};
-use async_graphql::{dataloader::Loader, ComplexObject, SimpleObject};
+use async_graphql::{ComplexObject, SimpleObject};
 use chrono::Utc;
 use sea_orm::entity::prelude::*;
 use std::sync::Arc;
@@ -25,8 +23,8 @@ use std::sync::Arc;
 #[sea_orm(table_name = "bucket")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
-    pub namespace: i32,
+    pub id: i64,
+    pub namespace: i64,
     #[sea_orm(column_type = "Text")]
     pub name: String,
     #[sea_orm(column_type = "Text")]
@@ -41,8 +39,6 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::model_artifacts::Entity")]
-    ModelArtifacts,
     #[sea_orm(
         belongs_to = "super::namespace::Entity",
         from = "Column::Namespace",
@@ -51,12 +47,8 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     Namespace,
-}
-
-impl Related<super::model_artifacts::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::ModelArtifacts.def()
-    }
+    #[sea_orm(has_many = "super::object_blob::Entity")]
+    ObjectBlob,
 }
 
 impl Related<super::namespace::Entity> for Entity {
@@ -65,15 +57,13 @@ impl Related<super::namespace::Entity> for Entity {
     }
 }
 
-impl ActiveModelBehavior for ActiveModel {}
-
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
-pub enum RelatedEntity {
-    #[sea_orm(entity = "super::model_artifacts::Entity")]
-    ModelArtifacts,
-    #[sea_orm(entity = "super::namespace::Entity")]
-    Namespace,
+impl Related<super::object_blob::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ObjectBlob.def()
+    }
 }
+
+impl ActiveModelBehavior for ActiveModel {}
 
 #[ComplexObject]
 impl Model {}
@@ -85,7 +75,7 @@ bulk_loader! {
 impl DbLoader<Model> {
     pub async fn load_by_namespace(
         &self,
-        namespaces: Option<Vec<i32>>,
+        namespaces: Option<Vec<i64>>,
         roles: Option<Vec<Lifecycle>>,
         page: PageInput,
     ) -> Result<Paginated<Model>, Arc<DbErr>> {

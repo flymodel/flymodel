@@ -1,10 +1,10 @@
 use crate::{bulk_loader, db::DbLoader, paginated};
-use async_graphql::{dataloader::Loader, SimpleObject};
+use async_graphql::{Context, SimpleObject};
 use chrono::Utc;
 use sea_orm::entity::prelude::*;
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
-use super::page::{PageInput, Paginated};
+use super::page::{PageInput, Paginated, PaginatedResult};
 
 #[derive(
     Clone,
@@ -18,9 +18,10 @@ use super::page::{PageInput, Paginated};
 )]
 #[sea_orm(table_name = "namespace")]
 #[graphql(name = "Namespace")]
+#[graphql(complex)]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
+    pub id: i64,
     #[sea_orm(column_type = "Text")]
     pub name: String,
     #[sea_orm(column_type = "Text")]
@@ -34,14 +35,14 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::bucket::Entity")]
-    Buckets,
+    Bucket,
     #[sea_orm(has_many = "super::model::Entity")]
     Model,
 }
 
 impl Related<super::bucket::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Buckets.def()
+        Relation::Bucket.def()
     }
 }
 
@@ -56,7 +57,7 @@ impl ActiveModelBehavior for ActiveModel {}
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
 pub enum RelatedEntity {
     #[sea_orm(entity = "super::bucket::Entity")]
-    Buckets,
+    Bucket,
     #[sea_orm(entity = "super::model::Entity")]
     Model,
 }
@@ -76,5 +77,19 @@ impl DbLoader<Model> {
         page: PageInput,
     ) -> Result<Paginated<Model>, Arc<DbErr>> {
         self.load_paginated(Entity::find(), page).await
+    }
+}
+
+#[async_graphql::ComplexObject]
+impl Model {
+    async fn models<'ctx>(
+        &self,
+        ctx: &Context<'ctx>,
+        page: Option<PageInput>,
+    ) -> PaginatedResult<super::model::Model> {
+        let db = DbLoader::<super::model::Model>::context(ctx).expect("it");
+        db.loader()
+            .find_by_namespace(vec![self.id], page.unwrap_or_default())
+            .await
     }
 }

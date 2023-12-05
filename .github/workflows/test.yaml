@@ -66,11 +66,21 @@ jobs:
       run: |
         cargo test --all-features
 
-    - name: Startup Server & Validate Client Introspection
+    - name: Startup Server
       run: |
+        set -euxo pipefail
         target/debug/flymodel serve  --config ./conf/flymodel.toml &
+        echo $? > PID.txt
         sleep 15
+
+    - name: Validate Client Introspection
+      run: |
+        set -euxo pipefail
         task schema_diff
+
+    - name: Stop Server
+      run: |
+        kill -9 $(cat PID.txt)
 
     - name: Test Migration Down
       run: |

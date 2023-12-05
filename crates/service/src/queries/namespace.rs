@@ -14,7 +14,7 @@ impl NamespaceQueries {
     async fn namespace<'ctx>(
         &self,
         ctx: &Context<'ctx>,
-        id: Option<Vec<i32>>,
+        id: Option<Vec<i64>>,
         page: Option<PageInput>,
     ) -> anyhow::Result<Paginated<entities::namespace::Model>> {
         let db: &Database<entities::namespace::Model> = ctx.data_opt().context("no database")?;

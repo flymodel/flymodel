@@ -1,7 +1,6 @@
-use anyhow::Context as ErrContext;
 use async_graphql::{dataloader::Loader, *};
 use flymodel_entities::{
-    db::Database,
+    db::DbLoader,
     entities::{
         self,
         enums::Lifecycle,
@@ -10,20 +9,20 @@ use flymodel_entities::{
 };
 
 #[derive(Clone, Default)]
-pub struct BucketQueries;
+pub struct ModelQueries;
 
 #[Object]
-impl BucketQueries {
-    async fn bucket<'ctx>(
+impl ModelQueries {
+    async fn model<'ctx>(
         &self,
         ctx: &Context<'ctx>,
         id: Option<Vec<i64>>,
         page: Option<PageInput>,
+        name: Option<String>,
         namespace: Option<Vec<i64>>,
         role: Option<Vec<Lifecycle>>,
-    ) -> anyhow::Result<Paginated<entities::bucket::Model>> {
-        let db: &Database<entities::bucket::Model> = ctx.data_opt().context("no database")?;
-
+    ) -> anyhow::Result<Paginated<entities::model::Model>> {
+        let db = DbLoader::<entities::model::Model>::context(ctx)?;
         if let Some(ids) = id {
             return Ok(Paginated::new(
                 (ids.len(), 0),
@@ -33,12 +32,15 @@ impl BucketQueries {
                     .load(&ids)
                     .await?
                     .values()
-                    .map(entities::bucket::Model::to_owned)
+                    .map(|model| model.to_owned())
                     .collect(),
             ));
         }
 
         let page = page.unwrap_or_default();
-        Ok(db.loader().load_by_namespace(namespace, role, page).await?)
+        Ok(db
+            .loader()
+            .find_by_name_and_namespace(name, namespace, role, page)
+            .await?)
     }
 }

@@ -3,10 +3,10 @@ set
 
 create type lifecycle as enum ('test', 'qa', 'stage', 'prod');
 
-create sequence namespace_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE NO MINVALUE CACHE 1;
+create type archival_format as enum ('zip', 'tgz');
 
 create table namespace (
-    id integer primary key default nextval('namespace_id_seq' :: regclass) not null,
+    id bigserial primary key not null,
     name text not null,
     description text default 'ML Namespace' :: text not null,
     created_at timestamptz not null default now(),
@@ -15,11 +15,9 @@ create table namespace (
 
 create index on namespace using btree(name);
 
-create sequence bucket_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE NO MINVALUE CACHE 1;
-
 create table bucket (
-    id integer primary key default nextval('bucket_id_seq' :: regclass) not null,
-    namespace integer references namespace(id) on delete cascade on update cascade not null,
+    id bigserial primary key not null,
+    namespace bigint references namespace(id) on delete cascade on update cascade not null,
     name text not null,
     region text not null,
     role lifecycle not null,
@@ -34,11 +32,9 @@ create unique index bucket_name_idx on bucket (namespace, name, region);
 
 create unique index bucket_role_shard on bucket (namespace, role, shard);
 
-create sequence model_id_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE NO MINVALUE CACHE 1;
-
 create table model (
-    id integer primary key default nextval('model_id_seq' :: regclass) not null,
-    namespace integer references namespace(id) on delete cascade on update cascade not null,
+    id bigserial primary key not null,
+    namespace bigint references namespace(id) on delete cascade on update cascade not null,
     name text not null,
     created_at timestamptz not null default now(),
     last_modified timestamptz not null default now()
@@ -46,31 +42,52 @@ create table model (
 
 create index model_btree_name on model using btree(name);
 
-create sequence model_version_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE NO MINVALUE CACHE 1;
-
 create table model_version (
-    id integer primary key default nextval('model_version_seq' :: regclass) not null,
-    model_id integer references model(id) on delete cascade on update cascade not null,
+    id bigserial primary key not null,
+    model_id bigint references model(id) on delete cascade on update cascade not null,
     version text not null
 );
 
 create unique index model_version_model_version_idx on model_version (model_id, version);
 
-create sequence model_states_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE NO MINVALUE CACHE 1;
-
-create table model_states (
-    id integer primary key default nextval('model_states_seq' :: regclass) not null,
-    version_id integer references model_version(id) on delete cascade on update cascade not null,
+create table model_state (
+    id bigserial primary key not null,
+    version_id bigint references model_version(id) on delete cascade on update cascade not null,
     state lifecycle not null,
     last_modified timestamptz not null default now()
 );
 
-create sequence model_artifacts_seq START WITH 1 INCREMENT BY 1 NO MAXVALUE NO MINVALUE CACHE 1;
+create unique index model_state_version_idx on model_state (version_id);
 
-create table model_artifacts (
-    id integer primary key default nextval('model_artifacts_seq' :: regclass) not null,
-    version_id integer references model_version(id) on delete cascade on update cascade not null,
-    bucket_id integer references bucket(id) on delete cascade on update cascade not null,
+create table object_blob (
+    id bigserial primary key not null,
+    -- tracking only - we dont care about the actual bucket here for 'validation'
+    bucket_id bigint references bucket(id) on delete cascade on update cascade not null,
+    -- we also dont want the version id in here to that we can track & remove orphaned objects
+    -- the derived key
     key text not null,
-    created_at timestamptz not null default now()
+    -- the actual object version
+    version_id varchar not null,
+    -- size in bytes
+    size bigint not null,
+    -- validation & version checking metadata
+    sha256 varchar(256) not null,
+    archive archival_format not null,
+    -- blob info
+    created_at timestamptz not null default now() -- we do not allow modifications so there's nothing else to track
 );
+
+create unique index object_blob_version_idx on object_blob (version_id, key);
+
+create table model_artifact (
+    id bigserial primary key not null,
+    -- we want the version id here to soft delete our artifacts
+    version_id bigint references model_version(id) on delete cascade not null,
+    blob bigint references object_blob(id) on delete cascade not null,
+    -- the actual name of the artifact
+    name text not null
+);
+
+create unique index model_artifact_version_idx on model_artifact (version_id, name);
+
+create unique index model_artifact_blob_idx on model_artifact (blob);

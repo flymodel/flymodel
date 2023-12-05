@@ -1,3 +1,4 @@
+use super::enums::Lifecycle;
 use async_graphql::SimpleObject;
 use sea_orm::entity::prelude::*;
 
@@ -7,32 +8,23 @@ use sea_orm::entity::prelude::*;
     PartialEq,
     DeriveEntityModel,
     Eq,
+    SimpleObject,
     serde::Serialize,
     serde::Deserialize,
-    SimpleObject,
 )]
-#[sea_orm(table_name = "model_artifacts")]
-#[graphql(name = "ModelArtifacts")]
+#[sea_orm(table_name = "model_state")]
+#[graphql(name = "ModelState")]
+
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
-    pub version_id: i32,
-    pub bucket_id: i32,
-    #[sea_orm(column_type = "Text")]
-    pub key: String,
-    pub created_at: DateTimeWithTimeZone,
+    pub id: i64,
+    pub version_id: i64,
+    pub state: Lifecycle,
+    pub last_modified: DateTimeWithTimeZone,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(
-        belongs_to = "super::bucket::Entity",
-        from = "Column::BucketId",
-        to = "super::bucket::Column::Id",
-        on_update = "Cascade",
-        on_delete = "Cascade"
-    )]
-    Buckets,
     #[sea_orm(
         belongs_to = "super::model_version::Entity",
         from = "Column::VersionId",
@@ -41,12 +33,6 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     ModelVersion,
-}
-
-impl Related<super::bucket::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::Buckets.def()
-    }
 }
 
 impl Related<super::model_version::Entity> for Entity {
@@ -59,8 +45,6 @@ impl ActiveModelBehavior for ActiveModel {}
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
 pub enum RelatedEntity {
-    #[sea_orm(entity = "super::bucket::Entity")]
-    Buckets,
     #[sea_orm(entity = "super::model_version::Entity")]
     ModelVersion,
 }

@@ -35,14 +35,15 @@ impl Fixtures {
             .map(|th| th.clone().into_active_model())
             .collect();
         Namespace::insert_many(act).exec(conn).await?;
-
-        let act: Vec<_> = fixture
-            .buckets
-            .iter()
-            .map(|th| th.clone().into_active_model())
-            .collect();
-
-        Bucket::insert_many(act).exec(conn).await?;
+        Bucket::insert_many(
+            fixture
+                .buckets
+                .iter()
+                .map(|th| th.clone().into_active_model())
+                .collect::<Vec<_>>(),
+        )
+        .exec(conn)
+        .await?;
         Ok(())
     }
 }

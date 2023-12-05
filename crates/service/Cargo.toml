@@ -19,7 +19,11 @@ version.workspace = true
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-async-graphql = { workspace = true, features = ["tracing", "dataloader"] }
+async-graphql = { workspace = true, features = [
+    "tracing",
+    "dataloader",
+    "opentelemetry",
+] }
 flymodel-entities = { path = "../entities" }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }

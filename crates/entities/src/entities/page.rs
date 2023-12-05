@@ -1,5 +1,7 @@
 use async_graphql::*;
 
+use crate::db::QueryResult;
+
 #[derive(Clone, Debug, PartialEq, Eq, InputObject)]
 #[graphql(concrete(name = "Page", params()))]
 pub struct PageInput {
@@ -43,8 +45,24 @@ impl PageOutput {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, SimpleObject)]
-#[graphql(concrete(name = "PaginatedNamespace", params(crate::entities::namespace::Model)))]
+#[graphql(concrete(
+    name = "PaginatedNamespaces",
+    params(crate::entities::namespace::Model)
+))]
 #[graphql(concrete(name = "PaginatedBucket", params(crate::entities::bucket::Model)))]
+#[graphql(concrete(name = "PaginatedModels", params(crate::entities::model::Model)))]
+#[graphql(concrete(
+    name = "PaginatedModelArtifact",
+    params(crate::entities::model_artifact::Model)
+))]
+#[graphql(concrete(
+    name = "PaginatedModelState",
+    params(crate::entities::model_state::Model)
+))]
+#[graphql(concrete(
+    name = "PaginatedModelVersions",
+    params(crate::entities::model_version::Model)
+))]
 pub struct Paginated<T>
 where
     T: OutputType + Send + Clone,
@@ -72,3 +90,5 @@ where
         }
     }
 }
+
+pub type PaginatedResult<T> = QueryResult<Paginated<T>>;

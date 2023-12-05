@@ -1,4 +1,3 @@
-use super::enums::Lifecycle;
 use async_graphql::SimpleObject;
 use sea_orm::entity::prelude::*;
 
@@ -12,15 +11,15 @@ use sea_orm::entity::prelude::*;
     serde::Serialize,
     serde::Deserialize,
 )]
-#[sea_orm(table_name = "model_states")]
-#[graphql(name = "ModelState")]
-
+#[graphql(name = "ModelArtifact")]
+#[sea_orm(table_name = "model_artifact")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
-    pub version_id: i32,
-    pub state: Lifecycle,
-    pub last_modified: DateTimeWithTimeZone,
+    pub id: i64,
+    pub version_id: i64,
+    pub blob: i64,
+    #[sea_orm(column_type = "Text")]
+    pub name: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -29,10 +28,18 @@ pub enum Relation {
         belongs_to = "super::model_version::Entity",
         from = "Column::VersionId",
         to = "super::model_version::Column::Id",
-        on_update = "Cascade",
+        on_update = "NoAction",
         on_delete = "Cascade"
     )]
     ModelVersion,
+    #[sea_orm(
+        belongs_to = "super::object_blob::Entity",
+        from = "Column::Blob",
+        to = "super::object_blob::Column::Id",
+        on_update = "NoAction",
+        on_delete = "Cascade"
+    )]
+    ObjectBlob,
 }
 
 impl Related<super::model_version::Entity> for Entity {
@@ -41,10 +48,10 @@ impl Related<super::model_version::Entity> for Entity {
     }
 }
 
-impl ActiveModelBehavior for ActiveModel {}
-
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
-pub enum RelatedEntity {
-    #[sea_orm(entity = "super::model_version::Entity")]
-    ModelVersion,
+impl Related<super::object_blob::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ObjectBlob.def()
+    }
 }
+
+impl ActiveModelBehavior for ActiveModel {}
