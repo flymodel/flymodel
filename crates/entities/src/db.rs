@@ -1,4 +1,6 @@
 use async_graphql::{dataloader::DataLoader, Context};
+use flymodel_tracing::tracer::OtlpTracerConfig;
+
 use sea_orm::{DatabaseConnection, DbErr};
 use std::{marker::PhantomData, sync::Arc};
 use tracing::{trace, warn};
@@ -14,7 +16,7 @@ impl<T> DbLoader<T>
 where
     T: Send + Sync + 'static,
 {
-    pub fn new(db: DatabaseConnection) -> Database<T> {
+    pub fn new(db: DatabaseConnection, _tracer: Option<OtlpTracerConfig>) -> Database<T> {
         Database::new(
             Self {
                 db,
@@ -24,7 +26,11 @@ where
         )
     }
 
-    pub fn context<'ctx>(ctx: &Context<'ctx>) -> Result<&'ctx Database<T>, Arc<DbErr>> {
+    pub fn with_context<'ctx>(ctx: &Context<'ctx>) -> Result<&'ctx Database<T>, Arc<DbErr>> {
+        // ctx.with_context(Context::current_with_span(
+
+        // ));
+
         ctx.data::<Database<T>>().map_err(|err| {
             trace!("an actual error is being suppressed: {:#?}", err);
             warn!(

@@ -4,9 +4,11 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 cynic = { version = "3", features = ["http-surf"] }
 surf = "2"
+chrono.workspace = true
+
 
 [build-dependencies]
-cynic-codegen = { version = "3", features=["rkyv"] }
+cynic-codegen = { version = "3", features = ["rkyv"] }
 insta = "1"
 
 

@@ -1,0 +1,47 @@
+[badges]
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+flymodel = { path = "../flymodel" }
+serde = { workspace = true, features = ["derive"] }
+opentelemetry = { workspace = true, features = [
+    "logs",
+    "metrics",
+    "logs_level_enabled",
+] }
+opentelemetry-otlp = { workspace = true, features = [
+    "logs",
+    "metrics",
+    "tls",
+    "tls-roots",
+    "integration-testing",
+] }
+opentelemetry_sdk = { workspace = true, features = [
+    "logs",
+    "logs_level_enabled",
+    "metrics",
+    "opentelemetry-http",
+    "rt-tokio",
+    "tokio",
+] }
+tonic = { workspace = true, features = ["tls", "tls-roots"] }
+opentelemetry-semantic-conventions.workspace = true
+anyhow.workspace = true
+
+[features]
+
+[package]
+name = "flymodel-tracing"
+readme = "README.md"
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+version.workspace = true
+
+[package.metadata.release]
+shared-version = true
+repository.workspace = true
+rust-version.workspace = true

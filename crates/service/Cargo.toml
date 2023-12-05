@@ -25,6 +25,7 @@ async-graphql = { workspace = true, features = [
     "opentelemetry",
 ] }
 flymodel-entities = { path = "../entities" }
+flymodel-tracing = { path = "../trace" }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 tokio-stream = { version = "0.1.14", features = ["full"] }
@@ -39,5 +40,10 @@ futures-util.workspace = true
 sea-orm.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
-
+actix-web-opentelemetry = { version = "0.16.0", features = ["metrics"] }
+opentelemetry = { workspace = true, features = [
+    "logs",
+    "metrics",
+    "logs_level_enabled",
+] }
 [features]

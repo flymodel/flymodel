@@ -21,6 +21,8 @@ shared-version = true
 
 [dependencies]
 flymodel = { path = "../flymodel" }
+flymodel-tracing = { path = "../trace" }
+opentelemetry.workspace = true
 tokio.workspace = true
 thiserror.workspace = true
 tracing.workspace = true

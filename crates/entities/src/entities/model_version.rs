@@ -1,6 +1,8 @@
 use async_graphql::SimpleObject;
 use sea_orm::entity::prelude::*;
 
+use crate::{bulk_loader, db::DbLoader, paginated};
+
 #[derive(
     Clone,
     Debug,
@@ -57,3 +59,22 @@ impl Related<super::model_state::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+bulk_loader! {
+    Model
+}
+
+paginated! {
+    Model,
+    Entity
+}
+
+impl DbLoader<Model> {
+    pub fn find_by_model_id(&self, sel: Select<Entity>, model_id: i64) -> Select<Entity> {
+        sel.filter(Column::ModelId.eq(model_id))
+    }
+
+    pub fn find_by_version(&self, sel: Select<Entity>, version: String) -> Select<Entity> {
+        sel.filter(Column::Version.like(version))
+    }
+}

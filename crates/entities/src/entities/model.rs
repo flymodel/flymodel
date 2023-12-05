@@ -74,8 +74,23 @@ impl Model {
         &self,
         ctx: &async_graphql::Context<'_>,
     ) -> crate::db::QueryResult<Option<super::namespace::Model>> {
-        let loader = DbLoader::<super::namespace::Model>::context(ctx)?;
+        let loader = DbLoader::<super::namespace::Model>::with_context(ctx)?;
         loader.load_one(self.namespace_id.clone()).await
+    }
+
+    async fn model_versions(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        version: Option<String>,
+        page: Option<PageInput>,
+    ) -> PaginatedResult<super::model_version::Model> {
+        let db = DbLoader::<super::model_version::Model>::with_context(ctx)?.loader();
+        let mut query = super::model_version::Entity::find();
+        if let Some(version) = version {
+            query = db.find_by_version(query, version);
+        }
+
+        db.load_paginated(query, page.unwrap_or_default()).await
     }
 }
 

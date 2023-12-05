@@ -3,18 +3,19 @@ doc = false
 name = "flymodel"
 
 [dependencies]
-clap = {workspace = true, features = ["derive", "env"]}
+clap = { workspace = true, features = ["derive", "env"] }
 dotenv.workspace = true
-flymodel = {path = "../flymodel"}
-flymodel-migration = {path = "../migration"}
-flymodel-registry = {path = "../registry"}
-flymodel-service = {path = "../service"}
-tokio = {version = "1.34.0", features = [
+flymodel = { path = "../flymodel" }
+flymodel-migration = { path = "../migration" }
+flymodel-tracing = { path = "../trace" }
+flymodel-registry = { path = "../registry" }
+flymodel-service = { path = "../service" }
+tokio = { version = "1.34.0", features = [
   "num_cpus",
   "rt",
   "rt-multi-thread",
-  "macros"
-]}
+  "macros",
+] }
 toml = "0.8.8"
 anyhow.workspace = true
 futures-util.workspace = true
@@ -24,7 +25,7 @@ serde.workspace = true
 serde_yaml.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
-tracing-subscriber.workspace = true
+tracing-subscriber = { workspace = true, features = ["std"] }
 
 [features]
 

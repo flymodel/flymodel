@@ -1,8 +1,13 @@
-use crate::config::{MigrationConfig, ServeConfig};
+use crate::{
+    config::{MigrationConfig, ServeConfig},
+    log::LoggingConfig,
+};
+use anyhow::Context;
 use clap::{Parser, Subcommand};
 use flymodel_migration::Migrator;
 use flymodel_registry::storage::StorageConfig;
 
+use flymodel_tracing::{tracer::OtlpTracerConfig, TracingConfiguration};
 use sea_orm_migration::MigratorTrait;
 use std::path::PathBuf;
 
@@ -44,8 +49,8 @@ impl Migration {
         };
         Migrator::init(conf.test_data.clone());
         Ok(match self {
-            Self::Up(..) => Migrator::up(&conn, None).await,
-            Self::Down(..) => Migrator::down(&conn, None).await,
+            Self::Up(..) => Migrator::up(&conn, conf.steps).await,
+            Self::Down(..) => Migrator::down(&conn, conf.steps).await,
         }?)
     }
 }
@@ -53,6 +58,18 @@ impl Migration {
 #[derive(serde::Deserialize, Debug)]
 pub struct Conf {
     pub storage: StorageConfig,
+    pub tracing: Option<TracingConfiguration>,
+    #[serde(default)]
+    pub log: LoggingConfig,
+}
+
+impl Conf {
+    pub fn tracer(&self) -> Option<OtlpTracerConfig> {
+        match &self.tracing {
+            Some(TracingConfiguration { otlp, .. }) => otlp.clone(),
+            None => None,
+        }
+    }
 }
 
 impl Cli {
@@ -61,18 +78,14 @@ impl Cli {
             Some(ext) => ext,
             None => anyhow::bail!("no extension detected"),
         }
-        .to_str();
-        if let Some(ext) = ext {
-            let config = std::fs::read_to_string(&self.config)?;
-            let conf: Conf = match ext {
-                "toml" => toml::from_str(&config)?,
-                "yaml" => serde_yaml::from_str(&config)?,
-                ext => anyhow::bail!("invalid format: {}", ext),
-            };
-            Ok(conf)
-        } else {
-            anyhow::bail!("no extension detected")
-        }
+        .to_str()
+        .context("extension is unknown to os")?;
+        let config = std::fs::read_to_string(&self.config)?;
+        Ok(match ext {
+            "toml" => toml::from_str(&config)?,
+            "yaml" => serde_yaml::from_str(&config)?,
+            ext => anyhow::bail!("invalid format: {}", ext),
+        })
     }
 }
 
@@ -84,7 +97,18 @@ mod test {
             command: super::Commands::SetupStorage,
             config: "../../conf/flymodel.toml".into(),
         };
-        let _ = cli.load_config()?;
+        let _conf = cli.load_config()?;
+
+        // assert_eq!(
+        //     conf.tracing,
+        //     TracingConfiguration {
+        //         otlp: Some(OtlpTracerConfig {
+        //             target: "localhost:4317".into(),
+        //             ..Default::default()
+        //         })
+        //     }
+        // );
+
         let cli = super::Cli {
             command: super::Commands::SetupStorage,
             config: "../../conf/flymodel.yaml".into(),

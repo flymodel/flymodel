@@ -39,6 +39,6 @@ impl BucketQueries {
         }
 
         let page = page.unwrap_or_default();
-        Ok(db.loader().load_by_namespace(namespace, role, page).await?)
+        Ok(db.loader().find_by_namespace(namespace, role, page).await?)
     }
 }

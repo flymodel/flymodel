@@ -25,6 +25,8 @@ pub struct MigrationConfig {
     pub db: DatabaseConfig,
     #[arg(long)]
     pub test_data: Option<Fixtures>,
+    #[arg(long)]
+    pub steps: Option<u32>,
 }
 
 impl DatabaseConfig {

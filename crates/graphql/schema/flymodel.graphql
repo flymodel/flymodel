@@ -28,6 +28,22 @@ enum Lifecycle {
   test
 }
 
+type Model {
+  id: Int!
+  namespaceId: Int!
+  name: String!
+  createdAt: DateTime!
+  lastModified: DateTime!
+  namespace: Namespace
+  modelVersions(version: String, page: Page): PaginatedModelVersions!
+}
+
+type ModelVersion {
+  id: Int!
+  modelId: Int!
+  version: String!
+}
+
 type Mutation {
   rootMutation: String!
 }
@@ -38,6 +54,8 @@ type Namespace {
   description: String!
   createdAt: DateTime!
   lastModified: DateTime!
+  buckets(page: Page): PaginatedBucket!
+  models(page: Page): PaginatedModels!
 }
 
 input Page {
@@ -52,7 +70,21 @@ type PaginatedBucket {
   data: [Bucket!]!
 }
 
-type PaginatedNamespace {
+type PaginatedModelVersions {
+  page: CurrentPage!
+  totalPages: Int!
+  totalItems: Int!
+  data: [ModelVersion!]!
+}
+
+type PaginatedModels {
+  page: CurrentPage!
+  totalPages: Int!
+  totalItems: Int!
+  data: [Model!]!
+}
+
+type PaginatedNamespaces {
   page: CurrentPage!
   totalPages: Int!
   totalItems: Int!
@@ -61,6 +93,12 @@ type PaginatedNamespace {
 
 type Query {
   bucket(id: [Int!], page: Page, namespace: [Int!], role: [Lifecycle!]): PaginatedBucket!
-  namespace(id: [Int!], page: Page): PaginatedNamespace!
+  namespace(id: [Int!], page: Page): PaginatedNamespaces!
+  model(id: [Int!], page: Page, name: String, namespace: [Int!], role: [Lifecycle!]): PaginatedModels!
+  _service: _Service!
+}
+
+type _Service {
+  sdl: String
 }
 

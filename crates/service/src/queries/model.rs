@@ -22,7 +22,7 @@ impl ModelQueries {
         namespace: Option<Vec<i64>>,
         role: Option<Vec<Lifecycle>>,
     ) -> anyhow::Result<Paginated<entities::model::Model>> {
-        let db = DbLoader::<entities::model::Model>::context(ctx)?;
+        let db = DbLoader::<entities::model::Model>::with_context(ctx)?;
         if let Some(ids) = id {
             return Ok(Paginated::new(
                 (ids.len(), 0),

@@ -82,13 +82,24 @@ impl DbLoader<Model> {
 
 #[async_graphql::ComplexObject]
 impl Model {
+    async fn buckets<'ctx>(
+        &self,
+        ctx: &Context<'ctx>,
+        page: Option<PageInput>,
+    ) -> PaginatedResult<super::bucket::Model> {
+        DbLoader::<super::bucket::Model>::with_context(ctx)?
+            .loader()
+            .find_by_namespace(Some(vec![self.id]), None, page.unwrap_or_default())
+            .await
+    }
+
     async fn models<'ctx>(
         &self,
         ctx: &Context<'ctx>,
         page: Option<PageInput>,
     ) -> PaginatedResult<super::model::Model> {
-        let db = DbLoader::<super::model::Model>::context(ctx).expect("it");
-        db.loader()
+        DbLoader::<super::model::Model>::with_context(ctx)?
+            .loader()
             .find_by_namespace(vec![self.id], page.unwrap_or_default())
             .await
     }

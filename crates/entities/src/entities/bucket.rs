@@ -73,7 +73,7 @@ bulk_loader! {
 }
 
 impl DbLoader<Model> {
-    pub async fn load_by_namespace(
+    pub async fn find_by_namespace(
         &self,
         namespaces: Option<Vec<i64>>,
         roles: Option<Vec<Lifecycle>>,
