@@ -21,6 +21,11 @@ The input/output is a string in RFC3339 format.
 """
 scalar DateTime
 
+"""
+A scalar that can represent any JSON value.
+"""
+scalar JSON
+
 enum Lifecycle {
   prod
   qa
@@ -35,13 +40,14 @@ type Model {
   createdAt: DateTime!
   lastModified: DateTime!
   namespace: Namespace
-  modelVersions(version: String, page: Page): PaginatedModelVersions!
+  versions(version: String, page: Page): PaginatedModelVersions!
 }
 
 type ModelArtifact {
   id: Int!
   versionId: Int!
   blob: Int!
+  extra: JSON
   name: String!
 }
 
