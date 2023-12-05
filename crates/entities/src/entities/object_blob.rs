@@ -1,4 +1,4 @@
-use super::enums::ArchivalFormat;
+use super::enums::{ArchiveEncoding, ArchiveFormat};
 use async_graphql::SimpleObject;
 use sea_orm::entity::prelude::*;
 
@@ -24,7 +24,8 @@ pub struct Model {
     pub version_id: String,
     pub size: i64,
     pub sha256: String,
-    pub archive: ArchivalFormat,
+    pub archive: Option<ArchiveFormat>,
+    pub encode: Option<ArchiveEncoding>,
     pub created_at: DateTimeWithTimeZone,
 }
 
@@ -38,6 +39,8 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     Bucket,
+    #[sea_orm(has_many = "super::experiment_artifact::Entity")]
+    ExperimentArtifact,
     #[sea_orm(has_many = "super::model_artifact::Entity")]
     ModelArtifact,
 }
@@ -48,10 +51,15 @@ impl Related<super::bucket::Entity> for Entity {
     }
 }
 
+impl Related<super::experiment_artifact::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ExperimentArtifact.def()
+    }
+}
+
 impl Related<super::model_artifact::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ModelArtifact.def()
     }
 }
-
 impl ActiveModelBehavior for ActiveModel {}
