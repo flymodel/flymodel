@@ -1,7 +1,7 @@
-use async_graphql::SimpleObject;
-use sea_orm::entity::prelude::*;
-
 use crate::{bulk_loader, db::DbLoader, paginated};
+use async_graphql::{ComplexObject, SimpleObject};
+use sea_orm::entity::prelude::*;
+use std::sync::Arc;
 
 #[derive(
     Clone,
@@ -15,6 +15,7 @@ use crate::{bulk_loader, db::DbLoader, paginated};
 )]
 #[sea_orm(table_name = "model_version")]
 #[graphql(name = "ModelVersion")]
+#[graphql(complex)]
 
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -26,6 +27,10 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::experiment::Entity")]
+    Experiment,
+    #[sea_orm(has_many = "super::experiment_artifact::Entity")]
+    ExperimentArtifact,
     #[sea_orm(
         belongs_to = "super::model::Entity",
         from = "Column::ModelId",
@@ -38,6 +43,18 @@ pub enum Relation {
     ModelArtifact,
     #[sea_orm(has_many = "super::model_state::Entity")]
     ModelState,
+}
+
+impl Related<super::experiment::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Experiment.def()
+    }
+}
+
+impl Related<super::experiment_artifact::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ExperimentArtifact.def()
+    }
 }
 
 impl Related<super::model::Entity> for Entity {
@@ -76,5 +93,40 @@ impl DbLoader<Model> {
 
     pub fn find_by_version(&self, sel: Select<Entity>, version: String) -> Select<Entity> {
         sel.filter(Column::Version.like(version))
+    }
+}
+
+#[ComplexObject]
+impl Model {
+    pub async fn model(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> async_graphql::Result<super::model::Model> {
+        super::model::Entity::find_by_id(self.model_id)
+            .one(&DbLoader::<Model>::with_context(ctx)?.loader().db)
+            .await?
+            .ok_or_else(|| async_graphql::Error::new("Model not found"))
+    }
+
+    pub async fn artifacts(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> Result<Vec<super::model_artifact::Model>, Arc<DbErr>> {
+        super::model_artifact::Entity::find()
+            .filter(super::model_artifact::Column::VersionId.eq(self.id))
+            .all(&DbLoader::<Model>::with_context(ctx)?.loader().db)
+            .await
+            .map_err(Arc::new)
+    }
+
+    pub async fn state(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> Result<Option<super::model_state::Model>, Arc<DbErr>> {
+        super::model_state::Entity::find()
+            .filter(super::model_state::Column::VersionId.eq(self.id))
+            .one(&DbLoader::<Model>::with_context(ctx)?.loader().db)
+            .await
+            .map_err(Arc::new)
     }
 }

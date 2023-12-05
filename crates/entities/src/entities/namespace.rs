@@ -1,7 +1,8 @@
-use crate::{bulk_loader, db::DbLoader, paginated};
+use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
 use async_graphql::{Context, SimpleObject};
 use chrono::Utc;
 use sea_orm::entity::prelude::*;
+
 use std::sync::Arc;
 
 use super::page::{PageInput, Paginated, PaginatedResult};
@@ -74,9 +75,19 @@ paginated! {
 impl DbLoader<Model> {
     pub async fn bulk_paginated_namespaces(
         &self,
+        name: Option<String>,
         page: PageInput,
     ) -> Result<Paginated<Model>, Arc<DbErr>> {
-        self.load_paginated(Entity::find(), page).await
+        let mut query = Entity::find();
+        if let Some(name) = name {
+            query = Self::find_by_name(query, name);
+        }
+        self.load_paginated(query, page).await
+    }
+
+    #[inline]
+    pub fn find_by_name(sel: Select<Entity>, name: String) -> Select<Entity> {
+        filter_like(sel, Column::Name, name)
     }
 }
 

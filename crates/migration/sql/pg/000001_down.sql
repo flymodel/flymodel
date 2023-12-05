@@ -3,9 +3,11 @@ set
 
 drop table namespace cascade;
 
-drop type lifecycle cascade;
+drop type archive_encoding cascade;
 
-drop type archival_format cascade;
+drop type archive_format cascade;
+
+drop type lifecycle cascade;
 
 drop table bucket cascade;
 
@@ -18,3 +20,7 @@ drop table model_version cascade;
 drop table model_artifact cascade;
 
 drop table object_blob cascade;
+
+drop table experiment_artifact cascade;
+
+drop table experiment cascade;

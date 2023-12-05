@@ -3,7 +3,11 @@ set
 
 create type lifecycle as enum ('test', 'qa', 'stage', 'prod');
 
-create type archival_format as enum ('zip', 'tgz');
+-- storing models or test data
+create type archive_format as enum ('zip', 'gzip', 'tar', 'tzg', 'snappy');
+
+-- when we want to store test data for reproducibility
+create type archive_encoding as enum ('json', 'feather', 'parquet');
 
 create table namespace (
     id bigserial primary key not null,
@@ -72,7 +76,9 @@ create table object_blob (
     size bigint not null,
     -- validation & version checking metadata
     sha256 varchar(256) not null,
-    archive archival_format not null,
+    -- null implies raw archives
+    archive archive_format,
+    encode archive_encoding,
     -- blob info
     created_at timestamptz not null default now() -- we do not allow modifications so there's nothing else to track
 );
@@ -84,6 +90,11 @@ create table model_artifact (
     -- we want the version id here to soft delete our artifacts
     version_id bigint references model_version(id) on delete cascade not null,
     blob bigint references object_blob(id) on delete cascade not null,
+    -- we may want to store some metadata about the artifact
+    -- this is optional and may be null
+    -- this allows e.g.
+    --  { "backend": "torch" }
+    extra jsonb,
     -- the actual name of the artifact
     name text not null
 );
@@ -91,3 +102,30 @@ create table model_artifact (
 create unique index model_artifact_version_idx on model_artifact (version_id, name);
 
 create unique index model_artifact_blob_idx on model_artifact (blob);
+
+-- we want to be able to associate multiple experiments with a single model version
+create table experiment (
+    id bigserial primary key not null,
+    version_id bigint references model_version(id) on delete cascade on update cascade not null,
+    name text not null,
+    created_at timestamptz not null default now()
+);
+
+-- we want experiments to be uniquely identificable per model version
+create unique index experiment_name_idx on experiment (version_id, name);
+
+create table experiment_artifact (
+    id bigserial primary key not null,
+    experiment_id bigint references experiment(id) on delete cascade on update cascade not null,
+    -- the data blob is the actual artifact
+    -- we want the version id here to soft delete our artifacts
+    version_id bigint references model_version(id) on delete cascade not null,
+    -- we want the data blob to be unique per experiment
+    blob bigint references object_blob(id) on delete cascade not null,
+    -- the actual name of the artifact
+    name text not null
+);
+
+create unique index experiment_artifact_name_idx on experiment_artifact (experiment_id, name);
+
+create unique index experiment_artifact_blob_idx on experiment_artifact (blob);

@@ -38,10 +38,27 @@ type Model {
   modelVersions(version: String, page: Page): PaginatedModelVersions!
 }
 
+type ModelArtifact {
+  id: Int!
+  versionId: Int!
+  blob: Int!
+  name: String!
+}
+
+type ModelState {
+  id: Int!
+  versionId: Int!
+  state: Lifecycle!
+  lastModified: DateTime!
+}
+
 type ModelVersion {
   id: Int!
   modelId: Int!
   version: String!
+  model: Model!
+  artifacts: [ModelArtifact!]!
+  state: ModelState
 }
 
 type Mutation {
@@ -93,7 +110,7 @@ type PaginatedNamespaces {
 
 type Query {
   bucket(id: [Int!], page: Page, namespace: [Int!], role: [Lifecycle!]): PaginatedBucket!
-  namespace(id: [Int!], page: Page): PaginatedNamespaces!
+  namespace(id: [Int!], name: String, page: Page): PaginatedNamespaces!
   model(id: [Int!], page: Page, name: String, namespace: [Int!], role: [Lifecycle!]): PaginatedModels!
   _service: _Service!
 }

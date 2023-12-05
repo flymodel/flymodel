@@ -1,31 +1,27 @@
-use async_graphql::SimpleObject;
 use sea_orm::entity::prelude::*;
 
-#[derive(
-    Clone,
-    Debug,
-    PartialEq,
-    DeriveEntityModel,
-    Eq,
-    SimpleObject,
-    serde::Serialize,
-    serde::Deserialize,
-)]
-#[graphql(name = "ModelArtifact")]
-#[sea_orm(table_name = "model_artifact")]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+#[sea_orm(table_name = "experiment_artifact")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i64,
+    pub experiment_id: i64,
     pub version_id: i64,
     pub blob: i64,
-    #[sea_orm(column_type = "JsonBinary", nullable)]
-    pub extra: Option<Json>,
     #[sea_orm(column_type = "Text")]
     pub name: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(
+        belongs_to = "super::experiment::Entity",
+        from = "Column::ExperimentId",
+        to = "super::experiment::Column::Id",
+        on_update = "Cascade",
+        on_delete = "Cascade"
+    )]
+    Experiment,
     #[sea_orm(
         belongs_to = "super::model_version::Entity",
         from = "Column::VersionId",
@@ -42,6 +38,12 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     ObjectBlob,
+}
+
+impl Related<super::experiment::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Experiment.def()
+    }
 }
 
 impl Related<super::model_version::Entity> for Entity {

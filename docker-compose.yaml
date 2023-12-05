@@ -1,10 +1,4 @@
 services:
-
-
-
-
-
-
   minio:
     container_name: minio
     volumes:

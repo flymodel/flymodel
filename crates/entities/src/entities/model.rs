@@ -2,10 +2,9 @@ use super::{
     enums::Lifecycle,
     page::{PageInput, PaginatedResult},
 };
-use crate::{bulk_loader, db::DbLoader, paginated};
+use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
 use async_graphql::SimpleObject;
-use sea_orm::{entity::prelude::*, QuerySelect};
-use sea_query::{Expr, Func};
+use sea_orm::entity::prelude::*;
 
 #[derive(
     Clone,
@@ -78,7 +77,7 @@ impl Model {
         loader.load_one(self.namespace_id.clone()).await
     }
 
-    async fn model_versions(
+    async fn versions(
         &self,
         ctx: &async_graphql::Context<'_>,
         version: Option<String>,
@@ -89,15 +88,13 @@ impl Model {
         if let Some(version) = version {
             query = db.find_by_version(query, version);
         }
-
         db.load_paginated(query, page.unwrap_or_default()).await
     }
 }
 
 impl DbLoader<Model> {
     pub fn select_mlmodel_name(&self, sel: Select<Entity>, name: String) -> Select<Entity> {
-        sel.expr(Func::lower(Expr::col(Column::Name)))
-            .filter(Column::Name.like(name.to_lowercase()))
+        filter_like(sel, Column::Name, name)
     }
 
     pub fn select_mlmodel_namespace(&self, sel: Select<Entity>, ns: Vec<i64>) -> Select<Entity> {

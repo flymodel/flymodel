@@ -15,10 +15,10 @@ impl NamespaceQueries {
         &self,
         ctx: &Context<'ctx>,
         id: Option<Vec<i64>>,
+        name: Option<String>,
         page: Option<PageInput>,
     ) -> anyhow::Result<Paginated<entities::namespace::Model>> {
         let db: &Database<entities::namespace::Model> = ctx.data_opt().context("no database")?;
-
         if let Some(id) = id {
             return Ok(Paginated::new(
                 (id.len(), 0),
@@ -32,7 +32,9 @@ impl NamespaceQueries {
                     .collect(),
             ));
         }
-        let page = page.unwrap_or_default();
-        Ok(db.loader().bulk_paginated_namespaces(page).await?)
+        Ok(db
+            .loader()
+            .bulk_paginated_namespaces(name, page.unwrap_or_default())
+            .await?)
     }
 }
