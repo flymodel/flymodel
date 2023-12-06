@@ -21,6 +21,7 @@ maintenance = {status = "actively-developed"}
 serde = {workspace = true, features = ["derive"]}
 sea-orm.workspace = true
 thiserror.workspace = true
+bitflags = "2.4.1"
 
 [dependencies.sea-orm-migration]
 features = [

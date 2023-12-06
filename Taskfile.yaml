@@ -14,3 +14,9 @@ tasks:
     - cp crates/graphql/schema/flymodel.graphql crates/graphql/schema/flymodel.graphql.bk
     - task schema
     - diff -bB crates/graphql/schema/flymodel.graphql.bk crates/graphql/schema/flymodel.graphql
+
+  visualize-schema:
+    cmds:
+    - docker run --rm -v ./vis/:/output/diagrams/ -it schemaspy/schemaspy:latest -host host.docker.internal -port 5432 --user postgres --password postgres -db mlops -imageformat png -renderer :cairo -t pgsql
+    - convert ./vis/summary/relationships.real.large.png -gravity South -chop 0x45 ./docs/rels.png
+    - rm -rf ./vis
