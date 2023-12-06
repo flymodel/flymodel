@@ -1,3 +1,5 @@
+use crate::{bulk_loader, paginated};
+
 use super::enums::{ArchiveEncoding, ArchiveFormat};
 use async_graphql::SimpleObject;
 use sea_orm::entity::prelude::*;
@@ -63,3 +65,12 @@ impl Related<super::model_artifact::Entity> for Entity {
     }
 }
 impl ActiveModelBehavior for ActiveModel {}
+
+bulk_loader! {
+    Model
+}
+
+paginated! {
+    Model,
+    Entity
+}

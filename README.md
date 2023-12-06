@@ -6,27 +6,57 @@
 {
   namespace(name: "canada") {
     data {
-      models(page: { size: 25, page: 0 }) {
-        totalPages
-        totalItems
-        page {
-          size
-          page
-        }
+      models {
         data {
           id
           name
+          lastModified
+          createdAt
           versions {
-            totalItems
             data {
+              id
+              version
               state {
-                id
                 state
-                lastModified
+              }
+              experiments {
+                data {
+                  id
+                  artifacts {
+                    data {
+                      id
+                      name
+                      object {
+                        id
+                        bucketId
+                        key
+                        sha256
+                        encode
+                        archive
+                        createdAt
+                      }
+                    }
+                  }
+                }
+              }
+              artifacts {
+                data {
+                  id
+                  name
+                  extra
+                  object {
+                    id
+                    bucketId
+                    key
+                    encode
+                    archive
+                    createdAt
+                    sha256
+                  }
+                }
               }
             }
           }
-          lastModified
         }
       }
     }

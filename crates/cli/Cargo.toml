@@ -41,3 +41,9 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 version.workspace = true
+
+[package.metadata.wix]
+upgrade-guid = "78FA60D7-3A67-448A-8531-07F3387FAD5E"
+path-guid = "EF69B65C-0814-4699-B0DC-F718F93EA68B"
+license = false
+eula = false

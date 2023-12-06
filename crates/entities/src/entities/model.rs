@@ -4,6 +4,7 @@ use super::{
 };
 use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
 use async_graphql::SimpleObject;
+use chrono::{DateTime, Utc};
 use sea_orm::entity::prelude::*;
 
 #[derive(
@@ -26,8 +27,10 @@ pub struct Model {
     pub namespace_id: i64,
     #[sea_orm(column_type = "Text")]
     pub name: String,
-    pub created_at: DateTimeWithTimeZone,
-    pub last_modified: DateTimeWithTimeZone,
+    #[serde(default = "chrono::offset::Utc::now")]
+    pub created_at: DateTime<Utc>,
+    #[serde(default = "chrono::offset::Utc::now")]
+    pub last_modified: DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -45,12 +45,9 @@ impl PageOutput {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, SimpleObject)]
-#[graphql(concrete(
-    name = "PaginatedNamespaces",
-    params(crate::entities::namespace::Model)
-))]
+#[graphql(concrete(name = "PaginatedNamespace", params(crate::entities::namespace::Model)))]
 #[graphql(concrete(name = "PaginatedBucket", params(crate::entities::bucket::Model)))]
-#[graphql(concrete(name = "PaginatedModels", params(crate::entities::model::Model)))]
+#[graphql(concrete(name = "PaginatedModel", params(crate::entities::model::Model)))]
 #[graphql(concrete(
     name = "PaginatedModelArtifact",
     params(crate::entities::model_artifact::Model)
@@ -60,8 +57,16 @@ impl PageOutput {
     params(crate::entities::model_state::Model)
 ))]
 #[graphql(concrete(
-    name = "PaginatedModelVersions",
+    name = "PaginatedModelVersion",
     params(crate::entities::model_version::Model)
+))]
+#[graphql(concrete(
+    name = "PaginatedExperiment",
+    params(crate::entities::experiment::Model)
+))]
+#[graphql(concrete(
+    name = "PaginatedExperimentArtifact",
+    params(crate::entities::experiment_artifact::Model)
 ))]
 pub struct Paginated<T>
 where

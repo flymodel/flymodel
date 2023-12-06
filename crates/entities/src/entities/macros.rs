@@ -2,7 +2,7 @@
 macro_rules! bulk_loader {
     ($model: ty) => {
         #[async_trait::async_trait]
-        impl async_graphql::dataloader::Loader<i64> for DbLoader<$model> {
+        impl async_graphql::dataloader::Loader<i64> for crate::db::DbLoader<$model> {
             type Value = $model;
             type Error = std::sync::Arc<DbErr>;
 

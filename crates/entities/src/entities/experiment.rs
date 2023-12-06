@@ -1,6 +1,22 @@
+use async_graphql::{ComplexObject, SimpleObject};
 use sea_orm::entity::prelude::*;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
+use crate::{bulk_loader, db::DbLoader, paginated};
+
+use super::page::{PageInput, PaginatedResult};
+
+#[derive(
+    Clone,
+    Debug,
+    PartialEq,
+    DeriveEntityModel,
+    Eq,
+    SimpleObject,
+    serde::Serialize,
+    serde::Deserialize,
+)]
+#[graphql(name = "Experiment")]
+#[graphql(complex)]
 #[sea_orm(table_name = "experiment")]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -38,3 +54,29 @@ impl Related<super::model_version::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+bulk_loader! {
+    Model
+}
+
+paginated! {
+    Model,
+    Entity
+}
+
+#[ComplexObject]
+impl Model {
+    pub async fn artifacts(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        page: Option<PageInput>,
+    ) -> PaginatedResult<super::experiment_artifact::Model> {
+        DbLoader::<super::experiment_artifact::Model>::with_context(ctx)?
+            .loader()
+            .load_paginated(
+                self.find_related(super::experiment_artifact::Entity),
+                page.unwrap_or_default(),
+            )
+            .await
+    }
+}

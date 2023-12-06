@@ -2,6 +2,9 @@ use crate::{bulk_loader, db::DbLoader, paginated};
 use async_graphql::{ComplexObject, SimpleObject};
 use sea_orm::entity::prelude::*;
 use std::sync::Arc;
+use tracing::warn;
+
+use super::page::{PageInput, PaginatedResult};
 
 #[derive(
     Clone,
@@ -105,27 +108,50 @@ impl Model {
         super::model::Entity::find_by_id(self.model_id)
             .one(&DbLoader::<Model>::with_context(ctx)?.loader().db)
             .await?
-            .ok_or_else(|| async_graphql::Error::new("Model not found"))
+            .ok_or_else(|| {
+                warn!("non deterministic behaviour detected");
+                async_graphql::Error::new("Model not found")
+            })
     }
 
     pub async fn artifacts(
         &self,
         ctx: &async_graphql::Context<'_>,
-    ) -> Result<Vec<super::model_artifact::Model>, Arc<DbErr>> {
-        super::model_artifact::Entity::find()
-            .filter(super::model_artifact::Column::VersionId.eq(self.id))
-            .all(&DbLoader::<Model>::with_context(ctx)?.loader().db)
+        page: Option<PageInput>,
+    ) -> PaginatedResult<super::model_artifact::Model> {
+        DbLoader::<super::model_artifact::Model>::with_context(ctx)?
+            .loader()
+            .load_paginated(
+                self.find_related(super::model_artifact::Entity),
+                page.unwrap_or_default(),
+            )
             .await
-            .map_err(Arc::new)
+    }
+
+    pub async fn experiments(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+        page: Option<PageInput>,
+    ) -> PaginatedResult<super::experiment::Model> {
+        DbLoader::<super::experiment::Model>::with_context(ctx)?
+            .loader()
+            .load_paginated(
+                self.find_related(super::experiment::Entity),
+                page.unwrap_or_default(),
+            )
+            .await
     }
 
     pub async fn state(
         &self,
         ctx: &async_graphql::Context<'_>,
     ) -> Result<Option<super::model_state::Model>, Arc<DbErr>> {
-        super::model_state::Entity::find()
-            .filter(super::model_state::Column::VersionId.eq(self.id))
-            .one(&DbLoader::<Model>::with_context(ctx)?.loader().db)
+        self.find_related(super::model_state::Entity)
+            .one(
+                &DbLoader::<super::model_state::Model>::with_context(ctx)?
+                    .loader()
+                    .db,
+            )
             .await
             .map_err(Arc::new)
     }

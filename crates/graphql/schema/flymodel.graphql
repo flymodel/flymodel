@@ -1,3 +1,17 @@
+enum ArchivalFormat {
+  GZIP
+  SNAPPY
+  TAR
+  TZG
+  ZIP
+}
+
+enum ArchiveEncoding {
+  FEATHER
+  JSON
+  PARQUET
+}
+
 type Bucket {
   id: Int!
   namespace: Int!
@@ -21,6 +35,23 @@ The input/output is a string in RFC3339 format.
 """
 scalar DateTime
 
+type Experiment {
+  id: Int!
+  versionId: Int!
+  name: String!
+  createdAt: DateTime!
+  artifacts(page: Page): PaginatedExperimentArtifact!
+}
+
+type ExperimentArtifact {
+  id: Int!
+  experimentId: Int!
+  versionId: Int!
+  blob: Int!
+  name: String!
+  object: ObjectBlob!
+}
+
 """
 A scalar that can represent any JSON value.
 """
@@ -40,7 +71,7 @@ type Model {
   createdAt: DateTime!
   lastModified: DateTime!
   namespace: Namespace
-  versions(version: String, page: Page): PaginatedModelVersions!
+  versions(version: String, page: Page): PaginatedModelVersion!
 }
 
 type ModelArtifact {
@@ -49,6 +80,7 @@ type ModelArtifact {
   blob: Int!
   extra: JSON
   name: String!
+  object: ObjectBlob!
 }
 
 type ModelState {
@@ -56,6 +88,7 @@ type ModelState {
   versionId: Int!
   state: Lifecycle!
   lastModified: DateTime!
+  version: ModelVersion!
 }
 
 type ModelVersion {
@@ -63,7 +96,8 @@ type ModelVersion {
   modelId: Int!
   version: String!
   model: Model!
-  artifacts: [ModelArtifact!]!
+  artifacts(page: Page): PaginatedModelArtifact!
+  experiments(page: Page): PaginatedExperiment!
   state: ModelState
 }
 
@@ -78,7 +112,19 @@ type Namespace {
   createdAt: DateTime!
   lastModified: DateTime!
   buckets(page: Page): PaginatedBucket!
-  models(page: Page): PaginatedModels!
+  models(page: Page): PaginatedModel!
+}
+
+type ObjectBlob {
+  id: Int!
+  bucketId: Int!
+  key: String!
+  versionId: String!
+  size: Int!
+  sha256: String!
+  archive: ArchivalFormat
+  encode: ArchiveEncoding
+  createdAt: DateTime!
 }
 
 input Page {
@@ -93,21 +139,42 @@ type PaginatedBucket {
   data: [Bucket!]!
 }
 
-type PaginatedModelVersions {
+type PaginatedExperiment {
   page: CurrentPage!
   totalPages: Int!
   totalItems: Int!
-  data: [ModelVersion!]!
+  data: [Experiment!]!
 }
 
-type PaginatedModels {
+type PaginatedExperimentArtifact {
+  page: CurrentPage!
+  totalPages: Int!
+  totalItems: Int!
+  data: [ExperimentArtifact!]!
+}
+
+type PaginatedModel {
   page: CurrentPage!
   totalPages: Int!
   totalItems: Int!
   data: [Model!]!
 }
 
-type PaginatedNamespaces {
+type PaginatedModelArtifact {
+  page: CurrentPage!
+  totalPages: Int!
+  totalItems: Int!
+  data: [ModelArtifact!]!
+}
+
+type PaginatedModelVersion {
+  page: CurrentPage!
+  totalPages: Int!
+  totalItems: Int!
+  data: [ModelVersion!]!
+}
+
+type PaginatedNamespace {
   page: CurrentPage!
   totalPages: Int!
   totalItems: Int!
@@ -116,8 +183,8 @@ type PaginatedNamespaces {
 
 type Query {
   bucket(id: [Int!], page: Page, namespace: [Int!], role: [Lifecycle!]): PaginatedBucket!
-  namespace(id: [Int!], name: String, page: Page): PaginatedNamespaces!
-  model(id: [Int!], page: Page, name: String, namespace: [Int!], role: [Lifecycle!]): PaginatedModels!
+  namespace(id: [Int!], name: String, page: Page): PaginatedNamespace!
+  model(id: [Int!], page: Page, name: String, namespace: [Int!], role: [Lifecycle!]): PaginatedModel!
   _service: _Service!
 }
 

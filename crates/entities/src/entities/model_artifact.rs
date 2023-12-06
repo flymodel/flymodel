@@ -1,5 +1,8 @@
-use async_graphql::SimpleObject;
+use async_graphql::{ComplexObject, SimpleObject};
 use sea_orm::entity::prelude::*;
+use tracing::warn;
+
+use crate::{bulk_loader, db::DbLoader, paginated};
 
 #[derive(
     Clone,
@@ -12,6 +15,7 @@ use sea_orm::entity::prelude::*;
     serde::Deserialize,
 )]
 #[graphql(name = "ModelArtifact")]
+#[graphql(complex)]
 #[sea_orm(table_name = "model_artifact")]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -57,3 +61,30 @@ impl Related<super::object_blob::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+bulk_loader! {
+    Model
+}
+
+paginated! {
+    Model,
+    Entity
+}
+
+#[ComplexObject]
+impl Model {
+    pub async fn object(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> async_graphql::Result<super::object_blob::Model> {
+        DbLoader::<super::object_blob::Model>::with_context(ctx)?
+            .load_one(self.blob)
+            .await?
+            .ok_or_else(|| {
+                warn!(
+                    "non deterministic behaviour detected. expected blob reference but found null."
+                );
+                async_graphql::Error::new("Blob not found")
+            })
+    }
+}

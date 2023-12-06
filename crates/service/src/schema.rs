@@ -41,7 +41,19 @@ pub fn build_schema(
             db.clone(),
             tracer.clone(),
         ))
+        .data(DbLoader::<entities::experiment::Model>::new(
+            db.clone(),
+            tracer.clone(),
+        ))
+        .data(DbLoader::<entities::experiment_artifact::Model>::new(
+            db.clone(),
+            tracer.clone(),
+        ))
         .data(DbLoader::<entities::model_version::Model>::new(
+            db.clone(),
+            tracer.clone(),
+        ))
+        .data(DbLoader::<entities::object_blob::Model>::new(
             db.clone(),
             tracer.clone(),
         ))

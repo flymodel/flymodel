@@ -63,3 +63,34 @@ buckets:
   region: ca-local
   role: prod
   shard: 0
+
+models:
+- id: 1
+  namespace_id: 1
+  name: llm.lg
+- id: 2
+  namespace_id: 1
+  name: llm.med
+- id: 3
+  namespace_id: 1
+  name: llm.sm
+versions:
+- id: 1
+  model_id: 1
+  version: v1.0.0
+- id: 2
+  model_id: 2
+  version: v1.0.0
+- id: 3
+  model_id: 3
+  version: v1.0.0
+states:
+- id: 1
+  version_id: 1
+  state: test
+- id: 2
+  version_id: 2
+  state: test
+- id: 3
+  version_id: 3
+  state: test

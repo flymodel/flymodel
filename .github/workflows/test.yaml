@@ -62,7 +62,15 @@ jobs:
       run: |
         RUSTFLAGS="-Awarnings" cargo build
 
-    - name: Test Migration Up
+    - name: Test Migration Up (basic)
+      run: |
+        target/debug/flymodel migrate up --test-data basic
+
+    - name: Test Migration Down
+      run: |
+        target/debug/flymodel migrate down
+
+    - name: Test Migration Up (multi-region)
       run: |
         target/debug/flymodel migrate up --test-data multi_region
 

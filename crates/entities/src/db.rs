@@ -27,10 +27,6 @@ where
     }
 
     pub fn with_context<'ctx>(ctx: &Context<'ctx>) -> Result<&'ctx Database<T>, Arc<DbErr>> {
-        // ctx.with_context(Context::current_with_span(
-
-        // ));
-
         ctx.data::<Database<T>>().map_err(|err| {
             trace!("an actual error is being suppressed: {:#?}", err);
             warn!(
