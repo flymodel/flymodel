@@ -32,6 +32,7 @@ mod test {
     fn test_schema() {
         schema::Bucket;
         schema::PaginatedBucket;
-        schema::PaginatedNamespaces;
+        schema::Namespace;
+        schema::PaginatedNamespace;
     }
 }
