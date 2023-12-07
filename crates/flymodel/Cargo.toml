@@ -15,19 +15,23 @@ repository.workspace = true
 rust-version.workspace = true
 
 [badges]
-maintenance = {status = "actively-developed"}
+maintenance = { status = "actively-developed" }
 
 [dependencies]
-serde = {workspace = true, features = ["derive"]}
+serde = { workspace = true, features = ["derive"] }
+anyhow.workspace = true
+tracing.workspace = true
 sea-orm.workspace = true
+async-graphql.workspace = true
+bytes.workspace = true
+async-trait.workspace = true
 thiserror.workspace = true
+aws-sdk-s3.workspace = true
+aws-smithy-runtime-api.workspace = true
 bitflags = "2.4.1"
 
 [dependencies.sea-orm-migration]
-features = [
-  "runtime-tokio-native-tls",
-  "sqlx-postgres"
-]
+features = ["runtime-tokio-native-tls", "sqlx-postgres"]
 workspace = true
 
 [features]

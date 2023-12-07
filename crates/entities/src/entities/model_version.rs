@@ -1,7 +1,8 @@
 use crate::{bulk_loader, db::DbLoader, paginated};
 use async_graphql::{ComplexObject, SimpleObject};
+use flymodel::errs::FlymodelError;
 use sea_orm::entity::prelude::*;
-use std::sync::Arc;
+
 use tracing::warn;
 
 use super::page::{PageInput, PaginatedResult};
@@ -145,7 +146,7 @@ impl Model {
     pub async fn state(
         &self,
         ctx: &async_graphql::Context<'_>,
-    ) -> Result<Option<super::model_state::Model>, Arc<DbErr>> {
+    ) -> crate::db::QueryResult<Option<super::model_state::Model>> {
         self.find_related(super::model_state::Entity)
             .one(
                 &DbLoader::<super::model_state::Model>::with_context(ctx)?
@@ -153,6 +154,6 @@ impl Model {
                     .db,
             )
             .await
-            .map_err(Arc::new)
+            .map_err(|err| FlymodelError::DbOperationError(err).into_graphql_error())
     }
 }

@@ -1,7 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use bytes::Bytes;
-use flymodel_entities::entities::enums::Lifecycle;
+use flymodel::{errs::FlymodelResult, storage::StorageProvider};
 
 use crate::minio::{S3Configuration, S3Storage};
 
@@ -21,7 +20,7 @@ impl StorageOrchestrator {
         self.storage.get(store)
     }
 
-    pub async fn setup(&self) -> anyhow::Result<()> {
+    pub async fn setup(&self) -> FlymodelResult<()> {
         for store in self.storage.as_ref().values() {
             store.setup().await?;
         }
@@ -42,23 +41,4 @@ impl StorageConfig {
             storage: Arc::new(storage),
         })
     }
-}
-
-#[async_trait::async_trait]
-pub trait StorageProvider {
-    fn role(&self) -> Lifecycle;
-
-    async fn setup(&self) -> anyhow::Result<()>;
-
-    fn prefix(&self) -> String;
-    fn resolve_path(&self, path: String) -> String {
-        let pre = self.prefix();
-        if pre.ends_with('/') {
-            return pre + &path;
-        }
-        pre + "/" + &path
-    }
-
-    async fn put(&self, path: String, bs: bytes::Bytes) -> anyhow::Result<Option<String>>;
-    async fn get(&self, path: String, version_id: Option<String>) -> anyhow::Result<Bytes>;
 }

@@ -13,6 +13,7 @@ license.workspace = true
 
 
 [dependencies]
+flymodel = { path = "../flymodel" }
 flymodel-entities = { path = "../entities" }
 async-std = { version = "1", features = ["attributes", "tokio1"] }
 clap = { workspace = true, features = ["derive"] }

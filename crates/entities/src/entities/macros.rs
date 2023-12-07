@@ -33,13 +33,17 @@ macro_rules! paginated {
                 &self,
                 sel: Select<$entity>,
                 page: $crate::entities::page::PageInput,
-            ) -> Result<$crate::entities::page::Paginated<$model>, std::sync::Arc<DbErr>> {
+            ) -> $crate::entities::page::PaginatedResult<$model> {
                 let selector = sel.paginate(&self.db, page.size as u64);
-                let items_pg = selector.num_items_and_pages().await?;
+                let items_pg = selector.num_items_and_pages().await.map_err(|it| {
+                    flymodel::errs::FlymodelError::DbOperationError(it).into_graphql_error()
+                })?;
                 selector
                     .fetch_page(page.page as u64)
                     .await
-                    .map_err(std::sync::Arc::new)
+                    .map_err(|e| {
+                        flymodel::errs::FlymodelError::DbOperationError(e).into_graphql_error()
+                    })
                     .map(|it| {
                         $crate::entities::page::Paginated::new(
                             page,

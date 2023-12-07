@@ -27,6 +27,8 @@ pub enum Commands {
     #[command(subcommand)]
     Migrate(Migration),
     SetupStorage,
+
+    Upsert,
 }
 
 #[derive(Debug, Clone, Subcommand)]

@@ -24,6 +24,7 @@ async-graphql = { workspace = true, features = [
     "dataloader",
     "opentelemetry",
 ] }
+flymodel = { path = "../flymodel" }
 flymodel-entities = { path = "../entities" }
 flymodel-tracing = { path = "../trace" }
 serde = { workspace = true, features = ["derive"] }

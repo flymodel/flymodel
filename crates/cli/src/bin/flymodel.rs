@@ -51,6 +51,7 @@ async fn run<S>(
         Commands::Serve(ref server) => serve_server(cmd.clone(), server, reload_handle).await,
         Commands::Migrate(migrate) => migrate.run().await,
         Commands::SetupStorage => setup_storage(cmd, reload_handle).await,
+        Commands::Upsert => unimplemented!(),
     }
 }
 

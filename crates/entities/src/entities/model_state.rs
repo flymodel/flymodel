@@ -1,8 +1,8 @@
 use crate::db::DbLoader;
 
-use super::enums::Lifecycle;
 use async_graphql::{ComplexObject, SimpleObject};
 use chrono::{DateTime, Utc};
+use flymodel::lifecycle::Lifecycle;
 use sea_orm::entity::prelude::*;
 use tracing::warn;
 

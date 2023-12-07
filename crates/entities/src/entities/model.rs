@@ -1,10 +1,8 @@
-use super::{
-    enums::Lifecycle,
-    page::{PageInput, PaginatedResult},
-};
+use super::page::{PageInput, PaginatedResult};
 use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
 use async_graphql::SimpleObject;
 use chrono::{DateTime, Utc};
+use flymodel::{errs::FlymodelError, lifecycle::Lifecycle};
 use sea_orm::entity::prelude::*;
 
 #[derive(
@@ -77,7 +75,10 @@ impl Model {
         ctx: &async_graphql::Context<'_>,
     ) -> crate::db::QueryResult<Option<super::namespace::Model>> {
         let loader = DbLoader::<super::namespace::Model>::with_context(ctx)?;
-        loader.load_one(self.namespace_id.clone()).await
+        loader
+            .load_one(self.namespace_id.clone())
+            .await
+            .map_err(|it| FlymodelError::DbLoaderError(it).into_graphql_error())
     }
 
     async fn versions(

@@ -1,11 +1,11 @@
-use anyhow::Context as ErrContext;
+use anyhow::Context as _;
 use async_graphql::{dataloader::Loader, *};
+use flymodel::lifecycle::Lifecycle;
 use flymodel_entities::{
     db::Database,
     entities::{
         self,
-        enums::Lifecycle,
-        page::{PageInput, Paginated},
+        page::{PageInput, Paginated, PaginatedResult},
     },
 };
 
@@ -21,24 +21,26 @@ impl BucketQueries {
         page: Option<PageInput>,
         namespace: Option<Vec<i64>>,
         role: Option<Vec<Lifecycle>>,
-    ) -> anyhow::Result<Paginated<entities::bucket::Model>> {
+    ) -> PaginatedResult<entities::bucket::Model> {
         let db: &Database<entities::bucket::Model> = ctx.data_opt().context("no database")?;
 
         if let Some(ids) = id {
+            let re: Vec<_> = db
+                .loader()
+                .load(&ids)
+                .await?
+                .values()
+                .map(entities::bucket::Model::to_owned)
+                .collect();
             return Ok(Paginated::new(
                 (ids.len(), 0),
                 1 as usize,
-                ids.len() as u64,
-                db.loader()
-                    .load(&ids)
-                    .await?
-                    .values()
-                    .map(entities::bucket::Model::to_owned)
-                    .collect(),
+                re.len() as u64,
+                re,
             ));
         }
 
         let page = page.unwrap_or_default();
-        Ok(db.loader().find_by_namespace(namespace, role, page).await?)
+        db.loader().find_by_namespace(namespace, role, page).await
     }
 }

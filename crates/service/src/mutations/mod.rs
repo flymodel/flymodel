@@ -1,7 +1,7 @@
 use async_graphql::MergedObject;
 
-use self::root::RootMutations;
-pub mod root;
+use self::namespace::NamespaceMutations;
+pub mod namespace;
 
 #[derive(MergedObject, Clone, Default)]
-pub struct Mutation(RootMutations);
+pub struct Mutation(NamespaceMutations);

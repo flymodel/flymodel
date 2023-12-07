@@ -1,9 +1,10 @@
-use crate::db::Database;
-use anyhow::Context as ErrContext;
 use async_graphql::{dataloader::Loader, *};
 use flymodel_entities::{
-    entities,
-    entities::page::{PageInput, Paginated},
+    db::DbLoader,
+    entities::{
+        self,
+        page::{PageInput, Paginated, PaginatedResult},
+    },
 };
 
 #[derive(Clone, Default)]
@@ -17,24 +18,26 @@ impl NamespaceQueries {
         id: Option<Vec<i64>>,
         name: Option<String>,
         page: Option<PageInput>,
-    ) -> anyhow::Result<Paginated<entities::namespace::Model>> {
-        let db: &Database<entities::namespace::Model> = ctx.data_opt().context("no database")?;
+    ) -> PaginatedResult<entities::namespace::Model> {
+        let db = DbLoader::<entities::namespace::Model>::with_context(ctx)
+            .map_err(|err| err.into_graphql_error())?;
         if let Some(id) = id {
+            let re: Vec<_> = db
+                .loader()
+                .load(&id)
+                .await?
+                .values()
+                .map(|ns| ns.to_owned())
+                .collect();
             return Ok(Paginated::new(
                 (id.len(), 0),
                 1 as usize,
-                id.len() as u64,
-                db.loader()
-                    .load(&id)
-                    .await?
-                    .values()
-                    .map(|ns| ns.to_owned())
-                    .collect(),
+                re.len() as u64,
+                re,
             ));
         }
-        Ok(db
-            .loader()
+        db.loader()
             .bulk_paginated_namespaces(name, page.unwrap_or_default())
-            .await?)
+            .await
     }
 }

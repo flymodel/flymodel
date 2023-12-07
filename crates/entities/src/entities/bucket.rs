@@ -1,12 +1,9 @@
-use super::{
-    enums::Lifecycle,
-    page::{PageInput, Paginated},
-};
+use super::page::{PageInput, PaginatedResult};
 use crate::{bulk_loader, db::DbLoader, paginated};
 use async_graphql::{ComplexObject, SimpleObject};
 use chrono::Utc;
+use flymodel::lifecycle::Lifecycle;
 use sea_orm::entity::prelude::*;
-use std::sync::Arc;
 
 #[derive(
     Clone,
@@ -78,7 +75,7 @@ impl DbLoader<Model> {
         namespaces: Option<Vec<i64>>,
         roles: Option<Vec<Lifecycle>>,
         page: PageInput,
-    ) -> Result<Paginated<Model>, Arc<DbErr>> {
+    ) -> PaginatedResult<Model> {
         let mut filters = Entity::find();
 
         if let Some(namespaces) = namespaces {

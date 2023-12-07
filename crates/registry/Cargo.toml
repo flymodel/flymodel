@@ -20,8 +20,8 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 aws-config = { version = "1", features = ["behavior-version-latest"] }
 aws-sdk-s3 = { version = "1", features = ["behavior-version-latest"] }
-bytes = "1.5.0"
 dotenv.workspace = true
+bytes.workspace = true
 flymodel = { path = "../flymodel" }
 flymodel-entities = { path = "../entities" }
 serde = { workspace = true, features = ["derive"] }

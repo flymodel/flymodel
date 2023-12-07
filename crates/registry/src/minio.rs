@@ -1,4 +1,3 @@
-use crate::storage::StorageProvider;
 use aws_config::{environment::EnvironmentVariableCredentialsProvider, AppName, Region};
 use aws_sdk_s3::{
     primitives::ByteStream,
@@ -6,7 +5,11 @@ use aws_sdk_s3::{
     Client,
 };
 use bytes::Bytes;
-use flymodel_entities::entities::enums::Lifecycle;
+use flymodel::{
+    errs::{FlymodelError, FlymodelResult},
+    lifecycle::Lifecycle,
+    storage::StorageProvider,
+};
 use tracing::trace;
 
 fn default_path() -> String {
@@ -141,11 +144,13 @@ impl StorageProvider for S3Storage {
         self.prefix.clone()
     }
 
-    async fn setup(&self) -> anyhow::Result<()> {
-        self.setup_bucket().await
+    async fn setup(&self) -> FlymodelResult<()> {
+        self.setup_bucket()
+            .await
+            .map_err(FlymodelError::StorageSetupError)
     }
 
-    async fn put(&self, path: String, bs: bytes::Bytes) -> anyhow::Result<Option<String>> {
+    async fn put(&self, path: String, bs: bytes::Bytes) -> FlymodelResult<Option<String>> {
         let key = self.resolve_path(path);
         trace!("putting object: {}", key);
         Ok(self
@@ -159,7 +164,7 @@ impl StorageProvider for S3Storage {
             .version_id)
     }
 
-    async fn get(&self, path: String, version_id: Option<String>) -> anyhow::Result<Bytes> {
+    async fn get(&self, path: String, version_id: Option<String>) -> FlymodelResult<Bytes> {
         let key = self.resolve_path(path);
         trace!("getting object: {}", key);
         let base = self
@@ -177,7 +182,7 @@ mod test {
     use bytes::Bytes;
 
     use super::{Lifecycle, S3Storage};
-    use crate::storage::StorageProvider;
+    use flymodel::storage::StorageProvider;
 
     fn new_minio_test_client() -> S3Storage {
         dotenv::dotenv().ok();

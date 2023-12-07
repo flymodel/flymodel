@@ -1,11 +1,10 @@
 use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
 use async_graphql::{Context, SimpleObject};
 use chrono::Utc;
+
 use sea_orm::entity::prelude::*;
 
-use std::sync::Arc;
-
-use super::page::{PageInput, Paginated, PaginatedResult};
+use super::page::{PageInput, PaginatedResult};
 
 #[derive(
     Clone,
@@ -77,7 +76,7 @@ impl DbLoader<Model> {
         &self,
         name: Option<String>,
         page: PageInput,
-    ) -> Result<Paginated<Model>, Arc<DbErr>> {
+    ) -> PaginatedResult<Model> {
         let mut query = Entity::find();
         if let Some(name) = name {
             query = Self::find_by_name(query, name);
