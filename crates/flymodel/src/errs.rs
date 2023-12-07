@@ -82,7 +82,7 @@ impl FlymodelError {
         }
     }
 
-    pub fn description(&self) -> String {
+    pub fn code_description(&self) -> String {
         match self {
             Self::DbConnectionError(..)
             | Self::DbSetupError(..)
@@ -101,9 +101,9 @@ impl FlymodelError {
 
     pub fn into_graphql_error(&self) -> async_graphql::Error {
         tracing::error!("an error occured serving graphql: {}", self);
-        async_graphql::Error::new(self.description()).extend_with(|_, ext| {
-            ext.set("kind", self.code_str());
+        async_graphql::Error::new(self.code_description()).extend_with(|_, ext| {
             ext.set("code", self.code());
+            ext.set("kind", self.code_str());
         })
     }
 }

@@ -26,6 +26,7 @@ serde_yaml.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 tracing-subscriber = { workspace = true, features = ["std"] }
+config = "0.13.4"
 
 [features]
 

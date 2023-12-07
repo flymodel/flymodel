@@ -20,6 +20,7 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 serde = { workspace = true, features = ["derive"] }
 anyhow.workspace = true
+clap = { workspace = true, features = ["derive"] }
 tracing.workspace = true
 sea-orm.workspace = true
 async-graphql.workspace = true
@@ -29,6 +30,8 @@ thiserror.workspace = true
 aws-sdk-s3.workspace = true
 aws-smithy-runtime-api.workspace = true
 bitflags = "2.4.1"
+url = { version = "2.5.0", features = ["serde"] }
+config = "0.13.4"
 
 [dependencies.sea-orm-migration]
 features = ["runtime-tokio-native-tls", "sqlx-postgres"]

@@ -102,7 +102,7 @@ type ModelVersion {
 }
 
 type Mutation {
-  createNamespace(name: String!, description: String): String!
+  createNamespace(name: String!, description: String): Namespace!
 }
 
 type Namespace {

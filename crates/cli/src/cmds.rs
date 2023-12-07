@@ -2,14 +2,15 @@ use crate::{
     config::{MigrationConfig, ServeConfig},
     log::LoggingConfig,
 };
-use anyhow::Context;
 use clap::{Parser, Subcommand};
+use config::Config;
+use flymodel::config::auth::{AuthConfiguration, AuthHandlers};
 use flymodel_migration::Migrator;
 use flymodel_registry::storage::StorageConfig;
-
 use flymodel_tracing::{tracer::OtlpTracerConfig, TracingConfiguration};
 use sea_orm_migration::MigratorTrait;
 use std::path::PathBuf;
+use tracing::warn;
 
 #[derive(Debug, Clone, Parser)]
 #[command(author, version, about, long_about = None)]
@@ -63,6 +64,8 @@ pub struct Conf {
     pub tracing: Option<TracingConfiguration>,
     #[serde(default)]
     pub log: LoggingConfig,
+    #[serde(default)]
+    pub auth: AuthConfiguration,
 }
 
 impl Conf {
@@ -72,45 +75,40 @@ impl Conf {
             None => None,
         }
     }
+
+    pub fn validate(&self) -> anyhow::Result<()> {
+        if self.auth.handler == AuthHandlers::NoOp {
+            warn!("no authorizer is configured, using noop authorizer")
+        }
+        Ok(())
+    }
 }
 
 impl Cli {
     pub fn load_config(&self) -> anyhow::Result<Conf> {
-        let ext = match self.config.extension() {
-            Some(ext) => ext,
-            None => anyhow::bail!("no extension detected"),
-        }
-        .to_str()
-        .context("extension is unknown to os")?;
-        let config = std::fs::read_to_string(&self.config)?;
-        Ok(match ext {
-            "toml" => toml::from_str(&config)?,
-            "yaml" => serde_yaml::from_str(&config)?,
-            ext => anyhow::bail!("invalid format: {}", ext),
-        })
+        let conf = Config::builder()
+            .add_source(config::File::from(self.config.clone()))
+            .add_source(config::Environment::with_prefix("fm").separator("_"))
+            .build()?
+            .try_deserialize::<Conf>()?;
+        conf.validate()?;
+        Ok(conf)
     }
 }
 
 mod test {
-
     #[test]
-    fn test_server_load_conf() -> anyhow::Result<()> {
+    fn test_server_load_toml() -> anyhow::Result<()> {
         let cli = super::Cli {
             command: super::Commands::SetupStorage,
             config: "../../conf/flymodel.toml".into(),
         };
         let _conf = cli.load_config()?;
+        Ok(())
+    }
 
-        // assert_eq!(
-        //     conf.tracing,
-        //     TracingConfiguration {
-        //         otlp: Some(OtlpTracerConfig {
-        //             target: "localhost:4317".into(),
-        //             ..Default::default()
-        //         })
-        //     }
-        // );
-
+    #[test]
+    fn test_server_load_yaml() -> anyhow::Result<()> {
         let cli = super::Cli {
             command: super::Commands::SetupStorage,
             config: "../../conf/flymodel.yaml".into(),

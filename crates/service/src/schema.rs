@@ -20,7 +20,6 @@ pub fn build_schema(
         .extension(Tracing)
         .enable_federation()
         .enable_subscription_in_federation()
-        // TODO: otel
         .data(DbLoader::<entities::bucket::Model>::new(
             db.clone(),
             tracer.clone(),
@@ -70,9 +69,8 @@ pub fn build_schema(
     };
     let builder = if let Some(tracer) = tracer {
         debug!("tracer");
-        builder.extension(OpenTelemetry::new(
-            tracer.new_tracer_provider("flymodel-gql-query")?.tracer,
-        ))
+        let tracer = tracer.new_tracer_provider("flymodel-gql-query")?.tracer;
+        builder.extension(OpenTelemetry::new(tracer))
     } else {
         builder
     };

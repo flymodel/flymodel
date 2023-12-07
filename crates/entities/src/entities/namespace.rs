@@ -2,7 +2,8 @@ use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
 use async_graphql::{Context, SimpleObject};
 use chrono::Utc;
 
-use sea_orm::entity::prelude::*;
+use flymodel::errs::FlymodelError;
+use sea_orm::{entity::prelude::*, ActiveValue};
 
 use super::page::{PageInput, PaginatedResult};
 
@@ -87,6 +88,23 @@ impl DbLoader<Model> {
     #[inline]
     pub fn find_by_name(sel: Select<Entity>, name: String) -> Select<Entity> {
         filter_like(sel, Column::Name, name)
+    }
+
+    pub async fn create_namespace<'ctx>(
+        &self,
+        name: String,
+        description: Option<String>,
+    ) -> Result<Model, async_graphql::Error> {
+        let mut this = ActiveModel {
+            name: ActiveValue::Set(name),
+            ..Default::default()
+        };
+        if let Some(description) = description {
+            this.description = ActiveValue::Set(description);
+        }
+        this.insert(&self.db)
+            .await
+            .map_err(|it| FlymodelError::DbOperationError(it).into_graphql_error())
     }
 }
 
