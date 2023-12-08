@@ -129,10 +129,3 @@ create table experiment_artifact (
 create unique index experiment_artifact_name_idx on experiment_artifact (experiment_id, name);
 
 create unique index experiment_artifact_blob_idx on experiment_artifact (blob);
-
--- membership
-create table membership (
-    id bigserial primary key not null,
-    namespace bigint references namespace(id) on delete cascade on update cascade not null,
-    user_id bigint not null
-);

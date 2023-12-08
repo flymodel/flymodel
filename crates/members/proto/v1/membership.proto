@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package chatter.v1.membership;
+
+message Empty {}
+
+enum Readiness {
+  not_ready = 0;
+  ready = 1;
+}
+
+message Status {
+  Readiness readiness = 1;
+  repeated Service services = 2;
+}
+
+message MembersRequest {
+  // a way of asking for members since this time and forwards, it allows us to
+  // reach consensus without the full list
+  oneof to_epoch {
+    int64 before = 1;
+    int64 after = 2;
+  }
+}
+
+enum Service {
+  unknown = 0;
+  query = 1;
+  storage = 2;
+}
+
+message Discoverable { string address = 1; }
+
+message Member {
+  Discoverable discovery = 1;
+  repeated Service services = 2;
+  int64 joined_at = 3;
+  int64 last_seen = 4;
+}
+
+message DiscoveryList { repeated Discoverable discovery = 1; }
+
+service MembershipService {
+  rpc Ping(Empty) returns (Status);
+  rpc Check(Discoverable) returns (Status);
+  rpc Members(MembersRequest) returns (stream Member);
+  rpc Allow(DiscoveryList) returns (Empty);
+  rpc Deny(DiscoveryList) returns (Empty);
+}

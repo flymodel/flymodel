@@ -5,6 +5,7 @@ use crate::{
 use clap::{Parser, Subcommand};
 use config::Config;
 use flymodel::config::auth::{AuthConfiguration, AuthHandlers};
+use flymodel_members::server::MembershipConfig;
 use flymodel_migration::Migrator;
 use flymodel_registry::storage::StorageConfig;
 use flymodel_tracing::{tracer::OtlpTracerConfig, TracingConfiguration};
@@ -66,6 +67,8 @@ pub struct Conf {
     pub log: LoggingConfig,
     #[serde(default)]
     pub auth: AuthConfiguration,
+    #[serde(default)]
+    pub membership: MembershipConfig,
 }
 
 impl Conf {
