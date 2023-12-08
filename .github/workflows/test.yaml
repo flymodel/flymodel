@@ -55,7 +55,9 @@ jobs:
 
     - name: Install tools
       run: |
-        sudo apt-get install -y libpq-dev
+        sudo apt-get install -y \
+          libpq-dev \
+          protobuf-compiler
         cargo install --locked cynic-cli
 
     - name: Pre Build & Cache

@@ -26,6 +26,12 @@ jobs:
         cache: false
         components: cargo
 
+    - name: Install tools
+      run: |
+        sudo apt-get install -y \
+          libpq-dev \
+          protobuf-compiler
+
     - name: Cargo Check
       run: |
         cargo check --all-features
