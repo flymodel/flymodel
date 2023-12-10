@@ -38,18 +38,23 @@ impl Fixtures {
     async fn maybe_insert<E, A, AM>(
         src: Vec<A>,
         conn: &'_ SchemaManagerConnection<'_>,
+        with_am: impl Fn(&mut AM),
     ) -> Result<(), DbErr>
     where
-        E: EntityTrait,
-        A: IntoActiveModel<AM> + Clone,
-        AM: ActiveModelTrait<Entity = E>,
+        E: EntityTrait + Sized,
+        A: IntoActiveModel<AM> + Clone + Sized,
+        AM: ActiveModelTrait<Entity = E> + Sized,
     {
         if src.len() == 0 {
             return Ok(());
         }
         E::insert_many(
             src.iter()
-                .map(|th| th.clone().into_active_model())
+                .map(|th| {
+                    let mut model = th.clone().into_active_model();
+                    with_am(&mut model);
+                    model
+                })
                 .collect::<Vec<_>>(),
         )
         .exec(conn)
@@ -65,11 +70,26 @@ impl Fixtures {
             .map(|th| th.clone().into_active_model())
             .collect();
 
-        Self::maybe_insert::<Namespace, _, _>(act, conn).await?;
-        Self::maybe_insert::<Bucket, _, _>(fixture.buckets, conn).await?;
-        Self::maybe_insert::<Model, _, _>(fixture.models, conn).await?;
-        Self::maybe_insert::<ModelVersion, _, _>(fixture.versions, conn).await?;
-        Self::maybe_insert::<ModelState, _, _>(fixture.states, conn).await?;
+        Self::maybe_insert::<Namespace, _, _>(act, conn, |am| {
+            am.id = ActiveValue::NotSet;
+        })
+        .await?;
+        Self::maybe_insert::<Bucket, _, _>(fixture.buckets, conn, |am| {
+            am.id = ActiveValue::NotSet;
+        })
+        .await?;
+        Self::maybe_insert::<Model, _, _>(fixture.models, conn, |am| {
+            am.id = ActiveValue::NotSet;
+        })
+        .await?;
+        Self::maybe_insert::<ModelVersion, _, _>(fixture.versions, conn, |am| {
+            am.id = ActiveValue::NotSet;
+        })
+        .await?;
+        Self::maybe_insert::<ModelState, _, _>(fixture.states, conn, |am| {
+            am.id = ActiveValue::NotSet;
+        })
+        .await?;
 
         Ok(())
     }

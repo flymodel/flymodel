@@ -1,9 +1,12 @@
 use super::page::{PageInput, PaginatedResult};
-use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
+use crate::{
+    bulk_loader, db::DbLoader, filters::filter_like, paginated,
+    utils::sql_errs::parse_column_contraint_violation,
+};
 use async_graphql::SimpleObject;
 use chrono::{DateTime, Utc};
 use flymodel::{errs::FlymodelError, lifecycle::Lifecycle};
-use sea_orm::entity::prelude::*;
+use sea_orm::{entity::prelude::*, ActiveValue};
 
 #[derive(
     Clone,
@@ -20,19 +23,22 @@ use sea_orm::entity::prelude::*;
 #[graphql(complex)]
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[serde(skip_deserializing)]
     pub id: i64,
     #[sea_orm(column_name = "namespace")]
     pub namespace_id: i64,
     #[sea_orm(column_type = "Text")]
     pub name: String,
-    #[serde(default = "chrono::offset::Utc::now")]
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
     pub created_at: DateTime<Utc>,
-    #[serde(default = "chrono::offset::Utc::now")]
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
     pub last_modified: DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+    #[sea_orm(has_many = "super::model_tags::Entity")]
+    ModelTags,
     #[sea_orm(has_many = "super::model_version::Entity")]
     ModelVersion,
     #[sea_orm(
@@ -43,6 +49,12 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     Namespace,
+}
+
+impl Related<super::model_tags::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ModelTags.def()
+    }
 }
 
 impl Related<super::model_version::Entity> for Entity {
@@ -94,6 +106,20 @@ impl Model {
         }
         db.load_paginated(query, page.unwrap_or_default()).await
     }
+
+    async fn tags(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> crate::db::QueryResult<Vec<super::model_tags::Model>> {
+        self.find_related(super::model_tags::Entity)
+            .all(
+                &DbLoader::<super::model_tags::Model>::with_context(ctx)?
+                    .loader()
+                    .db,
+            )
+            .await
+            .map_err(|it| FlymodelError::DbOperationError(it).into_graphql_error())
+    }
 }
 
 impl DbLoader<Model> {
@@ -135,5 +161,31 @@ impl DbLoader<Model> {
         }
 
         self.load_paginated(sel, page).await
+    }
+
+    pub async fn create_model(
+        &self,
+        namespace: i64,
+        name: String,
+    ) -> crate::db::QueryResult<Model> {
+        let model = ActiveModel {
+            name: ActiveValue::Set(name),
+            namespace_id: ActiveValue::Set(namespace),
+            ..Default::default()
+        };
+        model.insert(&self.db).await.map_err(|err| {
+            match &err.sql_err() {
+                Some(SqlErr::ForeignKeyConstraintViolation(source)) => {
+                    match parse_column_contraint_violation(source) {
+                        Some("model_namespace_fkey") => FlymodelError::ContraintError(format!(
+                            "Namespace {namespace} does not exist"
+                        )),
+                        _ => FlymodelError::DbOperationError(err),
+                    }
+                }
+                _ => FlymodelError::DbOperationError(err),
+            }
+            .into_graphql_error()
+        })
     }
 }

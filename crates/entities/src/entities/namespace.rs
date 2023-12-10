@@ -4,6 +4,7 @@ use chrono::Utc;
 
 use flymodel::errs::FlymodelError;
 use sea_orm::{entity::prelude::*, ActiveValue};
+use tracing::debug;
 
 use super::page::{PageInput, PaginatedResult};
 
@@ -22,14 +23,15 @@ use super::page::{PageInput, PaginatedResult};
 #[graphql(complex)]
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[serde(skip_deserializing)]
     pub id: i64,
     #[sea_orm(column_type = "Text")]
     pub name: String,
     #[sea_orm(column_type = "Text")]
     pub description: String,
-    #[serde(default = "chrono::offset::Utc::now")]
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
     pub created_at: chrono::DateTime<Utc>,
-    #[serde(default = "chrono::offset::Utc::now")]
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
     pub last_modified: chrono::DateTime<Utc>,
 }
 
@@ -54,14 +56,6 @@ impl Related<super::model::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
-
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
-pub enum RelatedEntity {
-    #[sea_orm(entity = "super::bucket::Entity")]
-    Bucket,
-    #[sea_orm(entity = "super::model::Entity")]
-    Model,
-}
 
 bulk_loader! {
     Model
@@ -95,14 +89,15 @@ impl DbLoader<Model> {
         name: String,
         description: Option<String>,
     ) -> Result<Model, async_graphql::Error> {
-        let mut this = ActiveModel {
+        let mut ns = ActiveModel {
             name: ActiveValue::Set(name),
             ..Default::default()
         };
         if let Some(description) = description {
-            this.description = ActiveValue::Set(description);
+            ns.description = ActiveValue::Set(description);
         }
-        this.insert(&self.db)
+        debug!("creating namespace: {:#?}", ns);
+        ns.insert(&self.db)
             .await
             .map_err(|it| FlymodelError::DbOperationError(it).into_graphql_error())
     }

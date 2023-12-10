@@ -18,7 +18,6 @@ type Bucket {
   name: String!
   region: String!
   role: Lifecycle!
-  shard: Int!
   createdAt: DateTime!
   lastModified: DateTime!
 }
@@ -72,6 +71,7 @@ type Model {
   lastModified: DateTime!
   namespace: Namespace
   versions(version: String, page: Page): PaginatedModelVersion!
+  tags: [ModelTag!]!
 }
 
 type ModelArtifact {
@@ -91,6 +91,13 @@ type ModelState {
   version: ModelVersion!
 }
 
+type ModelTag {
+  id: Int!
+  modelId: Int!
+  tag: String!
+  createdAt: DateTime!
+}
+
 type ModelVersion {
   id: Int!
   modelId: Int!
@@ -99,10 +106,21 @@ type ModelVersion {
   artifacts(page: Page): PaginatedModelArtifact!
   experiments(page: Page): PaginatedExperiment!
   state: ModelState
+  tags: [ModelVersionTag!]!
+}
+
+type ModelVersionTag {
+  id: Int!
+  versionId: Int!
+  tag: String!
+  createdAt: DateTime!
 }
 
 type Mutation {
   createNamespace(name: String!, description: String): Namespace!
+  createBucket(namespace: Int!, name: String!, region: String, role: Lifecycle!): Bucket!
+  createModel(namespace: Int!, name: String!): Model!
+  createModelVersion(model: Int!, name: String!): ModelVersion!
 }
 
 type Namespace {

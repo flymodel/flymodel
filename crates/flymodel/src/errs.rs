@@ -46,6 +46,9 @@ pub enum FlymodelError {
 
     #[error("Missing runtime dependency: {0}")]
     RuntimeDependencyError(String),
+
+    #[error("Constraint error: {0}")]
+    ContraintError(String),
 }
 
 impl FlymodelError {
@@ -63,6 +66,7 @@ impl FlymodelError {
             Self::S3PutObjectError(_) => 10,
             Self::S3BinaryLoadError(_) => 11,
             Self::RuntimeDependencyError(_) => 12,
+            Self::ContraintError(_) => 13,
         } + 9008)
     }
 
@@ -78,6 +82,7 @@ impl FlymodelError {
             | Self::S3PutObjectError(..) => "StorageError",
             Self::IntegrityError { .. } => "IntegrityError",
             Self::InvalidPermission(..) => "InvalidPermission",
+            Self::ContraintError(..) => "ContraintError",
             _ => "SystemError",
         }
     }
@@ -87,16 +92,20 @@ impl FlymodelError {
             Self::DbConnectionError(..)
             | Self::DbSetupError(..)
             | Self::DbLoaderError(..)
-            | Self::DbOperationError(..) => "A database error has occured",
-            Self::IdParsingError(..) => "An error occured parsing an entity ID",
-            Self::IntegrityError { .. } => "An integrity error has occured",
-            Self::InvalidPermission(..) => "An invalid permission has been provided",
-            Self::S3BinaryLoadError(..) => "An error occured loading binary data from storage",
-            Self::S3GetObjectError(..) => "An error occured loading data from storage",
-            Self::S3PutObjectError(..) => "An error occured uploading data to storage",
-            _ => "A system error occured",
+            | Self::DbOperationError(..) => "A database error has occured".to_string(),
+            Self::IdParsingError(..) => "An error occured parsing an entity ID".to_string(),
+            Self::IntegrityError { .. } => "An integrity error has occured".to_string(),
+            Self::InvalidPermission(..) => "An invalid permission has been provided".to_string(),
+            Self::S3BinaryLoadError(..) => {
+                "An error occured loading binary data from storage".to_string()
+            }
+            Self::S3GetObjectError(..) => "An error occured loading data from storage".to_string(),
+            Self::S3PutObjectError(..) => "An error occured uploading data to storage".to_string(),
+            Self::ContraintError(source) => {
+                format!("The following contraint failed validation: {source}")
+            }
+            _ => "A system error occured".to_string(),
         }
-        .to_string()
     }
 
     pub fn into_graphql_error(&self) -> async_graphql::Error {

@@ -19,6 +19,7 @@ use crate::{bulk_loader, db::DbLoader, paginated};
 #[sea_orm(table_name = "model_artifact")]
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[serde(skip_deserializing)]
     pub id: i64,
     pub version_id: i64,
     pub blob: i64,

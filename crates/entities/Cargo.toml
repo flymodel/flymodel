@@ -39,6 +39,8 @@ sea-orm = { workspace = true, features = ["chrono"] }
 lazy_static = "1.4.0"
 juniper = "0.15.11"
 sea-query = "0.30.4"
+regex = "1.10.2"
+once_cell = "1.19.0"
 
 
 [dependencies.sea-orm-migration]

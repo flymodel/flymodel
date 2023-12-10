@@ -2,6 +2,7 @@ use crate::{bulk_loader, paginated};
 
 use super::enums::{ArchiveEncoding, ArchiveFormat};
 use async_graphql::SimpleObject;
+use chrono::{DateTime, Utc};
 use sea_orm::entity::prelude::*;
 
 #[derive(
@@ -19,6 +20,7 @@ use sea_orm::entity::prelude::*;
 // #[graphql(complex)]
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[serde(skip_deserializing)]
     pub id: i64,
     pub bucket_id: i64,
     #[sea_orm(column_type = "Text")]
@@ -28,7 +30,8 @@ pub struct Model {
     pub sha256: String,
     pub archive: Option<ArchiveFormat>,
     pub encode: Option<ArchiveEncoding>,
-    pub created_at: DateTimeWithTimeZone,
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -7,9 +7,9 @@ use tokio::sync::mpsc;
 use tokio_stream::{wrappers::ReceiverStream, Stream};
 use tokio_util::sync::CancellationToken;
 use tonic::{Request, Response};
-use tracing::warn;
+use tracing::{debug, warn};
 
-use self::membership_impl::{default_cache, ClientCache};
+use self::member::{default_cache, ClientCache};
 
 // 5m
 const MIN_INTERVAL: i64 = 300;
@@ -74,13 +74,13 @@ mod test {
 }
 
 pub struct MembershipService {
-    allow: membership_impl::MemberCache,
-    deny: membership_impl::MemberCache,
+    allow: member::MemberCache,
+    deny: member::MemberCache,
     incarnations: i64,
-    watcher: Arc<membership_impl::MembershipWatcher>,
+    watcher: Arc<member::MembershipWatcher>,
 }
 
-mod membership_impl {
+mod member {
     use crate::protos::{
         self,
         v1::membership::{
@@ -94,6 +94,7 @@ mod membership_impl {
     use std::{str::FromStr, sync::Arc, time::SystemTime};
     use tokio_util::sync::CancellationToken;
     use tonic::transport::Channel;
+    use tracing::debug;
 
     #[repr(C)]
     #[derive(Clone)]
@@ -164,12 +165,14 @@ mod membership_impl {
         }
 
         pub fn replicate(self: Arc<Self>) -> Arc<Self> {
+            let incarnations = self.incarnations + 1;
+            debug!("incarnation: {}", incarnations);
             Arc::new(Self {
                 allow: self.allow.clone(),
                 deny: self.deny.clone(),
                 clients: self.clients.clone(),
-                incarnations: self.incarnations + 1,
                 cancel: self.cancel.clone(),
+                incarnations,
             })
         }
 
@@ -207,7 +210,7 @@ mod membership_impl {
             let now = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)?
                 .as_secs() as i64;
-            if cli.get_ref().readiness == Readiness::Ready.into() {
+            if cli.get_ref().readiness == <Readiness as Into<i32>>::into(Readiness::Ready) {
                 self.allow
                     .insert(
                         discovery.address.clone(),
@@ -234,16 +237,14 @@ mod membership_impl {
 
 impl MembershipService {
     pub fn new(
-        allow: Option<membership_impl::MemberCache>,
-        deny: Option<membership_impl::MemberCache>,
-        clients: Option<membership_impl::ClientCache>,
+        allow: Option<member::MemberCache>,
+        deny: Option<member::MemberCache>,
+        clients: Option<member::ClientCache>,
         tok: Option<CancellationToken>,
     ) -> Self {
-        // let s = tonic::client::Grpc::new();
-
         let allow = allow.unwrap_or_else(default_cache);
         let deny = deny.unwrap_or_else(default_cache);
-        let watcher = membership_impl::MembershipWatcher::new(
+        let watcher = member::MembershipWatcher::new(
             allow.clone(),
             deny.clone(),
             tok.unwrap_or_else(CancellationToken::new),
@@ -261,17 +262,17 @@ impl MembershipService {
         }
     }
 
-    fn replicate(&self) -> Self {
+    pub fn replicate(&self) -> Self {
+        let incarnations = self.incarnations + 1;
+        debug!("incarnation: {}", incarnations);
         Self {
             allow: self.allow.clone(),
             deny: self.deny.clone(),
             watcher: self.watcher.clone().replicate(),
-            incarnations: self.incarnations + 1,
+            incarnations,
         }
     }
 }
-
-type MebershipResult<T> = Result<Response<T>, Status>;
 
 #[tonic::async_trait]
 impl membership_service_server::MembershipService for MembershipService {

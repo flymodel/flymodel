@@ -1,9 +1,15 @@
 use super::page::{PageInput, PaginatedResult};
-use crate::{bulk_loader, db::DbLoader, paginated};
+use crate::{
+    bulk_loader,
+    db::{DbLoader, QueryResult},
+    paginated,
+    utils::sql_errs::parse_column_contraint_violation,
+};
 use async_graphql::{ComplexObject, SimpleObject};
 use chrono::Utc;
-use flymodel::lifecycle::Lifecycle;
-use sea_orm::entity::prelude::*;
+use flymodel::{errs::FlymodelError, lifecycle::Lifecycle};
+use sea_orm::{entity::prelude::*, ActiveValue, Select};
+use tracing::debug;
 
 #[derive(
     Clone,
@@ -15,11 +21,12 @@ use sea_orm::entity::prelude::*;
     serde::Serialize,
     serde::Deserialize,
 )]
+#[sea_orm(table_name = "bucket")]
 #[graphql(complex)]
 #[graphql(name = "Bucket")]
-#[sea_orm(table_name = "bucket")]
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[serde(skip_deserializing)]
     pub id: i64,
     pub namespace: i64,
     #[sea_orm(column_type = "Text")]
@@ -27,10 +34,9 @@ pub struct Model {
     #[sea_orm(column_type = "Text")]
     pub region: String,
     pub role: Lifecycle,
-    pub shard: i32,
-    #[serde(default = "chrono::offset::Utc::now")]
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
     pub created_at: chrono::DateTime<Utc>,
-    #[serde(default = "chrono::offset::Utc::now")]
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
     pub last_modified: chrono::DateTime<Utc>,
 }
 
@@ -69,6 +75,11 @@ bulk_loader! {
     Model
 }
 
+paginated! {
+    Model,
+    Entity
+}
+
 impl DbLoader<Model> {
     pub async fn find_by_namespace(
         &self,
@@ -88,9 +99,37 @@ impl DbLoader<Model> {
 
         self.load_paginated(filters, page).await
     }
-}
 
-paginated! {
-    Model,
-    Entity
+    pub async fn create_bucket(
+        &self,
+        namespace: i64,
+        name: String,
+        region: Option<String>,
+        role: Lifecycle,
+    ) -> QueryResult<Model> {
+        let bucket = ActiveModel {
+            namespace: ActiveValue::Set(namespace),
+            name: ActiveValue::Set(name.clone()),
+            region: ActiveValue::Set(region.unwrap_or_default()),
+            role: ActiveValue::Set(role),
+            ..Default::default()
+        };
+        debug!("creating bucket: {:#?}", bucket);
+        bucket.insert(&self.db).await.map_err(|err| {
+            tracing::error!("insert err: {:#?}", &err.sql_err());
+            match &err.sql_err() {
+                Some(SqlErr::UniqueConstraintViolation(source)) => {
+                    let source = parse_column_contraint_violation(source);
+                    match source {
+                        Some("bucket_name_idx") => FlymodelError::ContraintError(format!(
+                            "Bucket names may not be reused unless via a different region: {name}",
+                        )),
+                        _ => FlymodelError::DbOperationError(err),
+                    }
+                }
+                _ => FlymodelError::DbOperationError(err),
+            }
+            .into_graphql_error()
+        })
+    }
 }

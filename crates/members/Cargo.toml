@@ -21,6 +21,7 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+flymodel = { path = "../flymodel" }
 tonic = { version = "0.10.2", features = ["prost"] }
 anyhow.workspace = true
 async-trait.workspace = true

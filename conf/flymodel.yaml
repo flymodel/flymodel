@@ -5,7 +5,6 @@ tracing:
   otlp:
     target: localhost:4317
 
-
 retention:
   test:
     runs: 28
@@ -36,3 +35,8 @@ storage:
     role: prod
     region: ca-local
     endpoint: http://localhost:9000
+
+membership:
+  address: 127.0.0.1:14426
+  peers:
+  - address: 127.0.0.1:14425

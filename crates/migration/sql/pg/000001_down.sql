@@ -24,3 +24,7 @@ drop table object_blob cascade;
 drop table experiment_artifact cascade;
 
 drop table experiment cascade;
+
+drop table model_tags cascade;
+
+drop table model_version_tags cascade;

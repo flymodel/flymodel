@@ -1,4 +1,5 @@
 use async_graphql::{ComplexObject, SimpleObject};
+use chrono::{DateTime, Utc};
 use sea_orm::entity::prelude::*;
 
 use crate::{bulk_loader, db::DbLoader, paginated};
@@ -20,11 +21,13 @@ use super::page::{PageInput, PaginatedResult};
 #[sea_orm(table_name = "experiment")]
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[serde(skip_deserializing)]
     pub id: i64,
     pub version_id: i64,
     #[sea_orm(column_type = "Text")]
     pub name: String,
-    pub created_at: DateTimeWithTimeZone,
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

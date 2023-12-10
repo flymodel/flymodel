@@ -20,5 +20,5 @@ pub struct TlsConf {
     pub tls: bool,
     #[serde(default = "default_cert_source")]
     pub ca_source: CertSource,
-    pub client: Option<CertFileSource>,
+    pub certs: Option<CertFileSource>,
 }

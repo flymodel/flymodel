@@ -1,7 +1,9 @@
-use crate::{bulk_loader, db::DbLoader, paginated};
+use crate::{
+    bulk_loader, db::DbLoader, paginated, utils::sql_errs::parse_column_contraint_violation,
+};
 use async_graphql::{ComplexObject, SimpleObject};
-use flymodel::errs::FlymodelError;
-use sea_orm::entity::prelude::*;
+use flymodel::{errs::FlymodelError, lifecycle::Lifecycle};
+use sea_orm::{entity::prelude::*, ActiveValue};
 
 use tracing::warn;
 
@@ -23,6 +25,7 @@ use super::page::{PageInput, PaginatedResult};
 
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[serde(skip_deserializing)]
     pub id: i64,
     pub model_id: i64,
     #[sea_orm(column_type = "Text")]
@@ -47,6 +50,8 @@ pub enum Relation {
     ModelArtifact,
     #[sea_orm(has_many = "super::model_state::Entity")]
     ModelState,
+    #[sea_orm(has_many = "super::model_version_tags::Entity")]
+    ModelVersionTags,
 }
 
 impl Related<super::experiment::Entity> for Entity {
@@ -79,7 +84,29 @@ impl Related<super::model_state::Entity> for Entity {
     }
 }
 
-impl ActiveModelBehavior for ActiveModel {}
+impl Related<super::model_version_tags::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::ModelVersionTags.def()
+    }
+}
+
+#[async_trait::async_trait]
+impl ActiveModelBehavior for ActiveModel {
+    async fn after_save<'a, C>(model: Model, db: &'a C, insert: bool) -> Result<Model, DbErr>
+    where
+        C: ConnectionTrait + 'a,
+    {
+        if insert {
+            let sync = super::model_state::ActiveModel {
+                version_id: ActiveValue::Set(model.id),
+                state: ActiveValue::Set(Lifecycle::Test),
+                ..Default::default()
+            };
+            sync.insert(db).await?;
+        }
+        Ok(model)
+    }
+}
 
 bulk_loader! {
     Model
@@ -97,6 +124,32 @@ impl DbLoader<Model> {
 
     pub fn find_by_version(&self, sel: Select<Entity>, version: String) -> Select<Entity> {
         sel.filter(Column::Version.like(version))
+    }
+
+    pub async fn create_version(
+        &self,
+        model: i64,
+        version: String,
+    ) -> Result<Model, async_graphql::Error> {
+        let version = ActiveModel {
+            model_id: ActiveValue::Set(model),
+            version: ActiveValue::Set(version),
+            ..Default::default()
+        };
+        version.insert(&self.db).await.map_err(|err| {
+            match &err.sql_err() {
+                Some(SqlErr::ForeignKeyConstraintViolation(source)) => {
+                    match parse_column_contraint_violation(source) {
+                        Some("model_version_model_id_fkey") => FlymodelError::ContraintError(
+                            format!("The given model does not exist: {model}"),
+                        ),
+                        _ => FlymodelError::DbOperationError(err),
+                    }
+                }
+                _ => FlymodelError::DbOperationError(err),
+            }
+            .into_graphql_error()
+        })
     }
 }
 
@@ -155,5 +208,19 @@ impl Model {
             )
             .await
             .map_err(|err| FlymodelError::DbOperationError(err).into_graphql_error())
+    }
+
+    async fn tags(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> crate::db::QueryResult<Vec<super::model_version_tags::Model>> {
+        self.find_related(super::model_version_tags::Entity)
+            .all(
+                &DbLoader::<super::model_version_tags::Model>::with_context(ctx)?
+                    .loader()
+                    .db,
+            )
+            .await
+            .map_err(|it| FlymodelError::DbOperationError(it).into_graphql_error())
     }
 }

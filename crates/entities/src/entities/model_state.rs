@@ -22,10 +22,11 @@ use tracing::warn;
 
 pub struct Model {
     #[sea_orm(primary_key)]
+    #[serde(skip_deserializing)]
     pub id: i64,
     pub version_id: i64,
     pub state: Lifecycle,
-    #[serde(default = "chrono::offset::Utc::now")]
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
     pub last_modified: DateTime<Utc>,
 }
 
