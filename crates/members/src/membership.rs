@@ -80,9 +80,7 @@ pub struct MembershipService {
     watcher: Arc<member::MembershipWatcher>,
 }
 
-// impl tonic::client::
-
-mod member {
+pub mod member {
     use crate::protos::{
         self,
         v1::membership::{

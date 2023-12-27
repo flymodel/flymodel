@@ -155,20 +155,37 @@ create unique index experiment_artifact_name_idx on experiment_artifact (experim
 
 create unique index experiment_artifact_blob_idx on experiment_artifact (blob);
 
-create table model_tags (
+create table namespace_tag (
+    id bigint primary key not null,
+    namespace_id bigint references namespace(id) on delete cascade not null,
+    tag text not null,
+    color text not null,
+    created_at timestamptz not null default now()
+);
+
+create table model_tag (
     id bigint primary key not null,
     model_id bigint references model(id) on delete cascade not null,
-    tag text not null,
+    tag bigint references namespace_tag(id) on delete cascade not null,
     created_at timestamptz not null default now()
 );
 
-create unique index model_tags_model_tag_idx on model_tags (model_id, tag);
+create unique index model_tags_model_tag_idx on model_tag (model_id, tag);
 
-create table model_version_tags (
+create table model_version_tag (
     id bigint primary key not null,
     version_id bigint references model_version(id) on delete cascade not null,
-    tag text not null,
+    tag bigint references namespace_tag(id) on delete cascade not null,
     created_at timestamptz not null default now()
 );
 
-create unique index model_version_tags_version_tag_idx on model_version_tags (version_id, tag);
+create unique index model_version_tag_version_tag_idx on model_version_tag (version_id, tag);
+
+create table experiment_tag (
+    id bigint primary key not null,
+    experiment_id bigint references experiment(id) on delete cascade not null,
+    tag bigint references namespace_tag(id) on delete cascade not null,
+    created_at timestamptz not null default now()
+);
+
+create unique index experiment_tags_experiment_tag_idx on experiment_tag (experiment_id, tag);

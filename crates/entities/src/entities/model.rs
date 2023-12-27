@@ -37,8 +37,8 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    #[sea_orm(has_many = "super::model_tags::Entity")]
-    ModelTags,
+    #[sea_orm(has_many = "super::model_tag::Entity")]
+    ModelTag,
     #[sea_orm(has_many = "super::model_version::Entity")]
     ModelVersion,
     #[sea_orm(
@@ -51,9 +51,9 @@ pub enum Relation {
     Namespace,
 }
 
-impl Related<super::model_tags::Entity> for Entity {
+impl Related<super::model_tag::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ModelTags.def()
+        Relation::ModelTag.def()
     }
 }
 
@@ -110,10 +110,10 @@ impl Model {
     async fn tags(
         &self,
         ctx: &async_graphql::Context<'_>,
-    ) -> crate::db::QueryResult<Vec<super::model_tags::Model>> {
-        self.find_related(super::model_tags::Entity)
+    ) -> crate::db::QueryResult<Vec<super::model_tag::Model>> {
+        self.find_related(super::model_tag::Entity)
             .all(
-                &DbLoader::<super::model_tags::Model>::with_context(ctx)?
+                &DbLoader::<super::model_tag::Model>::with_context(ctx)?
                     .loader()
                     .db,
             )

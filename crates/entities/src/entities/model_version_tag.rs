@@ -11,14 +11,13 @@ use sea_orm::entity::prelude::*;
     serde::Serialize,
     serde::Deserialize,
 )]
+#[sea_orm(table_name = "model_version_tag")]
 #[graphql(name = "ModelVersionTag")]
-#[sea_orm(table_name = "model_version_tags")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: i64,
     pub version_id: i64,
-    #[sea_orm(column_type = "Text")]
-    pub tag: String,
+    pub tag: i64,
     pub created_at: DateTimeWithTimeZone,
 }
 
@@ -32,11 +31,25 @@ pub enum Relation {
         on_delete = "Cascade"
     )]
     ModelVersion,
+    #[sea_orm(
+        belongs_to = "super::namespace_tag::Entity",
+        from = "Column::Tag",
+        to = "super::namespace_tag::Column::Id",
+        on_update = "NoAction",
+        on_delete = "Cascade"
+    )]
+    NamespaceTag,
 }
 
 impl Related<super::model_version::Entity> for Entity {
     fn to() -> RelationDef {
         Relation::ModelVersion.def()
+    }
+}
+
+impl Related<super::namespace_tag::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::NamespaceTag.def()
     }
 }
 

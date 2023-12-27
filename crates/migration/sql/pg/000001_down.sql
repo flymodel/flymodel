@@ -25,6 +25,10 @@ drop table experiment_artifact cascade;
 
 drop table experiment cascade;
 
-drop table model_tags cascade;
+drop table namespace_tag cascade;
 
-drop table model_version_tags cascade;
+drop table model_tag cascade;
+
+drop table model_version_tag cascade;
+
+drop table experiment_tag cascade;

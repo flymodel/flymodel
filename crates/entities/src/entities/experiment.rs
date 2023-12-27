@@ -35,6 +35,8 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::experiment_artifact::Entity")]
     ExperimentArtifact,
+    #[sea_orm(has_many = "super::experiment_tag::Entity")]
+    ExperimentTag,
     #[sea_orm(
         belongs_to = "super::model_version::Entity",
         from = "Column::VersionId",

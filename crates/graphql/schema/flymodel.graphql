@@ -94,7 +94,7 @@ type ModelState {
 type ModelTag {
   id: Int!
   modelId: Int!
-  tag: String!
+  tag: Int!
   createdAt: DateTime!
 }
 
@@ -112,7 +112,7 @@ type ModelVersion {
 type ModelVersionTag {
   id: Int!
   versionId: Int!
-  tag: String!
+  tag: Int!
   createdAt: DateTime!
 }
 
@@ -121,6 +121,7 @@ type Mutation {
   createBucket(namespace: Int!, name: String!, region: String, role: Lifecycle!): Bucket!
   createModel(namespace: Int!, name: String!): Model!
   createModelVersion(model: Int!, name: String!): ModelVersion!
+  createExperiment(modelVersion: Int!, name: String!): Experiment!
 }
 
 type Namespace {
@@ -203,6 +204,7 @@ type Query {
   bucket(id: [Int!], page: Page, namespace: [Int!], role: [Lifecycle!]): PaginatedBucket!
   namespace(id: [Int!], name: String, page: Page): PaginatedNamespace!
   model(id: [Int!], page: Page, name: String, namespace: [Int!], role: [Lifecycle!]): PaginatedModel!
+  experiment(id: [Int!], modelId: Int, page: Page, name: String): PaginatedExperiment!
   _service: _Service!
 }
 
