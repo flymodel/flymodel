@@ -1,8 +1,9 @@
 use async_graphql::{ComplexObject, SimpleObject};
 use chrono::{DateTime, Utc};
-use sea_orm::entity::prelude::*;
+use flymodel::errs::FlymodelError;
+use sea_orm::{entity::prelude::*, ActiveValue};
 
-use crate::{bulk_loader, db::DbLoader, paginated};
+use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
 
 use super::page::{PageInput, PaginatedResult};
 
@@ -81,5 +82,48 @@ impl Model {
                 page.unwrap_or_default(),
             )
             .await
+    }
+}
+
+impl DbLoader<Model> {
+    pub async fn bulk_paginated_experiments(
+        &self,
+        name: Option<String>,
+        version_id: Option<i64>,
+        page: PageInput,
+    ) -> PaginatedResult<Model> {
+        let mut query = Entity::find();
+        if let Some(name) = name {
+            query = Self::find_by_name(query, name);
+        }
+        if let Some(version_id) = version_id {
+            query = Self::model_version(query, version_id);
+        }
+
+        self.load_paginated(query, page).await
+    }
+
+    pub fn find_by_name(sel: sea_orm::Select<Entity>, name: String) -> sea_orm::Select<Entity> {
+        filter_like(sel, Column::Name, name)
+    }
+
+    pub fn model_version(sel: sea_orm::Select<Entity>, version_id: i64) -> sea_orm::Select<Entity> {
+        sel.filter(Column::VersionId.eq(version_id))
+    }
+
+    pub async fn create_experiment(
+        &self,
+        version_id: i64,
+        name: String,
+    ) -> Result<Model, async_graphql::Error> {
+        let active_model = ActiveModel {
+            version_id: ActiveValue::Set(version_id),
+            name: ActiveValue::Set(name),
+            ..Default::default()
+        };
+        active_model
+            .insert(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbOperationError(err).into_graphql_error())
     }
 }

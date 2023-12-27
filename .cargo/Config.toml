@@ -1,4 +1,5 @@
 [alias]
+build_cli = "build --package flymodel-cli --bin flymodel"
 cli = "run --package flymodel-cli --bin flymodel"
 migrate-down = "cli migrate down --config ./conf/flymodel.toml"
 migrate-up = "cli migrate up --config ./conf/flymodel.toml"

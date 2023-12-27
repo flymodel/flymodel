@@ -20,3 +20,7 @@ tasks:
     - docker run --rm -v ./vis/:/output/diagrams/ -it schemaspy/schemaspy:latest -host host.docker.internal -port 5432 --user postgres --password postgres -db mlops -imageformat png -renderer :cairo -t pgsql
     - convert ./vis/summary/relationships.real.large.png -gravity South -chop 0x45 ./docs/rels.png
     - rm -rf ./vis
+
+  alpine:
+    cmds:
+    - docker build -f ./docker/alpine.Dockerfile -t flymodel:latest-alpine .

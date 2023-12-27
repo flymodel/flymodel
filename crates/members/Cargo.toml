@@ -43,6 +43,9 @@ moka = { version = "0.12.1", features = [
 futures = "0.3.29"
 tracing.workspace = true
 serde = { workspace = true, features = ["derive"] }
+ginepro = "0.7.0"
+url = "2.5.0"
+thiserror.workspace = true
 
 [build-dependencies]
 tonic-build = { version = "0.10.2", features = ["prost"] }

@@ -1,10 +1,11 @@
 use async_graphql::MergedObject;
 
 use self::{
-    bucket::BucketMutations, model::ModelMutations, model_version::ModelVersionMutations,
-    namespace::NamespaceMutations,
+    bucket::BucketMutations, experiment::ExperimentMutations, model::ModelMutations,
+    model_version::ModelVersionMutations, namespace::NamespaceMutations,
 };
 pub mod bucket;
+pub mod experiment;
 pub mod model;
 pub mod model_version;
 pub mod namespace;
@@ -15,4 +16,5 @@ pub struct Mutation(
     BucketMutations,
     ModelMutations,
     ModelVersionMutations,
+    ExperimentMutations,
 );

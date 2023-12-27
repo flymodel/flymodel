@@ -47,4 +47,5 @@ opentelemetry = { workspace = true, features = [
     "metrics",
     "logs_level_enabled",
 ] }
+paste = "1.0.14"
 [features]

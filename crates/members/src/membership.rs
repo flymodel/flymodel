@@ -80,6 +80,8 @@ pub struct MembershipService {
     watcher: Arc<member::MembershipWatcher>,
 }
 
+// impl tonic::client::
+
 mod member {
     use crate::protos::{
         self,
@@ -91,18 +93,37 @@ mod member {
 
     use super::get_next_eviction;
     use anyhow::bail;
-    use std::{str::FromStr, sync::Arc, time::SystemTime};
+
+    use std::{
+        convert::Infallible,
+        str::FromStr,
+        sync::{
+            atomic::{AtomicI32, AtomicU8, Ordering},
+            Arc,
+        },
+        time::SystemTime,
+    };
     use tokio_util::sync::CancellationToken;
     use tonic::transport::Channel;
     use tracing::debug;
 
+    #[derive(thiserror::Error, Debug, Clone)]
+    pub enum MemberError {
+        #[error("No available peers")]
+        NoAvailablePeers,
+    }
+
     #[repr(C)]
     #[derive(Clone)]
     pub struct Member {
+        url: url::Url,
+
         pub discovery: super::Discoverable,
         pub joined_at: i64,
         pub last_seen: i64,
         pub services: Vec<protos::v1::membership::Service>,
+
+        pub member: MemberClient,
     }
 
     impl Into<protos::v1::membership::Member> for Member {
@@ -116,23 +137,87 @@ mod member {
         }
     }
 
-    impl From<protos::v1::membership::Member> for Member {
-        fn from(m: protos::v1::membership::Member) -> Self {
+    #[repr(u8)]
+    enum ClientStatus {
+        Ready = 0,
+        InUse = 1,
+        Failing = 2,
+    }
+
+    impl TryFrom<u8> for ClientStatus {
+        type Error = Infallible;
+        fn try_from(v: u8) -> Result<Self, Self::Error> {
+            Ok(match v {
+                0 => ClientStatus::Ready,
+                1 => ClientStatus::InUse,
+                2 => ClientStatus::Failing,
+                _ => unreachable!(),
+            })
+        }
+    }
+
+    #[derive(Clone)]
+    pub struct MemberClient {
+        // TODO: do we want this to:
+        // 1) maintain load balanced connections via a manager
+        // 2) create & maintain connections via a raw connection cache
+        // 3) maintain address references and re-create clients as needed
+
+        // 1 is simple, yet will not allow for fine-grained control down the road as to
+        // the potential configurations with intra-cluster networking
+
+        // 2 is expensive in terms of the size of each client, and we need guaranteed mutability
+        // for the client cache.
+
+        // 3 is a bit more complex, and we need to maintain a reference to the address cache.
+        // This is a bit of a pain, it seems better for our use cases to destroy and re-create clients based on the
+        // address cache. a few things to consider before committing:
+        //     - each client will need to use shared tls pools for each endpoint. as such it may be worthwhile to double-down and create a secondary wrapper struct
+        client: MembershipServiceClient<Channel>,
+
+        status: Arc<AtomicU8>,
+
+        current_uses: Arc<AtomicI32>,
+    }
+
+    impl MemberClient {
+        pub fn new(client: MembershipServiceClient<Channel>) -> Self {
             Self {
-                discovery: m.discovery.unwrap(),
-                joined_at: m.joined_at,
-                last_seen: m.last_seen,
-                services: m
-                    .services
-                    .iter()
-                    .map(|it| Service::try_from(*it).expect("internal alignment"))
-                    .collect(),
+                client,
+                status: Arc::new(AtomicU8::new(ClientStatus::Ready as u8)),
+                current_uses: Arc::new(AtomicI32::new(0)),
             }
+        }
+
+        pub fn ready(&self) -> bool {
+            self.status.load(std::sync::atomic::Ordering::SeqCst) == ClientStatus::Ready as u8
+        }
+
+        fn uses(&self) -> i32 {
+            self.current_uses.load(std::sync::atomic::Ordering::SeqCst)
+        }
+
+        fn exit_usage(&self) -> ClientStatus {
+            let uses = self.current_uses.fetch_sub(1, Ordering::SeqCst);
+            if !self.ready() && uses == 1 {
+                let last = ClientStatus::try_from(self.status.load(Ordering::SeqCst))
+                    .expect("internal cast");
+                last
+            } else {
+                ClientStatus::Ready
+            }
+        }
+
+        pub fn client(&self) -> (MembershipServiceClient<Channel>, fn(&Self)) {
+            self.current_uses.fetch_add(1, Ordering::SeqCst);
+            (self.client.clone(), |this: &Self| {
+                this.exit_usage();
+            })
         }
     }
 
     pub(crate) type MemberCache = super::Cache<String, Member>;
-    pub(crate) type ClientCache = super::Cache<String, MembershipServiceClient<Channel>>;
+    pub(crate) type ClientCache = super::Cache<Service, MemberClient>;
 
     pub(crate) fn default_cache() -> MemberCache {
         MemberCache::builder().max_capacity(2048).build()
@@ -202,19 +287,19 @@ mod member {
             if self.deny.contains_key(&discovery.address) {
                 bail!("is denied member");
             }
-            let mut client = MembershipServiceClient::connect(
-                tonic::transport::Endpoint::from_str(&discovery.address)?,
-            )
-            .await?;
+            let endpoint = tonic::transport::Endpoint::from_str(&discovery.address)?;
+            let mut client = MembershipServiceClient::connect(endpoint).await?;
             let cli = client.ping(Empty {}).await?;
             let now = SystemTime::now()
                 .duration_since(SystemTime::UNIX_EPOCH)?
                 .as_secs() as i64;
             if cli.get_ref().readiness == <Readiness as Into<i32>>::into(Readiness::Ready) {
+                let url = url::Url::parse(&discovery.address)?;
                 self.allow
                     .insert(
                         discovery.address.clone(),
                         Member {
+                            url,
                             discovery,
                             last_seen: now,
                             joined_at: now,
@@ -225,12 +310,44 @@ mod member {
                                 .iter()
                                 .map(|it| Service::try_from(*it).expect("ok"))
                                 .collect(),
+                            member: MemberClient::new(client),
                         },
                     )
                     .await;
-                // self
+
+                // self.clients.insert()
             }
             Ok(())
+        }
+
+        pub async fn client_for(
+            &self,
+            service: Service,
+        ) -> Result<
+            (
+                MembershipServiceClient<Channel>,
+                for<'a> fn(&'a MemberClient),
+            ),
+            MemberError,
+        > {
+            // TODO: we could use an iterator here where we only compare min until finding one at zero, falling back to the next
+            // non-zero client.
+            if let Some(ref min) = self
+                .allow
+                .iter()
+                .filter_map(|this| {
+                    if this.1.services.contains(&service) {
+                        Some(this.1)
+                    } else {
+                        None
+                    }
+                })
+                .min_by_key(|it| it.member.uses())
+            {
+                Ok(min.member.client())
+            } else {
+                Err(MemberError::NoAvailablePeers)
+            }
         }
     }
 }
