@@ -1,6 +1,4 @@
 [dependencies]
-paste = "*"
-anyhow.workspace = true
 
 [dev-dependencies]
 

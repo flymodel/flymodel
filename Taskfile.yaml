@@ -5,6 +5,10 @@ includes:
     dir: hurl
 
 tasks:
+  act-test:
+    cmds:
+    - act --pull=false -W .github/workflows/test.yaml
+
   env:
     cmds:
     - docker-compose up
