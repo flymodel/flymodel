@@ -7,7 +7,9 @@ use actix_web::{
     HttpResponse,
 };
 use async_graphql::ErrorExtensions;
-use aws_sdk_s3::operation::{get_object::GetObjectError, put_object::PutObjectError};
+use aws_sdk_s3::operation::{
+    delete_object::DeleteObjectError, get_object::GetObjectError, put_object::PutObjectError,
+};
 use aws_smithy_runtime_api::{client::result::SdkError as AwsError, http::Response as AwsResponse};
 use sea_orm::DbErr;
 use std::{error::Error, str::FromStr, sync::Arc};
@@ -46,6 +48,9 @@ pub enum FlymodelError {
     #[error("S3 operation error (put): {0}")]
     S3PutObjectError(#[from] AwsError<PutObjectError, AwsResponse>),
 
+    #[error("S3 operation error (delete): {0}")]
+    S3DelObjectError(#[from] AwsError<DeleteObjectError, AwsResponse>),
+
     #[error("S3 operation error (get): {0}")]
     S3GetObjectError(#[from] AwsError<GetObjectError, AwsResponse>),
 
@@ -69,6 +74,7 @@ pub enum FlymodelError {
 
     #[error("Internal Error: {0}")]
     InternalError(anyhow::Error),
+    // TransactionError(TransactionError<FlymodelError>)
 }
 
 impl FlymodelError {
@@ -83,14 +89,15 @@ impl FlymodelError {
             Self::IntegrityError { .. } => 7,
             Self::StorageSetupError(_) => 8,
             Self::S3GetObjectError(_) => 9,
-            Self::S3PutObjectError(_) => 10,
-            Self::S3BinaryLoadError(_) => 11,
-            Self::RuntimeDependencyError(_) => 12,
-            Self::ContraintError(_) => 13,
-            Self::UploadError(_) => 14,
-            Self::NonDeterministicError(_) => 15,
-            Self::InvalidResourceId(_) => 16,
-            Self::InternalError(_) => 17,
+            Self::S3DelObjectError(_) => 10,
+            Self::S3PutObjectError(_) => 11,
+            Self::S3BinaryLoadError(_) => 12,
+            Self::RuntimeDependencyError(_) => 13,
+            Self::ContraintError(_) => 14,
+            Self::UploadError(_) => 15,
+            Self::NonDeterministicError(_) => 16,
+            Self::InvalidResourceId(_) => 17,
+            Self::InternalError(_) => 18,
         } + 9008)
     }
 
@@ -103,6 +110,7 @@ impl FlymodelError {
             Self::IdParsingError(..) => "IdParsingError",
             Self::S3BinaryLoadError(..)
             | Self::S3GetObjectError(..)
+            | Self::S3DelObjectError(..)
             | Self::S3PutObjectError(..) => "StorageError",
             Self::IntegrityError { .. } => "IntegrityError",
             Self::InvalidPermission(..) => "InvalidPermission",

@@ -1,8 +1,3 @@
-use std::{
-    io::{Read, Seek, SeekFrom},
-    str::FromStr,
-};
-
 use actix_web::{
     body::BoxBody,
     dev::Response,
@@ -12,15 +7,22 @@ use actix_web::{
     },
 };
 use anyhow::Error;
+use sea_orm::{ConnectionTrait, TransactionError, TransactionTrait};
+use std::{
+    io::{Read, Seek, SeekFrom},
+    pin::Pin,
+    str::FromStr,
+};
 
 use bytes::Bytes;
-use flymodel::errs::FlymodelError;
+use flymodel::{errs::FlymodelError, storage::StorageProvider};
 use flymodel_entities::entities::{
     self,
     enums::{ArchiveEncoding, ArchiveFormat},
 };
 use flymodel_registry::storage::StorageOrchestrator;
-use sea_orm::{ActiveEnum, EntityTrait};
+use futures_util::Future;
+use sea_orm::{ActiveEnum, DatabaseTransaction, EntityTrait};
 use serde::Deserialize;
 
 pub mod experiments;
@@ -47,6 +49,40 @@ macro_rules! params_for {
             }
         }
     };
+}
+
+pub(crate) async fn guarded_upload<
+    T: Send + Sync,
+    C: TransactionTrait + ConnectionTrait,
+    F: for<'c> FnOnce(
+            &'c DatabaseTransaction,
+            Option<String>,
+        )
+            -> Pin<Box<dyn Future<Output = Result<T, FlymodelError>> + Send + 'c>>
+        + Send,
+>(
+    sink: &Box<dyn StorageProvider + std::marker::Send + Sync>,
+    bs: Bytes,
+    db: &C,
+    key: String,
+    with_tx: F,
+) -> Result<T, FlymodelError> {
+    let upload_res = sink.put(key.clone(), bs).await?;
+    let created = match (&db)
+        .transaction(|tx| (with_tx)(tx.to_owned(), upload_res.clone()))
+        .await
+    {
+        Ok(created) => created,
+        Err(e) => {
+            let res = upload_res.clone();
+            sink.del(key, res).await?;
+            return Err(match e {
+                TransactionError::Connection(conn) => FlymodelError::DbOperationError(conn),
+                TransactionError::Transaction(tx) => tx,
+            });
+        }
+    };
+    Ok(created)
 }
 
 pub(crate) fn read_bts(

@@ -18,5 +18,6 @@ pub trait StorageProvider {
     }
 
     async fn put(&self, path: String, bs: Bytes) -> FlymodelResult<Option<String>>;
+    async fn del(&self, path: String, version_id: Option<String>) -> FlymodelResult<()>;
     async fn get(&self, path: String, version_id: Option<String>) -> FlymodelResult<Bytes>;
 }

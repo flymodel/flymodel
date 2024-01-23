@@ -1,5 +1,5 @@
 use crate::{
-    artifacts::{download_with_blob, read_bts, DownloadParams},
+    artifacts::{download_with_blob, guarded_upload, read_bts, DownloadParams},
     params_for,
 };
 use actix_web::{
@@ -74,7 +74,7 @@ pub async fn upload_experiment_artifact(
     storage: Data<Arc<StorageOrchestrator>>,
     namespaces: Data<DataLoader<DbLoader<entities::namespace::Model>>>,
     experiment: Data<DataLoader<DbLoader<entities::experiment::Model>>>,
-    artifact: Data<DataLoader<DbLoader<entities::experiment_artifact::Model>>>,
+    _artifact: Data<DataLoader<DbLoader<entities::experiment_artifact::Model>>>,
     buckets: Data<DataLoader<DbLoader<entities::bucket::Model>>>,
     versions: Data<DataLoader<DbLoader<entities::model_version::Model>>>,
     blobs: Data<DataLoader<DbLoader<entities::object_blob::Model>>>,
@@ -110,28 +110,38 @@ pub async fn upload_experiment_artifact(
         artifact = data.blob.artifact_name
     );
 
-    let upload_res = sink.put(key.clone(), bs).await?;
+    let created = guarded_upload(
+        sink,
+        bs,
+        &blobs.loader().db,
+        key.clone(),
+        |tx, version_id| {
+            Box::pin(async move {
+                let blob = DbLoader::<entities::object_blob::Model>::create_new_blob(
+                    tx,
+                    cte.bucket.id,
+                    key,
+                    version_id.expect("version id"),
+                    &data.blob,
+                    sz as i64,
+                    hash,
+                )
+                .await?;
 
-    let blob = blobs
-        .as_ref()
-        .loader()
-        .create_new_blob(
-            cte.bucket.id,
-            key,
-            upload_res.expect("version id"),
-            &data.blob,
-            sz as i64,
-            hash,
-        )
-        .await?;
-
-    let created = artifact
-        .as_ref()
-        .loader()
-        .create_new_artifact(&cte.experiment, &cte.model_version, &blob, &data.blob)
-        .await?;
-
-    debug!("created: {:#?}", created);
+                let created =
+                    DbLoader::<entities::experiment_artifact::Model>::create_new_artifact(
+                        tx,
+                        &cte.experiment,
+                        &cte.model_version,
+                        &blob,
+                        &data.blob,
+                    )
+                    .await?;
+                Ok(created)
+            })
+        },
+    )
+    .await?;
 
     Ok(web::Json(created))
 }

@@ -167,6 +167,19 @@ impl StorageProvider for S3Storage {
             .version_id)
     }
 
+    async fn del(&self, path: String, version_id: Option<String>) -> FlymodelResult<()> {
+        let key = self.resolve_path(path);
+        trace!("deleting object: {}", key);
+        self.cli
+            .delete_object()
+            .bucket(self.bucket.clone())
+            .key(key)
+            .set_version_id(version_id)
+            .send()
+            .await?;
+        Ok(())
+    }
+
     async fn get(&self, path: String, version_id: Option<String>) -> FlymodelResult<Bytes> {
         let key = self.resolve_path(path);
         trace!("getting object: {}", key);

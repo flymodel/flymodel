@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    artifacts::{download_with_blob, read_bts, DownloadParams},
+    artifacts::{download_with_blob, guarded_upload, read_bts, DownloadParams},
     params_for,
 };
 use actix_web::{
@@ -25,6 +25,7 @@ use actix_multipart::form::{self, tempfile::TempFile, MultipartForm};
 
 params_for!(ModelVersion, [(model_version: i64), (extra: Option<serde_json::Value>)]);
 
+#[derive(Clone)]
 struct CommonModelCte {
     model_version: entities::model_version::Model,
     bucket: entities::bucket::Model,
@@ -78,7 +79,7 @@ pub async fn upload_model_version_artifact(
     storage: Data<Arc<StorageOrchestrator>>,
     namespaces: Data<DataLoader<DbLoader<entities::namespace::Model>>>,
     versions: Data<DataLoader<DbLoader<entities::model_version::Model>>>,
-    artifact: Data<DataLoader<DbLoader<entities::model_artifact::Model>>>,
+    _artifact: Data<DataLoader<DbLoader<entities::model_artifact::Model>>>,
     buckets: Data<DataLoader<DbLoader<entities::bucket::Model>>>,
     blobs: Data<DataLoader<DbLoader<entities::object_blob::Model>>>,
 ) -> actix_web::Result<impl Responder> {
@@ -113,26 +114,37 @@ pub async fn upload_model_version_artifact(
         artifact = data.blob.artifact_name
     );
 
-    let upload_res = sink.put(key.clone(), bs).await?;
-
-    let blob = blobs
-        .as_ref()
-        .loader()
-        .create_new_blob(
-            cte.bucket.id,
-            key,
-            upload_res.expect("version id"),
-            &data.blob,
-            sz as i64,
-            hash,
-        )
-        .await?;
-
-    let created = artifact
-        .as_ref()
-        .loader()
-        .create_new_artifact(&cte.model_version, &blob, &data.blob, data.extra.clone())
-        .await?;
+    let created = guarded_upload(
+        sink,
+        bs,
+        &blobs.loader().db,
+        key.clone(),
+        |tx, version_id| {
+            Box::pin(async move {
+                let tx = tx;
+                let blob = DbLoader::<entities::object_blob::Model>::create_new_blob(
+                    tx,
+                    cte.bucket.id,
+                    key,
+                    version_id.expect("version id"),
+                    &data.blob,
+                    sz as i64,
+                    hash,
+                )
+                .await?;
+                let created = DbLoader::<entities::model_artifact::Model>::create_new_artifact(
+                    tx,
+                    &cte.model_version,
+                    &blob,
+                    &data.blob,
+                    data.extra.clone(),
+                )
+                .await?;
+                Ok(created)
+            })
+        },
+    )
+    .await?;
 
     Ok(Json(created))
 }
@@ -169,6 +181,7 @@ pub async fn download_model_version_artifact(
         on_err,
     )
     .await?;
+
     let blobref = blobs
         .loader()
         .load(&[artifact.blob])

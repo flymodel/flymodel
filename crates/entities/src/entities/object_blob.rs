@@ -8,7 +8,7 @@ use super::{
 use async_graphql::SimpleObject;
 use chrono::{DateTime, Utc};
 use flymodel::errs::FlymodelError;
-use sea_orm::{entity::prelude::*, ActiveValue};
+use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction};
 
 #[derive(
     Clone,
@@ -85,7 +85,7 @@ paginated! {
 
 impl DbLoader<Model> {
     pub async fn create_new_blob(
-        &self,
+        conn: &DatabaseTransaction,
         bucket_id: i64,
         key: String,
         version_id: String,
@@ -105,7 +105,7 @@ impl DbLoader<Model> {
             ..Default::default()
         };
 
-        this.insert(&self.db)
+        this.insert(conn)
             .await
             .map_err(|err| FlymodelError::DbOperationError(err))
     }

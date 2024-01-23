@@ -1,6 +1,6 @@
 use async_graphql::{ComplexObject, SimpleObject};
 use flymodel::errs::FlymodelError;
-use sea_orm::{entity::prelude::*, ActiveValue};
+use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction};
 use tracing::warn;
 
 use crate::{bulk_loader, db::DbLoader, paginated};
@@ -90,7 +90,7 @@ paginated! {
 
 impl DbLoader<Model> {
     pub async fn create_new_artifact(
-        &self,
+        conn: &DatabaseTransaction,
         experiment: &super::experiment::Model,
         version: &super::model_version::Model,
         blob: &super::object_blob::Model,
@@ -104,7 +104,7 @@ impl DbLoader<Model> {
             id: ActiveValue::NotSet,
         };
         Ok(this
-            .insert(&self.db)
+            .insert(conn)
             .await
             .map_err(|err| FlymodelError::DbOperationError(err))?)
     }
