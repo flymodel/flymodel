@@ -44,8 +44,8 @@ jsonpath "$.data.createExperiment.versionId" == 1
 POST http://localhost:9009/upload/experiment-artifact
 
 [MultipartFormData]
-file: file,./experiment_artifact.json; application/octet-stream;
-artifact: file,./experiment_artifact_payload.json; application/json;
+file: file,experiment_artifact.json; application/octet-stream;
+artifact: file,experiment_artifact_payload.json; application/json;
 
 
 HTTP 200

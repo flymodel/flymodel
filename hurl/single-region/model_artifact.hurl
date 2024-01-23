@@ -1,8 +1,8 @@
 POST http://localhost:9009/upload/model-version-artifact
 
 [MultipartFormData]
-file: file,./model_artifact.json; application/octet-stream;
-artifact: file,./model_artifact_payload.json; application/json;
+file: file,model_artifact.json; application/octet-stream;
+artifact: file,model_artifact_payload.json; application/json;
 
 
 HTTP 200
