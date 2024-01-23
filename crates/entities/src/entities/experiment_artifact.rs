@@ -103,8 +103,13 @@ impl DbLoader<Model> {
             blob: ActiveValue::Set(blob.id),
             id: ActiveValue::NotSet,
         };
-        Ok(this
-            .insert(conn)
+        Ok(Entity::insert(this)
+            .on_conflict(
+                sea_query::OnConflict::columns(vec![Column::ExperimentId, Column::Name])
+                    .update_columns(vec![Column::Blob])
+                    .to_owned(),
+            )
+            .exec_with_returning(conn)
             .await
             .map_err(|err| FlymodelError::DbOperationError(err))?)
     }

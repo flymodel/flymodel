@@ -90,8 +90,13 @@ impl DbLoader<Model> {
             extra: ActiveValue::Set(extra),
             id: ActiveValue::NotSet,
         };
-        Ok(this
-            .insert(conn)
+        Ok(Entity::insert(this)
+            .on_conflict(
+                sea_query::OnConflict::columns(vec![Column::VersionId, Column::Name])
+                    .update_columns(vec![Column::Blob, Column::Extra])
+                    .to_owned(),
+            )
+            .exec_with_returning(conn)
             .await
             .map_err(|err| FlymodelError::DbOperationError(err))?)
     }
