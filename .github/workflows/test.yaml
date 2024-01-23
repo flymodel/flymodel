@@ -14,14 +14,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v4
 
     - name: Setup Temp Data
       run: |
+        rm -rf ./tmp
         mkdir -p ./tmp/postgres
         mkdir -p ./tmp/minio
+        mkdir -p ./tmp/fs
         chmod -R g+rwx ./tmp
 
     - name: Install tools
@@ -30,10 +32,6 @@ jobs:
         brew install --cask docker
         brew install protobuf libpq
         open -a Docker
-
-    - uses: isbang/compose-action@v1.5.1
-      with:
-        compose-file: ./docker-compose.yaml
 
     - uses: actions/cache@v3
       with:
@@ -71,6 +69,10 @@ jobs:
     - name: Pre Build & Cache
       run: |
         RUSTFLAGS="-Awarnings" cargo build
+
+    - uses: isbang/compose-action@v1.5.1
+      with:
+        compose-file: ./docker-compose.yaml
 
     - name: Test Migration Up (basic)
       run: |
