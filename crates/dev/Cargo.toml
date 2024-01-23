@@ -1,0 +1,15 @@
+[dependencies]
+paste = "*"
+anyhow.workspace = true
+
+[dev-dependencies]
+
+[features]
+
+[package]
+name = "flymodel-dev"
+readme = "README.md"
+authors.workspace = true
+publish = false
+license.workspace = true
+version.workspace = true

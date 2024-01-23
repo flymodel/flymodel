@@ -2,6 +2,6 @@ version: '3'
 set: [pipefail]
 
 tasks:
-  test_iter:
+  integrity:
     cmds:
-    - hurl ./{{ .DIR }}/*.hurl --file-root ./{{ .DIR }}
+    - hurl ./{{ .TEST }}/*.hurl --file-root ./{{ .TEST }}

@@ -21,7 +21,7 @@ jobs:
         - x86_64-unknown-linux-musl
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup Temp Data
       run: |
@@ -46,15 +46,15 @@ jobs:
     - name: Install Task
       uses: arduino/setup-task@v1
 
-    - name: Install Hurl
-      uses: gacts/install-hurl@v1
-
     - uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
         toolchain: 1.74.0
         components: rustfmt
         cache: false
         target: ${{ matrix.linux_target }}
+
+    - name: Install Hurl
+      uses: gacts/install-hurl@v1
 
     - name: Install tools
       run: |
@@ -71,6 +71,10 @@ jobs:
       run: |
         target/debug/flymodel migrate up --test-data basic
 
+    - name: Integrity Tests (basic)
+      run: |
+        DIR=single-region task hurl:integrity
+
     - name: Test Migration Down
       run: |
         target/debug/flymodel migrate down
@@ -79,7 +83,11 @@ jobs:
       run: |
         target/debug/flymodel migrate up --test-data multi_region
 
-    - name: Test
+    - name: Integrity Tests (multi-region)
+      run: |
+        DIR=multi-region task hurl:integrity
+
+    - name: Unit Tests (multi-region)
       run: |
         cargo test --all-features
 
@@ -89,10 +97,6 @@ jobs:
         target/debug/flymodel serve  --config ./conf/flymodel.toml &
         sleep 10
         task schema_diff
-
-    - name: Test GraphQL Requests
-      run: |
-        task hurl
 
     - name: Test Migration Down
       run: |
