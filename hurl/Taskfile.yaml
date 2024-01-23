@@ -2,6 +2,13 @@ version: '3'
 set: [pipefail]
 
 tasks:
-  integrity:
+  multi-region:
+    dir: multi-region
     cmds:
-    - hurl ./{{ .TEST }}/*.hurl --file-root ./{{ .TEST }}
+    - hurl ./namespace.hurl
+
+  single-region:
+    dir: single-region
+    cmds:
+    - hurl ./namespace.hurl
+    - hurl ./experiment.hurl

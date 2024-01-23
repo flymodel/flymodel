@@ -71,9 +71,16 @@ jobs:
       run: |
         target/debug/flymodel migrate up --test-data basic
 
+    - name: Startup Server & Validate Introspection
+      run: |
+        set -euxo pipefail
+        target/debug/flymodel serve  --config ./conf/flymodel.toml &
+        sleep 10
+        task schema_diff
+
     - name: Integrity Tests (basic)
       run: |
-        DIR=single-region task hurl:integrity
+        task hurl:single-region
 
     - name: Test Migration Down
       run: |
@@ -85,18 +92,11 @@ jobs:
 
     - name: Integrity Tests (multi-region)
       run: |
-        DIR=multi-region task hurl:integrity
+        task hurl:multi-region
 
     - name: Unit Tests (multi-region)
       run: |
         cargo test --all-features
-
-    - name: Startup Server & Validate Introspection
-      run: |
-        set -euxo pipefail
-        target/debug/flymodel serve  --config ./conf/flymodel.toml &
-        sleep 10
-        task schema_diff
 
     - name: Test Migration Down
       run: |

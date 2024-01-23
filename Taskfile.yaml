@@ -35,13 +35,11 @@ tasks:
       silent: true
     - cmd: cargo migrate-up --test-data multi_region
       silent: true
-    - task: hurl:integrity
-      vars:
-        TEST: multi-region
+    - task: hurl:multi-region
     - cmd: cargo migrate-down
       silent: true
     - cmd: cargo migrate-up --test-data basic
       silent: true
-    - task: hurl:integrity
-      vars:
-        TEST: single-region
+    - task: hurl:single-region
+    - cmd: cargo migrate-down
+      silent: true
