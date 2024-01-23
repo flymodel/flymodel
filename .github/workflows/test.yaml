@@ -94,10 +94,6 @@ jobs:
         sleep 10
         task schema_diff
 
-    - name: Integrity Tests (basic)
-      run: |
-        task hurl:single-region
-
     - name: Test Migration Down
       run: |
         target/debug/flymodel migrate down
@@ -106,13 +102,13 @@ jobs:
       run: |
         target/debug/flymodel migrate up --test-data multi_region
 
-    - name: Integrity Tests (multi-region)
-      run: |
-        task hurl:multi-region
-
     - name: Unit Tests (multi-region)
       run: |
         cargo test --all-features
+
+    - name: Integrity Tests
+      run: |
+        task integrity
 
     - name: Test Migration Down
       run: |

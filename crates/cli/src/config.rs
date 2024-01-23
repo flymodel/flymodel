@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::Args;
 use flymodel::errs::{FlymodelError, FlymodelResult};
 use flymodel_migration::hooks::Fixtures;
@@ -11,6 +13,7 @@ pub struct ServeConfig {
     pub bind: String,
     #[clap(flatten)]
     pub db: DatabaseConfig,
+
 }
 
 #[derive(Debug, Clone, Args)]

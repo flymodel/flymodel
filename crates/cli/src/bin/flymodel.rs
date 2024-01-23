@@ -39,6 +39,7 @@ async fn serve_server<S>(
     start_server(
         server.db.to_connection().await?,
         format!("{}:{}", server.bind, server.port),
+        conf.server.temp_dir,
         tracer,
         Arc::new(storage),
     )

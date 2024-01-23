@@ -52,15 +52,21 @@ async fn graphql_idx() -> Result<HttpResponse> {
         ))
 }
 
-pub async fn start_server<A>(
+pub async fn start_server<
+    A,
+    P: std::convert::AsRef<std::path::Path> + Clone + Send + Sync + 'static,
+>(
     db: DbConn,
     bind: A,
+    temp_dir: P,
     tracer: Option<OtlpTracerConfig>,
     store: Arc<StorageOrchestrator>,
 ) -> anyhow::Result<()>
 where
     A: std::net::ToSocketAddrs + Display,
 {
+    std::fs::create_dir_all(temp_dir.clone())?;
+
     info!("starting on http://{}", bind);
     let schema = build_schema(db.clone(), None, None, tracer.clone())?;
     let service_tracer = if let Some(tracer) = tracer.clone() {
@@ -71,10 +77,11 @@ where
     let store = store.clone();
 
     HttpServer::new(move || {
+        let temp_dir = temp_dir.clone();
         let store = store.clone();
         let base = App::new()
             .wrap(TracingLogger::default())
-            .app_data(TempFileConfig::default().directory("./tmp/fs"))
+            .app_data(TempFileConfig::default().directory(temp_dir))
             .app_data(Data::new(store));
 
         apply_data! {

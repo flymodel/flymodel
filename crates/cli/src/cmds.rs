@@ -69,6 +69,18 @@ pub struct Conf {
     pub auth: AuthConfiguration,
     #[serde(default)]
     pub membership: MembershipConfig,
+    #[serde(default)]
+    pub server: ServerConfig,
+}
+
+#[derive(serde::Deserialize, Debug, Default)]
+pub struct ServerConfig {
+    #[serde(default = "default_temp_dir")]
+    pub temp_dir: PathBuf,
+}
+
+fn default_temp_dir() -> PathBuf {
+    PathBuf::from("./tmp/fs")
 }
 
 impl Conf {
