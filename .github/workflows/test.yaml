@@ -74,6 +74,15 @@ jobs:
       with:
         compose-file: ./docker-compose.yaml
 
+    - name: Wait for database start
+      run: |
+        while ! nc -z localhost 5432; do
+          sleep 0.5
+        done
+
+        # sleep an extra 5s just in case
+        sleep 5
+
     - name: Test Migration Up (basic)
       run: |
         target/debug/flymodel migrate up --test-data basic
