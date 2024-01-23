@@ -1,8 +1,16 @@
+use actix_web::{
+    body::BoxBody,
+    http::{
+        header::{self, HeaderValue},
+        StatusCode,
+    },
+    HttpResponse,
+};
 use async_graphql::ErrorExtensions;
 use aws_sdk_s3::operation::{get_object::GetObjectError, put_object::PutObjectError};
 use aws_smithy_runtime_api::{client::result::SdkError as AwsError, http::Response as AwsResponse};
 use sea_orm::DbErr;
-use std::{str::FromStr, sync::Arc};
+use std::{error::Error, str::FromStr, sync::Arc};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -49,6 +57,18 @@ pub enum FlymodelError {
 
     #[error("Constraint error: {0}")]
     ContraintError(String),
+
+    #[error("Upload error: {0}")]
+    UploadError(anyhow::Error),
+
+    #[error("Non-Deterministic behaviour error: {0}")]
+    NonDeterministicError(String),
+
+    #[error("Invalid resource ID: {0}")]
+    InvalidResourceId(i64),
+
+    #[error("Internal Error: {0}")]
+    InternalError(anyhow::Error),
 }
 
 impl FlymodelError {
@@ -67,6 +87,10 @@ impl FlymodelError {
             Self::S3BinaryLoadError(_) => 11,
             Self::RuntimeDependencyError(_) => 12,
             Self::ContraintError(_) => 13,
+            Self::UploadError(_) => 14,
+            Self::NonDeterministicError(_) => 15,
+            Self::InvalidResourceId(_) => 16,
+            Self::InternalError(_) => 17,
         } + 9008)
     }
 
@@ -83,6 +107,9 @@ impl FlymodelError {
             Self::IntegrityError { .. } => "IntegrityError",
             Self::InvalidPermission(..) => "InvalidPermission",
             Self::ContraintError(..) => "ContraintError",
+            Self::UploadError(..) => "UploadError",
+            Self::NonDeterministicError(..) => "NonDeterministicBehaviourError",
+            Self::InvalidResourceId(..) => "InvalidResourceId",
             _ => "SystemError",
         }
     }
@@ -104,6 +131,15 @@ impl FlymodelError {
             Self::ContraintError(source) => {
                 format!("The following contraint failed validation: {source}")
             }
+            Self::UploadError(..) => {
+                format!("A system error occured while uploading data")
+            }
+            Self::NonDeterministicError(..) => {
+                format!("Non deterministic behaviour was detected")
+            }
+            Self::InvalidResourceId(id) => {
+                format!("{id} could not be found")
+            }
             _ => "A system error occured".to_string(),
         }
     }
@@ -114,6 +150,46 @@ impl FlymodelError {
             ext.set("code", self.code());
             ext.set("kind", self.code_str());
         })
+    }
+
+    pub fn internal_error<'a, E: Error + Sync + Send + 'static>(err: E) -> FlymodelError {
+        FlymodelError::InternalError(anyhow::Error::from(err))
+    }
+}
+
+impl actix_web::error::ResponseError for FlymodelError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Self::IdParsingError(..) => StatusCode::BAD_REQUEST,
+            Self::IntegrityError { .. } | Self::ContraintError(..) => {
+                StatusCode::EXPECTATION_FAILED
+            }
+            Self::InvalidPermission(..) => StatusCode::FORBIDDEN,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+
+    fn error_response(&self) -> actix_web::HttpResponse<actix_web::body::BoxBody> {
+        tracing::error!("an error occured serving an api: {}", self);
+
+        let mut resp = HttpResponse::new(self.status_code()).set_body(BoxBody::new(
+            // this is infallible serialization
+            match serde_json::to_vec(&serde_json::json!({
+                "code": self.code(),
+                "kind": self.code_str()
+            })) {
+                Ok(enc) => enc,
+                Err(..) => unreachable!(),
+            },
+        ));
+
+        let headers = resp.headers_mut();
+        headers.insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/json"),
+        );
+
+        resp
     }
 }
 

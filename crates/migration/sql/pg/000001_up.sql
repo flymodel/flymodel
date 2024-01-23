@@ -96,6 +96,22 @@ create table object_blob (
 
 comment on table object_blob is 'a single object blob (meta)';
 
+create type upload_ticket_status as enum (
+    'pending',
+    'uploading',
+    'erred',
+    'expired',
+    'cancelled',
+    'completed'
+);
+
+create table upload_tickets (
+    id bigserial primary key not null,
+    status upload_ticket_status not null,
+    created_at timestamptz not null default now(),
+    last_modified timestamptz not null default now()
+);
+
 create unique index object_blob_version_idx on object_blob (version_id, key);
 
 create table model_artifact (

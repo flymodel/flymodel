@@ -5,8 +5,8 @@ use tracing_subscriber::reload;
 #[serde(rename_all = "lowercase")]
 pub enum LogLevel {
     Trace,
-    Debug,
     #[default]
+    Debug,
     Info,
     Warn,
     Error,

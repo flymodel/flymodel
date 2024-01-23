@@ -1,4 +1,4 @@
-use std::process::ExitCode;
+use std::{process::ExitCode, sync::Arc};
 
 use clap::Parser;
 use flymodel_cli::{
@@ -34,11 +34,13 @@ async fn serve_server<S>(
 ) -> anyhow::Result<()> {
     let conf = cli.load_config()?;
     conf.log.reload(reload_handle)?;
-
+    let tracer = conf.tracer();
+    let storage = conf.storage.build().await?;
     start_server(
         server.db.to_connection().await?,
         format!("{}:{}", server.bind, server.port),
-        conf.tracer(),
+        tracer,
+        Arc::new(storage),
     )
     .await
 }

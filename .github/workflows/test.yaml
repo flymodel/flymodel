@@ -87,6 +87,10 @@ jobs:
         sleep 10
         task schema_diff
 
+    - name: Test GraphQL Requests
+      run: |
+        task hurl
+
     - name: Test Migration Down
       run: |
         target/debug/flymodel migrate down

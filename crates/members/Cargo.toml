@@ -1,9 +1,3 @@
-[badges]
-maintenance = { status = "actively-developed" }
-
-
-[features]
-
 [package]
 name = "flymodel-members"
 readme = "README.md"
@@ -19,6 +13,13 @@ version.workspace = true
 shared-version = true
 repository.workspace = true
 rust-version.workspace = true
+
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+
+[features]
 
 [dependencies]
 flymodel = { path = "../flymodel" }
@@ -46,6 +47,7 @@ serde = { workspace = true, features = ["derive"] }
 ginepro = "0.7.0"
 url = "2.5.0"
 thiserror.workspace = true
+job_scheduler.workspace = true
 
 [build-dependencies]
 tonic-build = { version = "0.10.2", features = ["prost"] }

@@ -43,7 +43,9 @@ bytes = "1.5.0"
 aws-config = "1"
 aws-sdk-s3 = "1"
 aws-smithy-runtime-api = "1"
-
+job_scheduler = "1.2"
+iceoryx2 = "0.2.1"
+actix-multipart = "0.6"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]

@@ -32,3 +32,7 @@ drop table model_tag cascade;
 drop table model_version_tag cascade;
 
 drop table experiment_tag cascade;
+
+drop table upload_tickets cascade;
+
+drop type upload_ticket_status cascade;

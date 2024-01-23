@@ -17,14 +17,19 @@ use sea_orm::entity::prelude::*;
 #[graphql(name = "ArchivalFormat")]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "archive_format")]
 pub enum ArchiveFormat {
+    #[serde(rename = "gzip")]
     #[sea_orm(string_value = "gzip")]
     Gzip,
+    #[serde(rename = "snappy")]
     #[sea_orm(string_value = "snappy")]
     Snappy,
+    #[serde(rename = "tar")]
     #[sea_orm(string_value = "tar")]
     Tar,
+    #[serde(rename = "tzg")]
     #[sea_orm(string_value = "tzg")]
     Tzg,
+    #[serde(rename = "zip")]
     #[sea_orm(string_value = "zip")]
     Zip,
 }
@@ -44,10 +49,13 @@ pub enum ArchiveFormat {
 #[graphql(name = "ArchiveEncoding")]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "archive_encoding")]
 pub enum ArchiveEncoding {
+    #[serde(rename = "feather")]
     #[sea_orm(string_value = "feather")]
     Feather,
+    #[serde(rename = "json")]
     #[sea_orm(string_value = "json")]
     Json,
+    #[serde(rename = "parquet")]
     #[sea_orm(string_value = "parquet")]
     Parquet,
 }

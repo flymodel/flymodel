@@ -1,9 +1,14 @@
-use crate::{bulk_loader, paginated};
+use crate::{bulk_loader, db::DbLoader, paginated};
 
-use super::enums::{ArchiveEncoding, ArchiveFormat};
+use super::{
+    enums::{ArchiveEncoding, ArchiveFormat},
+    upload::UploadBlobRequestParams,
+};
+
 use async_graphql::SimpleObject;
 use chrono::{DateTime, Utc};
-use sea_orm::entity::prelude::*;
+use flymodel::errs::FlymodelError;
+use sea_orm::{entity::prelude::*, ActiveValue};
 
 #[derive(
     Clone,
@@ -76,4 +81,32 @@ bulk_loader! {
 paginated! {
     Model,
     Entity
+}
+
+impl DbLoader<Model> {
+    pub async fn create_new_blob(
+        &self,
+        bucket_id: i64,
+        key: String,
+        version_id: String,
+        args: &UploadBlobRequestParams,
+        size: i64,
+        sha256: String,
+    ) -> Result<Model, FlymodelError> {
+        let this = ActiveModel {
+            bucket_id: ActiveValue::Set(bucket_id),
+            key: ActiveValue::Set(key),
+            version_id: ActiveValue::Set(version_id),
+            archive: ActiveValue::Set(args.archive),
+            encode: ActiveValue::Set(args.encode),
+            created_at: ActiveValue::Set(Utc::now()),
+            size: ActiveValue::Set(size),
+            sha256: ActiveValue::Set(sha256),
+            ..Default::default()
+        };
+
+        this.insert(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbOperationError(err))
+    }
 }

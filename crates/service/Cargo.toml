@@ -26,6 +26,7 @@ async-graphql = { workspace = true, features = [
 ] }
 flymodel = { path = "../flymodel" }
 flymodel-entities = { path = "../entities" }
+flymodel-registry = { path = "../registry" }
 flymodel-tracing = { path = "../trace" }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
@@ -48,4 +49,8 @@ opentelemetry = { workspace = true, features = [
     "logs_level_enabled",
 ] }
 paste = "1.0.14"
+bytes.workspace = true
+actix-multipart.workspace = true
+sha256 = "1.5.0"
+
 [features]

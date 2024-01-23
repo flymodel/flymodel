@@ -9,6 +9,7 @@ use async_graphql::{ComplexObject, SimpleObject};
 use chrono::Utc;
 use flymodel::{errs::FlymodelError, lifecycle::Lifecycle};
 use sea_orm::{entity::prelude::*, ActiveValue, Select};
+use sea_query::Alias;
 use tracing::debug;
 
 #[derive(
@@ -33,6 +34,7 @@ pub struct Model {
     pub name: String,
     #[sea_orm(column_type = "Text")]
     pub region: String,
+    #[sea_orm(select_as = "text")]
     pub role: Lifecycle,
     #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
     pub created_at: chrono::DateTime<Utc>,
@@ -94,7 +96,14 @@ impl DbLoader<Model> {
         }
 
         if let Some(roles) = roles {
-            filters = filters.filter(Column::Role.is_in(roles));
+            filters = filters.filter(
+                Expr::expr(Expr::col(Column::Role).cast_as(Alias::new("varchar"))).is_in(
+                    roles
+                        .iter()
+                        .map(|v| v.into_value().as_str().to_string())
+                        .collect::<Vec<_>>(),
+                ),
+            );
         }
 
         self.load_paginated(filters, page).await

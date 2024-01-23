@@ -6,3 +6,4 @@ Cargo.lock
 /compare
 test.svg
 /vis
+expand.rs

@@ -16,3 +16,4 @@ pub mod namespace;
 pub mod namespace_tag;
 pub mod object_blob;
 pub mod page;
+pub mod upload;

@@ -10,7 +10,7 @@ use flymodel::{
     lifecycle::Lifecycle,
     storage::StorageProvider,
 };
-use tracing::trace;
+use tracing::{debug, trace};
 
 fn default_path() -> String {
     "/".to_string()
@@ -66,6 +66,7 @@ impl S3Storage {
     }
 
     pub async fn setup_bucket(&self) -> anyhow::Result<()> {
+        debug!("testing bucket existence (soft)");
         match self
             .cli
             .head_bucket()
@@ -75,20 +76,22 @@ impl S3Storage {
         {
             Ok(_) => {}
             Err(_) => {
-                let _ = self
-                    .cli
+                self.cli
                     .create_bucket()
                     .bucket(self.bucket.clone())
                     .send()
-                    .await;
+                    .await?;
             }
         }
+
+        debug!("testing bucket existence (required)");
         self.cli
             .head_bucket()
             .bucket(self.bucket.clone())
             .send()
             .await?;
 
+        debug!("checking bucket versioning");
         match self
             .cli
             .get_bucket_versioning()

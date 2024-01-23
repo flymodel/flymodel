@@ -4,7 +4,7 @@ use flymodel::{errs::FlymodelResult, storage::StorageProvider};
 
 use crate::minio::{S3Configuration, S3Storage};
 
-type StorageMap = HashMap<String, Box<dyn StorageProvider>>;
+type StorageMap = HashMap<String, Box<dyn StorageProvider + Sync + Send + 'static>>;
 
 #[derive(serde::Deserialize, Debug)]
 pub struct StorageConfig {
@@ -16,7 +16,7 @@ pub struct StorageOrchestrator {
 }
 
 impl StorageOrchestrator {
-    pub fn get(&self, store: &String) -> Option<&Box<dyn StorageProvider>> {
+    pub fn get(&self, store: &String) -> Option<&Box<dyn StorageProvider + Sync + Send + 'static>> {
         self.storage.get(store)
     }
 

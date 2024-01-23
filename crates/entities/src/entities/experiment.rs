@@ -128,4 +128,26 @@ impl DbLoader<Model> {
             .await
             .map_err(|err| FlymodelError::DbOperationError(err).into_graphql_error())
     }
+
+    pub async fn single_model_version(
+        &self,
+        experiment_id: i64,
+    ) -> Result<Option<(super::model_version::Model, Model)>, FlymodelError> {
+        let ents = Entity::find()
+            .filter(Column::Id.eq(experiment_id))
+            .find_also_related(super::model_version::Entity)
+            .one(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbLoaderError(std::sync::Arc::new(err)))?;
+
+        if let Some((experiment, version)) = ents {
+            if let Some(version) = version {
+                Ok(Some((version, experiment)))
+            } else {
+                Ok(None)
+            }
+        } else {
+            Ok(None)
+        }
+    }
 }

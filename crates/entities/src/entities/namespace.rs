@@ -1,5 +1,5 @@
 use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
-use async_graphql::{Context, SimpleObject};
+use async_graphql::{dataloader::DataLoader, Context, SimpleObject};
 use chrono::Utc;
 
 use flymodel::errs::FlymodelError;
@@ -77,6 +77,26 @@ impl DbLoader<Model> {
             query = Self::find_by_name(query, name);
         }
         self.load_paginated(query, page).await
+    }
+
+    pub async fn namespace_of_model(
+        this: &DataLoader<Self>,
+        model: &super::model_version::Model,
+    ) -> Result<Option<Model>, FlymodelError> {
+        let model = model
+            .find_related(super::model::Entity)
+            .one(&this.loader().db)
+            .await
+            .map_err(|err| FlymodelError::DbLoaderError(std::sync::Arc::new(err)))?;
+        if let Some(model) = model {
+            this.load_one(model.namespace_id.clone())
+                .await
+                .map_err(|it| FlymodelError::DbLoaderError(it))
+        } else {
+            Err(FlymodelError::NonDeterministicError(
+                "Expected model for model version".into(),
+            ))
+        }
     }
 
     #[inline]

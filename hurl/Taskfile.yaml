@@ -1,0 +1,7 @@
+version: '3'
+set: [pipefail]
+
+tasks:
+  test_iter:
+    cmds:
+    - hurl ./{{ .DIR }}/*.hurl --file-root ./{{ .DIR }}

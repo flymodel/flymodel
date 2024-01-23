@@ -72,10 +72,10 @@ pub struct Paginated<T>
 where
     T: OutputType + Send + Clone,
 {
-    page: PageOutput,
-    total_pages: usize,
-    total_items: u64,
-    data: Vec<T>,
+    pub page: PageOutput,
+    pub total_pages: usize,
+    pub total_items: u64,
+    pub data: Vec<T>,
 }
 
 impl<T> Paginated<T>

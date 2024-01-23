@@ -51,7 +51,7 @@ pub enum Relation {
     #[sea_orm(has_many = "super::model_state::Entity")]
     ModelState,
     #[sea_orm(has_many = "super::model_version_tag::Entity")]
-    ModelVersionTags,
+    ModelVersionTag,
 }
 
 impl Related<super::experiment::Entity> for Entity {
@@ -86,7 +86,7 @@ impl Related<super::model_state::Entity> for Entity {
 
 impl Related<super::model_version_tag::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::ModelVersionTags.def()
+        Relation::ModelVersionTag.def()
     }
 }
 
@@ -151,6 +151,20 @@ impl DbLoader<Model> {
             .into_graphql_error()
         })
     }
+
+    pub async fn state(
+        &self,
+        ent: &Model,
+    ) -> Result<Option<super::model_state::Model>, FlymodelError> {
+        ent.find_related(super::model_state::Entity)
+            .one(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbOperationError(err))
+    }
+
+    // pub async fn namespace(&self, ent: &Model,) {
+    //     ent.;
+    // }
 }
 
 #[ComplexObject]
@@ -200,14 +214,11 @@ impl Model {
         &self,
         ctx: &async_graphql::Context<'_>,
     ) -> crate::db::QueryResult<Option<super::model_state::Model>> {
-        self.find_related(super::model_state::Entity)
-            .one(
-                &DbLoader::<super::model_state::Model>::with_context(ctx)?
-                    .loader()
-                    .db,
-            )
+        DbLoader::<Model>::with_context(ctx)?
+            .loader()
+            .state(self)
             .await
-            .map_err(|err| FlymodelError::DbOperationError(err).into_graphql_error())
+            .map_err(|err| err.into_graphql_error())
     }
 
     async fn tags(
