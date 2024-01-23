@@ -24,6 +24,13 @@ jobs:
         mkdir -p ./tmp/minio
         chmod -R g+rwx ./tmp
 
+    - name: Install tools
+      if: startsWith(matrix.os, 'macos-')
+      run: |
+        brew install --cask docker
+        brew install protobuf libpq
+        open -a Docker
+
     - uses: isbang/compose-action@v1.5.1
       with:
         compose-file: ./docker-compose.yaml
@@ -55,16 +62,11 @@ jobs:
         cargo install --locked cynic-cli
 
     - name: Install tools
-      if: ${{ matrix.os }} == 'ubuntu-latest'
+      if: startsWith(matrix.os, 'ubuntu-')
       run: |
         sudo apt-get install -y \
           libpq-dev \
           protobuf-compiler
-
-    - name: Install tools
-      if: ${{ matrix.os }} == 'macos-latest'
-      run: |
-        brew install protobuf libpq
 
     - name: Pre Build & Cache
       run: |
