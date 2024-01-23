@@ -7,13 +7,13 @@ includes:
 tasks:
   hurl:
     cmds:
-      # - cmd: cargo migrate-down
-      #   silent: true
-      # - cmd: cargo migrate-up --test-data multi_region
-      #   silent: true
-      # - task: hurl:test_iter
-      #   vars:
-      #     DIR: multi-region
+    - cmd: cargo migrate-down
+      silent: true
+    - cmd: cargo migrate-up --test-data multi_region
+      silent: true
+    - task: hurl:test_iter
+      vars:
+        DIR: multi-region
     - cmd: cargo migrate-down
       silent: true
     - cmd: cargo migrate-up --test-data basic
