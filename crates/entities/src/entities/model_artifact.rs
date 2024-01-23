@@ -1,8 +1,11 @@
 use async_graphql::{ComplexObject, SimpleObject};
-use sea_orm::entity::prelude::*;
+use flymodel::errs::FlymodelError;
+use sea_orm::{entity::prelude::*, ActiveValue};
 use tracing::warn;
 
 use crate::{bulk_loader, db::DbLoader, paginated};
+
+use super::upload::UploadBlobRequestParams;
 
 #[derive(
     Clone,
@@ -70,6 +73,28 @@ bulk_loader! {
 paginated! {
     Model,
     Entity
+}
+
+impl DbLoader<Model> {
+    pub async fn create_new_artifact(
+        &self,
+        version: &super::model_version::Model,
+        blob: &super::object_blob::Model,
+        args: &UploadBlobRequestParams,
+        extra: Option<Json>,
+    ) -> Result<Model, FlymodelError> {
+        let this = ActiveModel {
+            version_id: ActiveValue::Set(version.id),
+            name: ActiveValue::Set(args.artifact_name.clone()),
+            blob: ActiveValue::Set(blob.id),
+            extra: ActiveValue::Set(extra),
+            id: ActiveValue::NotSet,
+        };
+        Ok(this
+            .insert(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbOperationError(err))?)
+    }
 }
 
 #[ComplexObject]

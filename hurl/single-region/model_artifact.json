@@ -1,0 +1,5 @@
+{
+  "training_rounds": 2000,
+  "acc": 0.9887,
+  "loss": 0.0034
+}

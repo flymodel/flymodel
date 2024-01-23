@@ -83,6 +83,27 @@ paginated! {
 }
 
 impl DbLoader<Model> {
+    pub async fn find_by_model<F: FnOnce() -> FlymodelError>(
+        &self,
+        namespace: &super::namespace::Model,
+        state: &super::model_state::Model,
+        on_missing: F,
+    ) -> Result<Model, FlymodelError> {
+        Ok(Entity::find()
+            .filter(Column::Namespace.eq(namespace.id))
+            .filter(
+                Expr::expr(Expr::col(Column::Role).cast_as(Alias::new("varchar"))).eq(state
+                    .state
+                    .into_value()
+                    .as_str()
+                    .to_string()),
+            )
+            .one(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbLoaderError(std::sync::Arc::new(err)))?
+            .ok_or_else(on_missing)?)
+    }
+
     pub async fn find_by_namespace(
         &self,
         namespaces: Option<Vec<i64>>,

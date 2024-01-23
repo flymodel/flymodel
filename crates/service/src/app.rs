@@ -24,7 +24,8 @@ use tracing::info;
 use crate::{
     apply_data,
     artifacts::{
-        download_experiment_artifact, upload_experiment_artifact, upload_model_version_artifact,
+        experiments::{download_experiment_artifact, upload_experiment_artifact},
+        model_version::{download_model_version_artifact, upload_model_version_artifact},
     },
     schema::{build_schema, FlymodelSchema},
 };
@@ -108,6 +109,7 @@ where
 
         base.service(upload_model_version_artifact)
             .service(upload_experiment_artifact)
+            .service(download_model_version_artifact)
             .service(download_experiment_artifact)
             .service(
                 web::resource(SUBSCRIPTION)

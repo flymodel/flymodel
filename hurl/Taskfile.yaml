@@ -12,3 +12,4 @@ tasks:
     cmds:
     - hurl ./namespace.hurl
     - hurl ./experiment.hurl
+    - hurl ./model_artifact.hurl
