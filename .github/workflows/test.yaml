@@ -51,6 +51,10 @@ jobs:
         components: rustfmt
         cache: false
 
+    - name: Add wasm targets
+      run: |
+        rustup target add wasm32-unknown-unknown
+
     - name: Install Hurl
       uses: gacts/install-hurl@v1
 
@@ -58,8 +62,7 @@ jobs:
 
     - name: Install cargo tools
       run: |
-        cargo binstall -y cynic-cli
-        cargo binstall -y cargo-insta
+        cargo binstall -y cynic-cli wasm-pack cargo-insta
 
     - name: Install tools
       if: startsWith(matrix.os, 'ubuntu-')
