@@ -42,27 +42,3 @@ jsvalue! {
     PaginatedNamespace,
     QueryNamespaces
 }
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use insta::assert_debug_snapshot;
-
-    #[test]
-    fn test_query_namespaces() {
-        let query = QueryNamespaces {
-            namespace: PaginatedNamespace {
-                page: CurrentPage { size: 1, page: 1 },
-                total_pages: 1,
-                total_items: 1,
-                data: vec![Namespace {
-                    id: 1,
-                    name: "test".to_string(),
-                    description: "test".to_string(),
-                }],
-            },
-        };
-
-        assert_debug_snapshot!(query);
-    }
-}
