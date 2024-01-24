@@ -125,8 +125,10 @@ jobs:
 
     - name: Integrity Tests
       run: |
-        TEST_REGION_SCOPE="multi-region" task integrity
-
-    - name: Test Migration Down
-      run: |
+        target/debug/flymodel migrate down
+        target/debug/flymodel migrate up --test-data basic
+        task hurl:single-region
+        target/debug/flymodel migrate down
+        target/debug/flymodel migrate up --test-data multi_region
+        task hurl:multi-region
         target/debug/flymodel migrate down
