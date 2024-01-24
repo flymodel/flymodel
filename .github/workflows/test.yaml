@@ -31,7 +31,6 @@ jobs:
       run: |
         brew install --cask docker
         brew install protobuf libpq
-        open -a Docker
 
     - uses: actions/cache@v3
       with:
@@ -55,9 +54,12 @@ jobs:
     - name: Install Hurl
       uses: gacts/install-hurl@v1
 
+    - uses: cargo-bins/cargo-binstall@main
+
     - name: Install cargo tools
       run: |
-        cargo install --locked cynic-cli
+        cargo binstall -y cynic-cli
+        cargo binstall -y cargo-insta
 
     - name: Install tools
       if: startsWith(matrix.os, 'ubuntu-')
@@ -89,10 +91,18 @@ jobs:
 
     - name: Startup Server & Validate Introspection
       run: |
-        set -euxo pipefail
+        set -eux pipefail
         target/debug/flymodel serve  --config ./conf/flymodel.toml &
         sleep 10
         task schema_diff
+
+    - name: Unit Tests (single-region)
+      run: |
+        TEST_REGION_SCOPE="basic" cargo test --all-features
+
+    - name: Test wasm client (single-region)
+      run: |
+        TEST_REGION_SCOPE="basic" task client:test-wasm
 
     - name: Test Migration Down
       run: |
@@ -104,11 +114,15 @@ jobs:
 
     - name: Unit Tests (multi-region)
       run: |
-        cargo test --all-features
+        TEST_REGION_SCOPE="multi-region" cargo test --all-features
+
+    - name: Test wasm client (multi-region)
+      run: |
+        TEST_REGION_SCOPE="multi-region" task client:test-wasm
 
     - name: Integrity Tests
       run: |
-        task integrity
+        TEST_REGION_SCOPE="multi-region" task integrity
 
     - name: Test Migration Down
       run: |

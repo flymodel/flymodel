@@ -16,7 +16,6 @@ use flymodel_entities::{
     entities::{self},
 };
 use flymodel_registry::storage::StorageOrchestrator;
-use sea_orm::ActiveEnum;
 use serde::Deserialize;
 use std::sync::Arc;
 use tracing::debug;
@@ -74,7 +73,6 @@ pub async fn upload_experiment_artifact(
     storage: Data<Arc<StorageOrchestrator>>,
     namespaces: Data<DataLoader<DbLoader<entities::namespace::Model>>>,
     experiment: Data<DataLoader<DbLoader<entities::experiment::Model>>>,
-    _artifact: Data<DataLoader<DbLoader<entities::experiment_artifact::Model>>>,
     buckets: Data<DataLoader<DbLoader<entities::bucket::Model>>>,
     versions: Data<DataLoader<DbLoader<entities::model_version::Model>>>,
     blobs: Data<DataLoader<DbLoader<entities::object_blob::Model>>>,

@@ -1,0 +1,17 @@
+query queryBuckets($page: Page, $id: Int, $namespace: Int, $role: Lifecycle) {
+  bucket(page: $page, id: $id, namespace: $namespace, role: $role) {
+    page {
+      size
+      page
+    }
+    totalPages
+    totalItems
+    data {
+      id
+      name
+      namespace
+      createdAt
+      lastModified
+    }
+  }
+}

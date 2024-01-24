@@ -1,0 +1,7 @@
+mutation createModel($namespace: Int!, $name: String!) {
+  createModel(namespace: $namespace, name: $name) {
+    id
+    name
+    namespaceId
+  }
+}

@@ -1,0 +1,15 @@
+query queryNamespaces($page: Page) {
+  namespace(page: $page) {
+    page {
+      size
+      page
+    }
+    totalPages
+    totalItems
+    data {
+      id
+      name
+      description
+    }
+  }
+}

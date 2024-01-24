@@ -40,9 +40,8 @@ impl ExperimentQueries {
             ));
         }
 
-        let page = page.unwrap_or_default();
         db.loader()
-            .bulk_paginated_experiments(name, model_id, page)
+            .bulk_paginated_experiments(name, model_id, page.unwrap_or_default())
             .await
     }
 }

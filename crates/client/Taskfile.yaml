@@ -1,0 +1,20 @@
+version: '3'
+
+tasks:
+  wasm-client:
+    cmds:
+    - wasm-pack build --out-name index --features wasm
+    - wasm-pack pack
+
+  test-wasm:
+    cmds:
+    - wasm-pack test --node --features wasm-node
+
+  test-sys:
+    cmds:
+    - cargo test --package flymodel-client
+
+  test:
+    cmds:
+    - task: test-wasm
+    - task: test-sys

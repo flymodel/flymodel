@@ -1,0 +1,7 @@
+mutation createExperiment($modelVersionId: Int!, $experimentName: String!) {
+  createExperiment(modelVersion: $modelVersionId, name: $experimentName) {
+    id
+    name
+    versionId
+  }
+}

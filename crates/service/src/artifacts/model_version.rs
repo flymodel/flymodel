@@ -18,7 +18,7 @@ use flymodel_entities::{
 };
 
 use flymodel_registry::storage::StorageOrchestrator;
-use sea_orm::{ActiveEnum, DbErr, EntityTrait, Related};
+use sea_orm::{DbErr, EntityTrait};
 use serde::Deserialize;
 
 use actix_multipart::form::{self, tempfile::TempFile, MultipartForm};

@@ -1,0 +1,7 @@
+mutation createModelVersion($modelId: Int!, $versionTag: String!) {
+  createModelVersion(model: $modelId, name: $versionTag) {
+    id
+    version
+    modelId
+  }
+}

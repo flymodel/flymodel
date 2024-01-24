@@ -22,7 +22,7 @@ use flymodel_entities::entities::{
 };
 use flymodel_registry::storage::StorageOrchestrator;
 use futures_util::Future;
-use sea_orm::{ActiveEnum, DatabaseTransaction, EntityTrait};
+use sea_orm::DatabaseTransaction;
 use serde::Deserialize;
 
 pub mod experiments;

@@ -1,0 +1,27 @@
+query namespaceModels(
+  $modelId: Int
+  $page: Page
+  $modelName: String
+  $modelNamespace: Int
+) {
+  model(
+    id: $modelId
+    page: $page
+    name: $modelName
+    namespace: $modelNamespace
+  ) {
+    page {
+      size
+      page
+    }
+    totalPages
+    totalItems
+    data {
+      id
+      name
+      createdAt
+      lastModified
+      namespaceId
+    }
+  }
+}
