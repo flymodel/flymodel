@@ -1,6 +1,6 @@
 [package]
 name = "flymodel-client"
-readme = "README.md"
+readme.workspace = true
 authors.workspace = true
 description.workspace = true
 documentation.workspace = true
@@ -14,6 +14,7 @@ version.workspace = true
 maintenance = { status = "actively-developed" }
 
 [lib]
+name = "flymodel_client"
 crate-type = ["cdylib", "lib"]
 
 [features]
@@ -29,7 +30,10 @@ wasm = [
 wasm-web = ["wasm", "flymodel-graphql/wasm-web"]
 wasm-node = ["wasm", "flymodel-graphql/wasm-node"]
 
+python = ["dep:pyo3", "flymodel-graphql/python"]
+
 [dependencies]
+flymodel-macros = { path = "../macros" }
 flymodel-graphql = { path = "../graphql" }
 flymodel-dev = { path = "../dev" }
 
@@ -46,7 +50,7 @@ url.workspace = true
 wasm-bindgen = { workspace = true, optional = true }
 wasm-bindgen-futures = { workspace = true, optional = true }
 wee_alloc = { workspace = true, optional = true }
-
+pyo3 = { workspace = true, features = ["extension-module"], optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = { version = "0.3" }

@@ -3,6 +3,9 @@
 #[cynic::schema("flymodel")]
 pub mod schema {}
 
+#[cfg(feature = "python")]
+pub mod py;
+
 pub mod enums;
 
 pub mod fragments;

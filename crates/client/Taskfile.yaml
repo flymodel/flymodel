@@ -3,8 +3,12 @@ version: '3'
 tasks:
   wasm-client:
     cmds:
-    - wasm-pack build --out-name index --features wasm
+    - wasm-pack build --target web --out-name index --features wasm-web
     - wasm-pack pack
+    - cp -r ./pkg/* ../../clients/flymodel-web/
+    - wasm-pack build --target nodejs --out-name index --features wasm-node
+    - wasm-pack pack
+    - cp -r ./pkg/* ../../clients/flymodel-node/
 
   test-wasm:
     cmds:

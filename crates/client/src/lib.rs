@@ -4,6 +4,9 @@ cfg_if::cfg_if! {
     }
 }
 
+#[cfg(feature = "python")]
+pub mod py;
+
 pub mod client;
 pub(crate) mod wasm;
 

@@ -60,7 +60,7 @@ cynic = "3"
 js-sys = "0.3"
 insta = "1"
 prettytable = "0.10"
-
+pyo3 = "0.20.2"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]

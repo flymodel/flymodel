@@ -1,0 +1,28 @@
+[package]
+name = "flymodel-macros"
+readme = "README.md"
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+version.workspace = true
+
+[package.metadata.release]
+shared-version = true
+repository.workspace = true
+rust-version.workspace = true
+
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features = ["full"] }
+quote = "1"
+proc-macro2 = "1"
+
+
+[dev-dependencies]
+wasm-bindgen.workspace = true

@@ -11,27 +11,26 @@ use flymodel_graphql::gql::{
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
+use flymodel_dev::config_attr;
+use flymodel_macros::hybrid_feature_class;
+
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
-use flymodel_dev::config_attr;
+#[cfg(all(not(feature = "wasm"), feature = "python"))]
+use pyo3::prelude::*;
 
-config_attr! {
-    if #[cfg(feature = "wasm")] {
-        #[wasm_bindgen]
-    } for {
-        pub struct FlymodelClient {
-            base_url: Url,
-            client: reqwest::Client,
-        }
-    }
+#[hybrid_feature_class("python", "wasm")]
+pub struct FlymodelClient {
+    base_url: Url,
+    client: reqwest::Client,
 }
 
 config_attr! {
     if #[cfg(feature = "wasm")] {
         #[derive(tsify::Tsify)]
         #[tsify(into_wasm_abi)]
-    } for {
+    }  for {
         #[derive(Debug, Deserialize, Serialize)]
         pub struct ErrorExt {
             #[serde(flatten)]
@@ -60,6 +59,16 @@ cfg_if! {
         impl Into<wasm_bindgen::JsValue> for Error {
             fn into(self) -> JsValue {
                 JsValue::from_str(&self.to_string())
+            }
+        }
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "python")] {
+        impl Into<PyErr> for Error {
+            fn into(self) -> PyErr {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(self.to_string())
             }
         }
     }
@@ -127,12 +136,29 @@ impl FlymodelClient {
         Ok(raise_for(self.post("/graphql", &op).await?)?)
     }
 
+    #[cfg(all(not(feature = "wasm"), not(feature = "python")))]
+    pub fn new(base_url: &str) -> Result<FlymodelClient> {
+        FlymodelClient::new_common(base_url)
+    }
+
     #[inline]
     fn new_common(base_url: &str) -> Result<Self> {
         Ok(Self {
             base_url: base_url.parse()?,
             client: reqwest::ClientBuilder::new().build().expect("ok"),
         })
+    }
+}
+
+cfg_if! {
+    if #[cfg(all(feature = "python", not(feature = "wasm")))] {
+        #[pymethods]
+        impl FlymodelClient {
+            #[new]
+            fn new(base_url: String) -> Result<Self> {
+                FlymodelClient::new_common(&base_url)
+            }
+        }
     }
 }
 
@@ -143,11 +169,6 @@ config_attr! {
         impl FlymodelClient {
             #[cfg(feature = "wasm")]
             #[wasm_bindgen(constructor)]
-            pub fn new(base_url: &str) -> Result<FlymodelClient> {
-                FlymodelClient::new_common(base_url)
-            }
-
-            #[cfg(not(feature = "wasm"))]
             pub fn new(base_url: &str) -> Result<FlymodelClient> {
                 FlymodelClient::new_common(base_url)
             }

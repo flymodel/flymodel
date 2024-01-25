@@ -1,0 +1,22 @@
+[package]
+name = "flymodel-events"
+readme = "README.md"
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+version.workspace = true
+
+[package.metadata.release]
+shared-version = true
+repository.workspace = true
+rust-version.workspace = true
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+iceoryx2.workspace = true
+job_scheduler.workspace = true

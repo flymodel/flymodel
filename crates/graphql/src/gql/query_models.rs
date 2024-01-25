@@ -1,7 +1,9 @@
 use crate::{fragments::*, jsvalue, scalars::*, schema};
+use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
+#[hybrid_feature_class("python")]
 #[derive(tsify::Tsify, cynic::QueryVariables, Debug, Clone, Deserialize)]
 #[tsify(from_wasm_abi)]
 pub struct NamespaceModelsVariables {
@@ -11,6 +13,7 @@ pub struct NamespaceModelsVariables {
     pub page: Option<Page>,
 }
 
+#[hybrid_feature_class("python")]
 #[derive(tsify::Tsify, cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Query", variables = "NamespaceModelsVariables")]
 #[tsify(from_wasm_abi, into_wasm_abi)]
@@ -19,6 +22,7 @@ pub struct NamespaceModels {
     pub model: PaginatedModel,
 }
 
+#[hybrid_feature_class("python")]
 #[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
 #[tsify(into_wasm_abi)]
 pub struct PaginatedModel {
@@ -28,6 +32,7 @@ pub struct PaginatedModel {
     pub data: Vec<Model>,
 }
 
+#[hybrid_feature_class("python")]
 #[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Model {

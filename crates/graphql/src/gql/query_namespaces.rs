@@ -1,8 +1,10 @@
 use crate::schema;
 
 use crate::{fragments::*, jsvalue};
+use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 
+#[hybrid_feature_class("python")]
 #[derive(tsify::Tsify, cynic::QueryVariables, Debug, Clone, Deserialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 
@@ -10,6 +12,7 @@ pub struct QueryNamespacesVariables {
     pub page: Option<Page>,
 }
 
+#[hybrid_feature_class("python")]
 #[derive(tsify::Tsify, cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Query", variables = "QueryNamespacesVariables")]
 #[tsify(from_wasm_abi, into_wasm_abi)]
@@ -18,6 +21,7 @@ pub struct QueryNamespaces {
     pub namespace: PaginatedNamespace,
 }
 
+#[hybrid_feature_class("python")]
 #[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 
@@ -28,6 +32,7 @@ pub struct PaginatedNamespace {
     pub data: Vec<Namespace>,
 }
 
+#[hybrid_feature_class("python")]
 #[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 
