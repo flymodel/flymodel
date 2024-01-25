@@ -2,7 +2,7 @@ use crate::schema;
 use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 
-#[hybrid_feature_class("python")]
+#[hybrid_feature_class(python = true)]
 #[derive(tsify::Tsify, cynic::InputObject, Clone, Debug, Deserialize)]
 #[tsify(from_wasm_abi)]
 pub struct Page {
@@ -10,7 +10,7 @@ pub struct Page {
     pub page: i32,
 }
 
-#[hybrid_feature_class("python")]
+#[hybrid_feature_class(python = true)]
 #[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
 #[tsify(into_wasm_abi)]
 pub struct CurrentPage {
@@ -20,7 +20,7 @@ pub struct CurrentPage {
 
 #[cfg(feature = "python")]
 #[pyo3::prelude::pymethods]
-impl CurrentPage {
+impl Page {
     #[new]
     pub fn new(size: i32, page: i32) -> Self {
         Self { size, page }

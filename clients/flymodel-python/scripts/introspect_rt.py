@@ -1,16 +1,17 @@
-import flymodel_client
-from  flymodel_client import models
 from pathlib import Path
 
-path = Path(__file__).parent.parent / "src" / "flymodel_client" / "models"
+from flymodel_client import models
 
+path = Path(__file__).parent.parent / "src" / "flymodel_client" / "models"
 
 
 def model_import_stmt_pyi(name: str):
     return f"import flymodel_client.models.{name} as {name}"
 
+
 def imports_for_mod(mod):
     return list(filter(lambda v: not v.startswith("__"), dir(mod)))
+
 
 def introspect_models():
     top_level = imports_for_mod(models)
@@ -21,7 +22,6 @@ def introspect_models():
 
     with open(path / "__init__.pyi", "w") as f:
         f.write(pyi)
-
 
     for mod in top_level:
         pyi = path / (mod + ".pyi")
@@ -41,8 +41,8 @@ __spec__ = {spec!r}
         with open(pyi, "w") as f:
             f.write(stub)
 
-
     print()
+
 
 if __name__ == "__main__":
     assert path.exists()

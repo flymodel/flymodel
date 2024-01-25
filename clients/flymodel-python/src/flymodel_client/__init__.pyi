@@ -1,1 +1,1 @@
-from .client import FlymodelClient
+from .client import FlymodelClient  # noqa: F401

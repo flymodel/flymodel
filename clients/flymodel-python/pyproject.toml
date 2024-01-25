@@ -19,3 +19,6 @@ module-name = "flymodel_client"
 features = ["python"]
 python-source = "src"
 manifest-path = "../../crates/client/Cargo.toml"
+
+
+[tool.ruff.per-file-ignores]

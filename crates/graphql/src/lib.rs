@@ -15,3 +15,28 @@ pub mod wasm;
 
 #[cfg(test)]
 pub mod tests {}
+
+#[macro_export]
+macro_rules! new_for {
+    (
+        $name:ident,
+        $(
+            $field:ident: $type:ty
+        ), + $(,)?
+    ) => {
+        #[cfg(feature = "python")]
+        #[pyo3::prelude::pymethods]
+        impl $name {
+            #[new]
+            fn new($(
+                $field: $type,
+            )*) -> Self {
+                Self {
+                    $(
+                        $field: $field.into(),
+                    )*
+                }
+            }
+        }
+    };
+}

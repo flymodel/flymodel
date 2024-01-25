@@ -19,13 +19,13 @@ rust-version.workspace = true
 crate-type = ["cdylib", "lib"]
 
 [features]
-default = []
+default = ["python"]
 wasm = ["chrono/wasmbind", "dep:serde-wasm-bindgen", "tsify/wasm-bindgen"]
 
 wasm-web = ["wasm"]
 wasm-node = ["wasm", "chrono/js-sys", "tsify/js"]
 
-python = ["dep:pyo3"]
+python = ["dep:pyo3", "pyo3/chrono"]
 
 
 [badges]
@@ -46,8 +46,10 @@ tsify = { workspace = true }
 wasm-bindgen = { workspace = true }
 serde-wasm-bindgen = { workspace = true, optional = true }
 pyo3 = { workspace = true, features = [
-    "abi3-py38",
     "extension-module",
+    "chrono",
+    "serde",
+    "experimental-inspect",
 ], optional = true }
 
 [build-dependencies]

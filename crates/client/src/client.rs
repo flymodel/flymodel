@@ -20,7 +20,7 @@ use wasm_bindgen::prelude::*;
 #[cfg(all(not(feature = "wasm"), feature = "python"))]
 use pyo3::prelude::*;
 
-#[hybrid_feature_class("python", "wasm")]
+#[hybrid_feature_class(python = true, wasm = true, py_getters = false)]
 pub struct FlymodelClient {
     base_url: Url,
     client: reqwest::Client,

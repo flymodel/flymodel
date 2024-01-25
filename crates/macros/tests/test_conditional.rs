@@ -1,9 +1,6 @@
 use flymodel_macros::*;
 
-use wasm_bindgen::prelude::*;
-
-#[hybrid_feature_class("wasm", "python")]
-
+#[hybrid_feature_class(wasm = true, python = true)]
 struct SmokeTest {
     value: i32,
 }
