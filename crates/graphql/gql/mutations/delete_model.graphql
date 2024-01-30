@@ -1,0 +1,3 @@
+mutation DeleteModel($id: Int!) {
+  deleteModel(id: $id)
+}

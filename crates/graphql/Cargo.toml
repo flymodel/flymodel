@@ -19,7 +19,7 @@ rust-version.workspace = true
 crate-type = ["cdylib", "lib"]
 
 [features]
-default = ["python"]
+default = []
 wasm = [
     "chrono/wasmbind",
     "tsify/wasm-bindgen",
@@ -57,7 +57,6 @@ pyo3 = { workspace = true, features = [
     "experimental-inspect",
 ], optional = true }
 
-tracing = { workspace = true, default-features = false, features = ["log"] }
 
 [build-dependencies]
 cynic-codegen = { version = "3", features = ["rkyv"] }

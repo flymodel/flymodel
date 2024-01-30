@@ -1,8 +1,5 @@
 use crate::{client::Result, trace::init_subscriber};
-use flymodel_graphql::gql::{
-    create_experiment, create_model, create_model_version, create_namespace, query_buckets,
-    query_models, query_namespaces,
-};
+use flymodel_graphql::gql::*;
 use pyo3::prelude::*;
 use std::{
     future::Future,
@@ -27,6 +24,12 @@ fn flymodel_client(py: Python, m: &PyModule) -> PyResult<()> {
 struct Runtime {
     _rt: Option<tokio::runtime::Runtime>,
     handle: tokio::runtime::Handle,
+}
+
+impl Clone for Runtime {
+    fn clone(&self) -> Self {
+        Self::with_current(self.handle.clone())
+    }
 }
 
 impl Runtime {
@@ -145,7 +148,6 @@ macro_rules! impl_associated_futures {
 
                 $(
                     pub fn $name<'py>(&self, py: Python<'py>, $($arg: $typ)*) -> PyResult<&'py PyAny> {
-                        println!("is fu {:#?}", self.rt.handle);
                         let client = self.shared.clone();
                         let handle = self.rt.handle.clone();
                         self.rt.pyfut(py, async move {
@@ -162,26 +164,48 @@ macro_rules! impl_associated_futures {
 }
 
 impl_associated_futures! {
-    pub async fn create_namespace(&self,
-        namespace: create_namespace::CreateNamespaceVariables,
-    ) -> Result<create_namespace::CreateNamespace>,
+    pub async fn create_bucket(&self, bucket: create_bucket::CreateBucketVariables) -> Result<create_bucket::CreateBucket>,
+
+    pub async fn delete_bucket(&self, bucket: delete_bucket::DeleteBucketVariables) -> Result<delete_bucket::DeleteBucket>,
+
+    pub async fn create_namespace(&self, namespace: create_namespace::CreateNamespaceVariables) -> Result<create_namespace::CreateNamespace>,
+
+    pub async fn delete_namespace(&self, namespace: delete_namespace::DeleteNamespaceVariables) -> Result<delete_namespace::DeleteNamespace> ,
+
+    pub async fn update_namespace(&self, namespace: update_namespace::UpdateNamespaceVariables) -> Result<update_namespace::UpdateNamespace>,
 
     pub async fn create_model(
         &self,
         model: create_model::CreateModelVariables,
     ) -> Result<create_model::CreateModel>,
 
+    pub async fn delete_model(&self, model: delete_model::DeleteModelVariables) -> Result<delete_model::DeleteModel>,
+
+    pub async fn update_model(&self, model: update_model::UpdateModelVariables) -> Result<update_model::UpdateModel>,
+
     pub async fn create_model_version(
         &self,
-        model: create_model_version::CreateModelVersionVariables,
+        version: create_model_version::CreateModelVersionVariables,
     ) -> Result<create_model_version::CreateModelVersion> ,
+
+    pub async fn delete_model_version(
+        &self,
+        version: delete_model_version::DeleteModelVersionVariables,
+    ) -> Result<delete_model_version::DeleteModelVersion>,
+
+    pub async fn update_model_version_state(&self, state: update_model_version_state::UpdateModelVersionStateVariables) -> Result<update_model_version_state::UpdateModelVersionState>,
 
     pub async fn create_experiment(
         &self,
-        model: create_experiment::CreateExperimentVariables,
+        experiment: create_experiment::CreateExperimentVariables,
     ) -> Result<create_experiment::CreateExperiment>,
 
-    pub async fn query_namespaces(&self, vars: query_namespaces::QueryNamespacesVariables) -> Result<query_namespaces::QueryNamespaces>,
+    pub async fn delete_experiment(
+        &self,
+        experiment: delete_experiment::DeleteExperimentVariables,
+    ) -> Result<delete_experiment::DeleteExperiment>,
+
+    pub async fn query_namespaces(&self, vars: query_namespaces::QueryNamespacesVariables) -> Result<query_namespaces::QueryNamespaces> ,
 
     pub async fn query_buckets(&self, vars: query_buckets::QueryBucketsVariables) -> Result<query_buckets::QueryBuckets>,
 
@@ -189,4 +213,6 @@ impl_associated_futures! {
         &self,
         vars: query_models::NamespaceModelsVariables,
     ) -> Result<query_models::NamespaceModels>,
+
+    pub async fn query_experiment(&self, vars: query_experiment::QueryExperimentVariables) -> Result<query_experiment::QueryExperiment>,
 }

@@ -1,0 +1,21 @@
+mutation CreateBucket(
+  $namespace: Int!
+  $name: String!
+  $role: Lifecycle!
+  $region: String
+) {
+  createBucket(
+    namespace: $namespace
+    name: $name
+    role: $role
+    region: $region
+  ) {
+    id
+    name
+    role
+    region
+    namespace
+    createdAt
+    lastModified
+  }
+}

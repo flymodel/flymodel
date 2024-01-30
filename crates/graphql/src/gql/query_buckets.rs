@@ -14,6 +14,7 @@ pub struct QueryBucketsVariables {
 }
 
 crate::new_for! {
+    #[pyo3(signature = (id = None, namespace = None, page = None, role = None) )]
     QueryBucketsVariables,
     id: Option<i32>,
     namespace: Option<i32>,

@@ -41,7 +41,7 @@ impl CurrentPage {
 
 #[cfg_attr(feature = "python", pyo3::pymethods)]
 impl Page {
-    #[new]
+    #[cfg_attr(feature = "python", new)]
     pub fn new(size: i32, page: i32) -> Self {
         Self { size, page }
     }

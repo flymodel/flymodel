@@ -1,0 +1,13 @@
+query QueryExperiment($modelId: Int, $name: String, $id: Int, $page: Page) {
+  experiment(modelId:$modelId, name:$name, id:$id, page:$page ){
+    totalPages,
+    totalItems,
+    page{ size, page },
+  	data {
+      id,
+      name,
+      versionId,
+      createdAt,
+    }
+  }
+}

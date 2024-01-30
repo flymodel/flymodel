@@ -26,7 +26,7 @@ impl ModelVersionMutations {
         &self,
         ctx: &Context<'ctx>,
         id: i64,
-        hard: bool,
+        hard: Option<bool>,
     ) -> Result<bool, async_graphql::Error> {
         let db = DbLoader::<entities::model_version::Model>::with_context(ctx)?.loader();
         // todo: add 'hard' / 'soft' delete

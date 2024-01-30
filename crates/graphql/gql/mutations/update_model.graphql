@@ -1,0 +1,7 @@
+mutation UpdateModel($id: Int!, $name: String!) {
+  updateModel(id: $id, name: $name) {
+    id
+    name
+    lastModified
+  }
+}

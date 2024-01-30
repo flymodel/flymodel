@@ -19,7 +19,7 @@ crate-type = ["cdylib", "lib"]
 
 [features]
 
-default = []
+default = ["wasm-web"]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 
 wasm = [
@@ -27,8 +27,10 @@ wasm = [
     "dep:wee_alloc",
     "dep:wasm-bindgen",
     "dep:wasm-bindgen-futures",
-    "dep:console-subscriber",
+    "dep:tracing-wasm",
     "dep:tracing",
+    "dep:console_error_panic_hook",
+    "getrandom/js",
 ]
 
 wasm-web = ["wasm", "flymodel-graphql/wasm-web"]
@@ -56,6 +58,8 @@ reqwest.workspace = true
 serde_json.workspace = true
 tsify.workspace = true
 url.workspace = true
+js-sys = { version = "0.3", optional = true }
+getrandom = { version = "0.2", optional = true }
 wasm-bindgen = { workspace = true, optional = true }
 wasm-bindgen-futures = { workspace = true, optional = true }
 wee_alloc = { workspace = true, optional = true }
@@ -64,13 +68,13 @@ pyo3-asyncio = { version = "0.20", features = [
     "attributes",
     "tokio-runtime",
 ], optional = true }
-tokio = { workspace = true, optional = true, features = ["full"] }
-once_cell = "*"
+tokio = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
+tracing-wasm = { version = "0.2.1", optional = true }
 tracing-subscriber = { workspace = true, optional = true, features = [
     "env-filter",
 ] }
-console-subscriber = { version = "0.2", optional = true }
+console_error_panic_hook = { version = "0.1", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = { version = "0.3" }

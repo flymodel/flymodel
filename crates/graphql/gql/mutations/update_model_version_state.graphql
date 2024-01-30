@@ -1,0 +1,7 @@
+mutation UpdateModelVersionState($id: Int!, $state: Lifecycle!) {
+  updateModelVersionState(id: $id, state: $state) {
+    id
+    versionId
+    state
+  }
+}

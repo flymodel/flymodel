@@ -1,4 +1,5 @@
 import pytest
+
 from flymodel import Client
 
 

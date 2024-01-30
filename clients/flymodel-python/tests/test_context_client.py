@@ -1,4 +1,5 @@
 import pytest
+
 from flymodel import Client, client_context, context, current_client
 
 from .fixture import client

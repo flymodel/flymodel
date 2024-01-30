@@ -20,10 +20,12 @@ impl ExperimentMutations {
         db.create_experiment(model_version, name).await
     }
 
+    #[allow(unused_variables)]
     pub async fn delete_experiment<'ctx>(
         &self,
         ctx: &Context<'ctx>,
         id: i64,
+        hard: Option<bool>,
     ) -> Result<bool, async_graphql::Error> {
         let db = DbLoader::<entities::experiment::Model>::with_context(ctx)
             .map_err(|err| err.into_graphql_error())?

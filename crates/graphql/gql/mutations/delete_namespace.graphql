@@ -1,0 +1,3 @@
+mutation DeleteNamespace($id: Int!) {
+  deleteNamespace(id: $id)
+}

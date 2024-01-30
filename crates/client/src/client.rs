@@ -5,11 +5,7 @@ use reqwest::Url;
 
 use cfg_if::cfg_if;
 use cynic::{GraphQlError, GraphQlResponse, MutationBuilder, Operation, QueryBuilder};
-use flymodel_graphql::gql::{
-    create_experiment,
-    create_model::{self},
-    create_model_version, create_namespace, query_buckets, query_models, query_namespaces,
-};
+use flymodel_graphql::gql::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use flymodel_dev::config_attr;
@@ -27,17 +23,11 @@ pub struct Client {
     client: reqwest::Client,
 }
 
-config_attr! {
-    if #[cfg(feature = "wasm")] {
-        #[derive(tsify::Tsify)]
-        #[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify( into_wasm_abi))]
-    }  for {
-        #[derive(Debug, Deserialize, Serialize)]
-        pub struct ErrorExt {
-            #[serde(flatten)]
-            pub rest: serde_json::Value,
-        }
-    }
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(into_wasm_abi))]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ErrorExt {
+    #[serde(flatten)]
+    pub rest: serde_json::Value,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -175,7 +165,23 @@ config_attr! {
                 Client::new_common(base_url)
             }
 
+            pub async fn create_bucket(&self, bucket: create_bucket::CreateBucketVariables) -> Result<create_bucket::CreateBucket> {
+                self.perform_mutation(bucket).await
+            }
+
+            pub async fn delete_bucket(&self, bucket: delete_bucket::DeleteBucketVariables) -> Result<delete_bucket::DeleteBucket> {
+                self.perform_mutation(bucket).await
+            }
+
             pub async fn create_namespace(&self, namespace: create_namespace::CreateNamespaceVariables) -> Result<create_namespace::CreateNamespace> {
+                self.perform_mutation(namespace).await
+            }
+
+            pub async fn delete_namespace(&self, namespace: delete_namespace::DeleteNamespaceVariables) -> Result<delete_namespace::DeleteNamespace> {
+                self.perform_mutation(namespace).await
+            }
+
+            pub async fn update_namespace(&self, namespace: update_namespace::UpdateNamespaceVariables) -> Result<update_namespace::UpdateNamespace> {
                 self.perform_mutation(namespace).await
             }
 
@@ -186,18 +192,44 @@ config_attr! {
                 self.perform_mutation(model).await
             }
 
+            pub async fn delete_model(&self, model: delete_model::DeleteModelVariables) -> Result<delete_model::DeleteModel> {
+                self.perform_mutation(model).await
+            }
+
+            pub async fn update_model(&self, model: update_model::UpdateModelVariables) -> Result<update_model::UpdateModel> {
+                self.perform_mutation(model).await
+            }
+
             pub async fn create_model_version(
                 &self,
-                model: create_model_version::CreateModelVersionVariables,
+                version: create_model_version::CreateModelVersionVariables,
             ) -> Result<create_model_version::CreateModelVersion> {
-                self.perform_mutation(model).await
+                self.perform_mutation(version).await
+            }
+
+            pub async fn delete_model_version(
+                &self,
+                version: delete_model_version::DeleteModelVersionVariables,
+            ) -> Result<delete_model_version::DeleteModelVersion> {
+                self.perform_mutation(version).await
+            }
+
+            pub async fn update_model_version_state(&self, state: update_model_version_state::UpdateModelVersionStateVariables) -> Result<update_model_version_state::UpdateModelVersionState> {
+                self.perform_mutation(state).await
             }
 
             pub async fn create_experiment(
                 &self,
-                model: create_experiment::CreateExperimentVariables,
+                experiment: create_experiment::CreateExperimentVariables,
             ) -> Result<create_experiment::CreateExperiment> {
-                self.perform_mutation(model).await
+                self.perform_mutation(experiment).await
+            }
+
+            pub async fn delete_experiment(
+                &self,
+                experiment: delete_experiment::DeleteExperimentVariables,
+            ) -> Result<delete_experiment::DeleteExperiment> {
+                self.perform_mutation(experiment).await
             }
 
             pub async fn query_namespaces(&self, vars: query_namespaces::QueryNamespacesVariables) -> Result<query_namespaces::QueryNamespaces> {
@@ -214,6 +246,11 @@ config_attr! {
             ) -> Result<query_models::NamespaceModels> {
                 self.perform_query(vars).await
             }
+
+            pub async fn query_experiment(&self, vars: query_experiment::QueryExperimentVariables) -> Result<query_experiment::QueryExperiment> {
+                self.perform_query(vars).await
+            }
+
         }
     }
 

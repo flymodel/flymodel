@@ -1,0 +1,3 @@
+mutation DeleteExperiment($id: Int!, $hard: Boolean) {
+  deleteExperiment(id: $id, hard: $hard)
+}

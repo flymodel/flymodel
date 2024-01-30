@@ -9,5 +9,6 @@ pub(crate) fn init_subscriber() {
 
 #[cfg(feature = "wasm")]
 pub(crate) fn init_subscriber() {
-    console_subscriber::init();
+    console_error_panic_hook::set_once();
+    tracing_wasm::set_as_global_default();
 }

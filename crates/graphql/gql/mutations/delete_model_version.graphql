@@ -1,0 +1,3 @@
+mutation DeleteModelVersion($id: Int!, $hard: Boolean) {
+  deleteModelVersion(id: $id, hard: $hard)
+}

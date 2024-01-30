@@ -1,0 +1,8 @@
+mutation UpdateNamespace($id: Int!, $name: String, $description: String) {
+  updateNamespace(id: $id, name: $name, description: $description) {
+    id
+    name
+    description
+    lastModified
+  }
+}

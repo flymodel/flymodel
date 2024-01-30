@@ -19,6 +19,7 @@ pub struct QueryNamespacesVariables {
 }
 
 crate::new_for! {
+    #[pyo3(signature = (page = None) )]
     QueryNamespacesVariables,
     page: Option<Page>,
 }

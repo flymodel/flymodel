@@ -13,6 +13,7 @@ pub struct NamespaceModelsVariables {
 }
 
 crate::new_for! {
+    #[pyo3(signature = (model_id = None, model_name = None, model_namespace = None, page = None) )]
     NamespaceModelsVariables,
     model_id: Option<i32>,
     model_name: Option<String>,

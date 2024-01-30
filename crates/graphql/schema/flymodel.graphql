@@ -126,10 +126,10 @@ type Mutation {
   deleteModel(id: Int!): Boolean!
   updateModel(id: Int!, name: String!): Model!
   createModelVersion(model: Int!, name: String!): ModelVersion!
-  deleteModelVersion(id: Int!, hard: Boolean!): Boolean!
+  deleteModelVersion(id: Int!, hard: Boolean): Boolean!
   updateModelVersionState(id: Int!, state: Lifecycle!): ModelState!
   createExperiment(modelVersion: Int!, name: String!): Experiment!
-  deleteExperiment(id: Int!): Boolean!
+  deleteExperiment(id: Int!, hard: Boolean): Boolean!
 }
 
 type Namespace {

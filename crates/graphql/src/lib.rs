@@ -19,6 +19,9 @@ pub mod tests {}
 #[macro_export]
 macro_rules! new_for {
     (
+        $(
+            #[$($t: tt)*]
+        )*
         $name:ident,
         $(
             $field:ident: $type:ty
@@ -28,6 +31,9 @@ macro_rules! new_for {
         #[pyo3::prelude::pymethods]
         impl $name {
             #[new]
+            $(
+                #[$($t)*]
+            )*
             fn new($(
                 $field: $type,
             )*) -> Self {
