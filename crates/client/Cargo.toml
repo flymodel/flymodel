@@ -46,7 +46,6 @@ python = [
 [dependencies]
 flymodel-macros = { path = "../macros" }
 flymodel-graphql = { path = "../graphql" }
-flymodel-dev = { path = "../dev" }
 
 paste.workspace = true
 anyhow.workspace = true
@@ -80,6 +79,7 @@ once_cell = { version = "1.19", optional = true }
 [dev-dependencies]
 wasm-bindgen-test = { version = "0.3" }
 tokio.workspace = true
+flymodel-dev = { path = "../dev" }
 
 
 [package.metadata.release]

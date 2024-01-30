@@ -41,7 +41,6 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 
 flymodel-macros = { path = "../macros" }
-flymodel-dev = { path = "../dev" }
 
 cfg-if.workspace = true
 cynic = { workspace = true }
@@ -63,6 +62,7 @@ cynic-codegen = { version = "3", features = ["rkyv"] }
 
 [dev-dependencies]
 prettytable.workspace = true
+flymodel-dev = { path = "../dev" }
 
 
 [profile.dev.package]
