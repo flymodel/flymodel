@@ -70,7 +70,7 @@ pub fn hybrid_feature_class_impl(args: TokenStream, item: TokenStream) -> TokenS
     let python = if targets.is_python() {
         quote! {
             #[cfg_attr(
-                all(feature = "python", not(feature = "wasm")),
+                feature = "python",
                 pyo3::prelude::pyclass(#py_extra),
             )]
         }

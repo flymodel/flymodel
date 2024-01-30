@@ -1,12 +1,16 @@
 version: '3'
 
 tasks:
-  python:
+  python-dev:
     dir: flymodel-python
     cmds:
     - maturin develop
     - python scripts/introspect_rt.py
 
+  build-python:
+    dir: flymodel-python
+    cmds:
+    - maturin build {{ .FLAGS }}
 
   pytest:
     dir: flymodel-python

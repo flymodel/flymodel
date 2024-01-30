@@ -62,7 +62,7 @@ jobs:
 
     - name: Install cargo tools
       run: |
-        cargo binstall -y cynic-cli wasm-pack cargo-insta
+        cargo binstall -y cynic-cli wasm-pack
 
     - name: Install tools
       if: startsWith(matrix.os, 'ubuntu-')

@@ -18,8 +18,7 @@ name = "flymodel_client"
 crate-type = ["cdylib", "lib"]
 
 [features]
-
-default = ["wasm-web"]
+default = []
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 
 wasm = [
@@ -41,6 +40,7 @@ python = [
     "dep:pyo3-asyncio",
     "dep:tokio",
     "tracing",
+    "once_cell",
 ]
 
 [dependencies]
@@ -75,6 +75,7 @@ tracing-subscriber = { workspace = true, optional = true, features = [
     "env-filter",
 ] }
 console_error_panic_hook = { version = "0.1", optional = true }
+once_cell = { version = "1.19", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = { version = "0.3" }
@@ -85,3 +86,9 @@ tokio.workspace = true
 shared-version = true
 repository.workspace = true
 rust-version.workspace = true
+
+[profile.release]
+lto = 'fat'
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ['-Os']

@@ -13,9 +13,20 @@ includes:
     taskfile: ./clients/Taskfile.yaml
     dir: ./clients
 
-
-
 tasks:
+  python-dev:
+    cmds:
+    - task: dist-clients:python-dev
+
+  python-build:
+    cmds:
+    - task: dist-clients:build-python
+
+  python-build-release:
+    cmds:
+    - task: dist-clients:build-python
+      vars: {FLAGS: --release}
+
   gen:
     cmds:
     - echo $(echo $TGT | sed -e 's/.graphql/.rs/g')
@@ -74,3 +85,15 @@ tasks:
     - task: hurl:single-region
     - cmd: cargo migrate-down
       silent: true
+
+  build:
+    cmds:
+    - cargo build --package flymodel-cli
+    - task: python-build
+    - task: client:wasm-clients
+
+  build-release:
+    cmds:
+    - cargo build --release --package flymodel-cli
+    - task: python-build-release
+    - task: client:wasm-clients

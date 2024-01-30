@@ -1,7 +1,7 @@
 version: '3'
 
 tasks:
-  wasm-client:
+  wasm-clients:
     cmds:
     - wasm-pack build --target web --out-name index --features wasm-web
     - wasm-pack pack

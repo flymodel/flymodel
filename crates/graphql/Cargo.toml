@@ -19,7 +19,7 @@ rust-version.workspace = true
 crate-type = ["cdylib", "lib"]
 
 [features]
-default = []
+default = ["python"]
 wasm = [
     "chrono/wasmbind",
     "tsify/wasm-bindgen",
@@ -63,9 +63,7 @@ cynic-codegen = { version = "3", features = ["rkyv"] }
 
 [dev-dependencies]
 prettytable.workspace = true
-insta.workspace = true
 
 
 [profile.dev.package]
-insta.opt-level = 3
 similar.opt-level = 3

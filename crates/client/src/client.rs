@@ -8,13 +8,12 @@ use cynic::{GraphQlError, GraphQlResponse, MutationBuilder, Operation, QueryBuil
 use flymodel_graphql::gql::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use flymodel_dev::config_attr;
 use flymodel_macros::hybrid_feature_class;
 
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 
-#[cfg(all(not(feature = "wasm"), feature = "python"))]
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
 
 #[hybrid_feature_class(wasm = true, py_getters = false)]
@@ -61,9 +60,9 @@ cfg_if! {
 
 cfg_if! {
     if #[cfg(feature = "python")] {
-        impl From<Error> for PyErr {
+        impl From<Error> for pyo3::PyErr {
             fn from(value: Error) -> PyErr {
-                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(value.to_string())
+                pyo3::PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(value.to_string())
             }
         }
     }
@@ -154,104 +153,130 @@ impl Client {
     }
 }
 
-config_attr! {
-    if #[cfg(feature = "wasm")] {
-        #[wasm_bindgen]
-    } for {
-        impl Client {
-            #[cfg(feature = "wasm")]
-            #[wasm_bindgen(constructor)]
-            pub fn new(base_url: &str) -> Result<Client> {
-                Client::new_common(base_url)
-            }
-
-            pub async fn create_bucket(&self, bucket: create_bucket::CreateBucketVariables) -> Result<create_bucket::CreateBucket> {
-                self.perform_mutation(bucket).await
-            }
-
-            pub async fn delete_bucket(&self, bucket: delete_bucket::DeleteBucketVariables) -> Result<delete_bucket::DeleteBucket> {
-                self.perform_mutation(bucket).await
-            }
-
-            pub async fn create_namespace(&self, namespace: create_namespace::CreateNamespaceVariables) -> Result<create_namespace::CreateNamespace> {
-                self.perform_mutation(namespace).await
-            }
-
-            pub async fn delete_namespace(&self, namespace: delete_namespace::DeleteNamespaceVariables) -> Result<delete_namespace::DeleteNamespace> {
-                self.perform_mutation(namespace).await
-            }
-
-            pub async fn update_namespace(&self, namespace: update_namespace::UpdateNamespaceVariables) -> Result<update_namespace::UpdateNamespace> {
-                self.perform_mutation(namespace).await
-            }
-
-            pub async fn create_model(
-                &self,
-                model: create_model::CreateModelVariables,
-            ) -> Result<create_model::CreateModel> {
-                self.perform_mutation(model).await
-            }
-
-            pub async fn delete_model(&self, model: delete_model::DeleteModelVariables) -> Result<delete_model::DeleteModel> {
-                self.perform_mutation(model).await
-            }
-
-            pub async fn update_model(&self, model: update_model::UpdateModelVariables) -> Result<update_model::UpdateModel> {
-                self.perform_mutation(model).await
-            }
-
-            pub async fn create_model_version(
-                &self,
-                version: create_model_version::CreateModelVersionVariables,
-            ) -> Result<create_model_version::CreateModelVersion> {
-                self.perform_mutation(version).await
-            }
-
-            pub async fn delete_model_version(
-                &self,
-                version: delete_model_version::DeleteModelVersionVariables,
-            ) -> Result<delete_model_version::DeleteModelVersion> {
-                self.perform_mutation(version).await
-            }
-
-            pub async fn update_model_version_state(&self, state: update_model_version_state::UpdateModelVersionStateVariables) -> Result<update_model_version_state::UpdateModelVersionState> {
-                self.perform_mutation(state).await
-            }
-
-            pub async fn create_experiment(
-                &self,
-                experiment: create_experiment::CreateExperimentVariables,
-            ) -> Result<create_experiment::CreateExperiment> {
-                self.perform_mutation(experiment).await
-            }
-
-            pub async fn delete_experiment(
-                &self,
-                experiment: delete_experiment::DeleteExperimentVariables,
-            ) -> Result<delete_experiment::DeleteExperiment> {
-                self.perform_mutation(experiment).await
-            }
-
-            pub async fn query_namespaces(&self, vars: query_namespaces::QueryNamespacesVariables) -> Result<query_namespaces::QueryNamespaces> {
-                self.perform_query(vars).await
-            }
-
-            pub async fn query_buckets(&self, vars: query_buckets::QueryBucketsVariables) -> Result<query_buckets::QueryBuckets> {
-                self.perform_query(vars).await
-            }
-
-            pub async fn query_namespace_models(
-                &self,
-                vars: query_models::NamespaceModelsVariables,
-            ) -> Result<query_models::NamespaceModels> {
-                self.perform_query(vars).await
-            }
-
-            pub async fn query_experiment(&self, vars: query_experiment::QueryExperimentVariables) -> Result<query_experiment::QueryExperiment> {
-                self.perform_query(vars).await
-            }
-
-        }
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+impl Client {
+    #[cfg(feature = "wasm")]
+    #[wasm_bindgen(constructor)]
+    pub fn new(base_url: &str) -> Result<Client> {
+        Client::new_common(base_url)
     }
 
+    pub async fn create_bucket(
+        &self,
+        bucket: create_bucket::CreateBucketVariables,
+    ) -> Result<create_bucket::CreateBucket> {
+        self.perform_mutation(bucket).await
+    }
+
+    pub async fn delete_bucket(
+        &self,
+        bucket: delete_bucket::DeleteBucketVariables,
+    ) -> Result<delete_bucket::DeleteBucket> {
+        self.perform_mutation(bucket).await
+    }
+
+    pub async fn create_namespace(
+        &self,
+        namespace: create_namespace::CreateNamespaceVariables,
+    ) -> Result<create_namespace::CreateNamespace> {
+        self.perform_mutation(namespace).await
+    }
+
+    pub async fn delete_namespace(
+        &self,
+        namespace: delete_namespace::DeleteNamespaceVariables,
+    ) -> Result<delete_namespace::DeleteNamespace> {
+        self.perform_mutation(namespace).await
+    }
+
+    pub async fn update_namespace(
+        &self,
+        namespace: update_namespace::UpdateNamespaceVariables,
+    ) -> Result<update_namespace::UpdateNamespace> {
+        self.perform_mutation(namespace).await
+    }
+
+    pub async fn create_model(
+        &self,
+        model: create_model::CreateModelVariables,
+    ) -> Result<create_model::CreateModel> {
+        self.perform_mutation(model).await
+    }
+
+    pub async fn delete_model(
+        &self,
+        model: delete_model::DeleteModelVariables,
+    ) -> Result<delete_model::DeleteModel> {
+        self.perform_mutation(model).await
+    }
+
+    pub async fn update_model(
+        &self,
+        model: update_model::UpdateModelVariables,
+    ) -> Result<update_model::UpdateModel> {
+        self.perform_mutation(model).await
+    }
+
+    pub async fn create_model_version(
+        &self,
+        version: create_model_version::CreateModelVersionVariables,
+    ) -> Result<create_model_version::CreateModelVersion> {
+        self.perform_mutation(version).await
+    }
+
+    pub async fn delete_model_version(
+        &self,
+        version: delete_model_version::DeleteModelVersionVariables,
+    ) -> Result<delete_model_version::DeleteModelVersion> {
+        self.perform_mutation(version).await
+    }
+
+    pub async fn update_model_version_state(
+        &self,
+        state: update_model_version_state::UpdateModelVersionStateVariables,
+    ) -> Result<update_model_version_state::UpdateModelVersionState> {
+        self.perform_mutation(state).await
+    }
+
+    pub async fn create_experiment(
+        &self,
+        experiment: create_experiment::CreateExperimentVariables,
+    ) -> Result<create_experiment::CreateExperiment> {
+        self.perform_mutation(experiment).await
+    }
+
+    pub async fn delete_experiment(
+        &self,
+        experiment: delete_experiment::DeleteExperimentVariables,
+    ) -> Result<delete_experiment::DeleteExperiment> {
+        self.perform_mutation(experiment).await
+    }
+
+    pub async fn query_namespaces(
+        &self,
+        vars: query_namespaces::QueryNamespacesVariables,
+    ) -> Result<query_namespaces::QueryNamespaces> {
+        self.perform_query(vars).await
+    }
+
+    pub async fn query_buckets(
+        &self,
+        vars: query_buckets::QueryBucketsVariables,
+    ) -> Result<query_buckets::QueryBuckets> {
+        self.perform_query(vars).await
+    }
+
+    pub async fn query_namespace_models(
+        &self,
+        vars: query_models::NamespaceModelsVariables,
+    ) -> Result<query_models::NamespaceModels> {
+        self.perform_query(vars).await
+    }
+
+    pub async fn query_experiment(
+        &self,
+        vars: query_experiment::QueryExperimentVariables,
+    ) -> Result<query_experiment::QueryExperiment> {
+        self.perform_query(vars).await
+    }
 }
