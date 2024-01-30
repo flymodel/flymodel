@@ -19,7 +19,7 @@ rust-version.workspace = true
 crate-type = ["cdylib", "lib"]
 
 [features]
-default = ["python"]
+default = []
 wasm = [
     "chrono/wasmbind",
     "tsify/wasm-bindgen",
