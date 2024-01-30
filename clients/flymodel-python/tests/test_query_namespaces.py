@@ -1,9 +1,16 @@
-from flymodel_client import models
+import pytest
+from flymodel_client import Client, models
+
+from .fixture import client
 
 
-def test_query_namespaces():
+@pytest.mark.asyncio
+async def test_query_namespaces(client: Client):
     vars = models.query_namespaces.QueryNamespacesVariables(
-        page=models.common.Page(size=25, page=1)
+        page=models.common.Page(size=25, page=0)
     )
-
-    print(vars, vars.page.size, vars.page.page)
+    res = await client.query_namespaces(vars)
+    namespaces = res.namespace.data
+    assert namespaces[0].id == 1
+    assert namespaces[0].name == "canada"
+    assert namespaces[0].description == "Flymodel Canada"

@@ -48,7 +48,7 @@ opentelemetry = { workspace = true, features = [
     "metrics",
     "logs_level_enabled",
 ] }
-paste = "1.0.14"
+paste.workspace = true
 bytes.workspace = true
 actix-multipart.workspace = true
 sha256 = "1.5.0"

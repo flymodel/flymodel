@@ -20,17 +20,26 @@ crate-type = ["cdylib", "lib"]
 [features]
 
 default = []
+tracing = ["dep:tracing", "dep:tracing-subscriber"]
+
 wasm = [
+    "flymodel-graphql/wasm",
     "dep:wee_alloc",
     "dep:wasm-bindgen",
     "dep:wasm-bindgen-futures",
-    "flymodel-graphql/wasm",
+    "dep:console-subscriber",
+    "dep:tracing",
 ]
 
 wasm-web = ["wasm", "flymodel-graphql/wasm-web"]
 wasm-node = ["wasm", "flymodel-graphql/wasm-node"]
-
-python = ["dep:pyo3", "flymodel-graphql/python"]
+python = [
+    "flymodel-graphql/python",
+    "dep:pyo3",
+    "dep:pyo3-asyncio",
+    "dep:tokio",
+    "tracing",
+]
 
 [dependencies]
 flymodel-macros = { path = "../macros" }
@@ -51,6 +60,17 @@ wasm-bindgen = { workspace = true, optional = true }
 wasm-bindgen-futures = { workspace = true, optional = true }
 wee_alloc = { workspace = true, optional = true }
 pyo3 = { workspace = true, features = ["extension-module"], optional = true }
+pyo3-asyncio = { version = "0.20", features = [
+    "attributes",
+    "tokio-runtime",
+], optional = true }
+tokio = { workspace = true, optional = true, features = ["full"] }
+once_cell = "*"
+tracing = { workspace = true, optional = true }
+tracing-subscriber = { workspace = true, optional = true, features = [
+    "env-filter",
+] }
+console-subscriber = { version = "0.2", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = { version = "0.3" }

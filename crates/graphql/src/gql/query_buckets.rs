@@ -4,8 +4,8 @@ use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[tsify(from_wasm_abi)]
+#[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(from_wasm_abi))]
 pub struct QueryBucketsVariables {
     pub id: Option<i32>,
     pub namespace: Option<i32>,
@@ -22,17 +22,25 @@ crate::new_for! {
 }
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryFragment, Debug, Clone, Serialize)]
+#[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Query", variables = "QueryBucketsVariables")]
-#[tsify(from_wasm_abi, into_wasm_abi)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 pub struct QueryBuckets {
     #[arguments(page: $page, id: $id, namespace: $namespace, role: $role)]
     pub bucket: PaginatedBucket,
 }
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
+#[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 pub struct PaginatedBucket {
     pub page: CurrentPage,
     pub total_pages: i32,
@@ -41,15 +49,19 @@ pub struct PaginatedBucket {
 }
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
+#[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 pub struct Bucket {
     pub id: i32,
     pub name: String,
     pub namespace: i32,
-    #[tsify(type = "string")]
+    #[cfg_attr(feature = "wasm", tsify(type = "string"))]
     pub created_at: DateTime,
-    #[tsify(type = "string")]
+    #[cfg_attr(feature = "wasm", tsify(type = "string"))]
     pub last_modified: DateTime,
 }
 

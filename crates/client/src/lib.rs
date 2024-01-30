@@ -7,7 +7,9 @@ cfg_if::cfg_if! {
 #[cfg(feature = "python")]
 pub mod py;
 
-pub mod client;
-pub(crate) mod wasm;
+#[cfg(feature = "tracing")]
+pub mod trace;
 
-pub use client::{Error, FlymodelClient};
+pub mod client;
+
+pub use client::{Client, Error};

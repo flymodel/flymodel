@@ -1,0 +1,9 @@
+mutation CreateNamespace($name: String!, $description: String!) {
+  createNamespace(name: $name, description: $description) {
+    id,
+    name,
+    description,
+    createdAt,
+    lastModified,
+  }
+}

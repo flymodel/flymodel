@@ -1,32 +1,33 @@
-use crate::{jsvalue, schema};
+use crate::{jsvalue, scalars::*, schema};
 use flymodel_macros::hybrid_feature_class;
+
 use serde::{Deserialize, Serialize};
 
 #[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
 #[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(from_wasm_abi))]
-pub struct CreateModelVersionVariables {
-    pub model_id: i32,
-    pub version_tag: String,
+pub struct CreateNamespaceVariables {
+    pub name: String,
+    pub description: String,
 }
 
 crate::new_for! {
-    CreateModelVersionVariables,
-    version_tag: &str,
-    model_id: i32,
+    CreateNamespaceVariables,
+    name: &str,
+    description: &str,
 }
 
 #[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
-#[cynic(graphql_type = "Mutation", variables = "CreateModelVersionVariables")]
 #[cfg_attr(
     feature = "wasm",
     derive(tsify::Tsify),
     tsify(from_wasm_abi, into_wasm_abi)
 )]
-pub struct CreateModelVersion {
-    #[arguments(model: $model_id, name: $version_tag)]
-    pub create_model_version: ModelVersion,
+#[cynic(graphql_type = "Mutation", variables = "CreateNamespaceVariables")]
+pub struct CreateNamespace {
+    #[arguments(name: $name, description: $description)]
+    pub create_namespace: Namespace,
 }
 
 #[hybrid_feature_class(python = true)]
@@ -36,14 +37,15 @@ pub struct CreateModelVersion {
     derive(tsify::Tsify),
     tsify(from_wasm_abi, into_wasm_abi)
 )]
-
-pub struct ModelVersion {
+pub struct Namespace {
     pub id: i32,
-    pub version: String,
-    pub model_id: i32,
+    pub name: String,
+    pub description: String,
+    pub created_at: DateTime,
+    pub last_modified: DateTime,
 }
 
 jsvalue! {
-    ModelVersion,
-    CreateModelVersion
+    Namespace,
+    CreateNamespace
 }

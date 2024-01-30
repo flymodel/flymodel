@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from .common import Page
@@ -21,6 +22,8 @@ class Namespace:
     id: str
     name: str
     description: str
+    created_at: datetime
+    last_modified: datetime
 
 class PaginatedNamespace(Paginated[Namespace]): ...
 

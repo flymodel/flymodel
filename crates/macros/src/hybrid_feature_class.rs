@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use darling::{ast::NestedMeta, FromMeta};
 use proc_macro::TokenStream;
 use quote::quote;
@@ -46,10 +48,10 @@ pub fn hybrid_feature_class_impl(args: TokenStream, item: TokenStream) -> TokenS
             get_all, set_all
         },
         (true, false) => quote! {
-            get_all
+            set_all
         },
         (false, true) => quote! {
-            set_all
+            get_all
         },
         (false, false) => quote!(),
     };

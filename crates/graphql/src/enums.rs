@@ -3,8 +3,12 @@ use flymodel_macros::hybrid_feature_class;
 use crate::schema;
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::Enum, Clone, Copy, Debug)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
+#[derive(cynic::Enum, Clone, Copy, Debug)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 pub enum Lifecycle {
     #[cynic(rename = "prod")]
     Prod,

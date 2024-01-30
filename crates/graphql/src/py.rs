@@ -50,6 +50,15 @@ pub fn submodule<'py>(py: Python<'py>) -> PyResult<&'py PyModule> {
     submodule_model! {
         py,
         m,
+        create_namespace,
+        gql::create_namespace::Namespace,
+        gql::create_namespace::CreateNamespace,
+        gql::create_namespace::CreateNamespaceVariables,
+    }
+
+    submodule_model! {
+        py,
+        m,
         create_experiment,
         gql::create_experiment::Experiment,
         gql::create_experiment::CreateExperiment,

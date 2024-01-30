@@ -1,8 +1,8 @@
-use flymodel_client::client::FlymodelClient;
+use flymodel_client::client::Client;
 use flymodel_graphql::gql::create_model::{CreateModel, CreateModelVariables, Model};
 
 async fn create_model_test_base() -> anyhow::Result<()> {
-    let cli = FlymodelClient::new("http://localhost:9009")?;
+    let cli = Client::new("http://localhost:9009/graphql")?;
     let req = CreateModelVariables {
         name: "test.model.lg".into(),
         namespace: 1,

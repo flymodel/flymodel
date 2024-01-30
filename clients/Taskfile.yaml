@@ -6,3 +6,9 @@ tasks:
     cmds:
     - maturin develop
     - python scripts/introspect_rt.py
+
+
+  pytest:
+    dir: flymodel-python
+    cmds:
+    - pytest

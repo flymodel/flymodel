@@ -1,1 +1,2 @@
-from .client import FlymodelClient  # noqa: F401
+class Client:
+    def __init__(self, base_url: str): ...

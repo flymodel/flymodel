@@ -3,8 +3,8 @@ use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[tsify(from_wasm_abi)]
+#[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(from_wasm_abi))]
 pub struct CreateExperimentVariables {
     pub experiment_name: String,
     pub model_version_id: i32,
@@ -17,17 +17,25 @@ crate::new_for! {
 }
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryFragment, Debug, Clone, Serialize)]
+#[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Mutation", variables = "CreateExperimentVariables")]
-#[tsify(from_wasm_abi, into_wasm_abi)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 pub struct CreateExperiment {
     #[arguments(modelVersion: $model_version_id, name: $experiment_name)]
     pub create_experiment: Experiment,
 }
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
+#[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 pub struct Experiment {
     pub id: i32,
     pub name: String,

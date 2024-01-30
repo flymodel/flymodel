@@ -1,13 +1,19 @@
-use crate::schema;
+use crate::{
+    scalars::DateTime,
+    schema::{self},
+};
 
 use crate::{fragments::*, jsvalue};
 use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-
+#[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 pub struct QueryNamespacesVariables {
     pub page: Option<Page>,
 }
@@ -18,18 +24,25 @@ crate::new_for! {
 }
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryFragment, Debug, Clone, Serialize)]
+#[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Query", variables = "QueryNamespacesVariables")]
-#[tsify(from_wasm_abi, into_wasm_abi)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 pub struct QueryNamespaces {
     #[arguments(page: $page)]
     pub namespace: PaginatedNamespace,
 }
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
-
+#[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 pub struct PaginatedNamespace {
     pub page: CurrentPage,
     pub total_pages: i32,
@@ -38,13 +51,21 @@ pub struct PaginatedNamespace {
 }
 
 #[hybrid_feature_class(python = true)]
-#[derive(tsify::Tsify, cynic::QueryFragment, Clone, Debug, Serialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
+#[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
+#[cfg_attr(
+    feature = "wasm",
+    derive(tsify::Tsify),
+    tsify(from_wasm_abi, into_wasm_abi)
+)]
 
 pub struct Namespace {
     pub id: i32,
     pub name: String,
     pub description: String,
+    #[cfg_attr(feature = "wasm", tsify(type = "string"))]
+    pub created_at: DateTime,
+    #[cfg_attr(feature = "wasm", tsify(type = "string"))]
+    pub last_modified: DateTime,
 }
 
 jsvalue! {

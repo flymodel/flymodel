@@ -1,13 +1,14 @@
 #![allow(non_snake_case)]
+use std::fmt::Debug;
+
 use reqwest::Url;
 
-use crate::wasm::*;
 use cfg_if::cfg_if;
 use cynic::{GraphQlError, GraphQlResponse, MutationBuilder, Operation, QueryBuilder};
 use flymodel_graphql::gql::{
     create_experiment,
     create_model::{self},
-    create_model_version, query_buckets, query_models, query_namespaces,
+    create_model_version, create_namespace, query_buckets, query_models, query_namespaces,
 };
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
@@ -20,8 +21,8 @@ use wasm_bindgen::prelude::*;
 #[cfg(all(not(feature = "wasm"), feature = "python"))]
 use pyo3::prelude::*;
 
-#[hybrid_feature_class(python = true, wasm = true, py_getters = false)]
-pub struct FlymodelClient {
+#[hybrid_feature_class(wasm = true, py_getters = false)]
+pub struct Client {
     base_url: Url,
     client: reqwest::Client,
 }
@@ -29,7 +30,7 @@ pub struct FlymodelClient {
 config_attr! {
     if #[cfg(feature = "wasm")] {
         #[derive(tsify::Tsify)]
-        #[tsify(into_wasm_abi)]
+        #[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify( into_wasm_abi))]
     }  for {
         #[derive(Debug, Deserialize, Serialize)]
         pub struct ErrorExt {
@@ -52,6 +53,10 @@ pub enum Error {
 
     #[error("Base url error: {0}")]
     BaseUrlError(#[from] url::ParseError),
+
+    #[cfg(feature = "python")]
+    #[error("Python implementation error: {0}")]
+    PyErr(#[from] pyo3::PyErr),
 }
 
 cfg_if! {
@@ -66,17 +71,18 @@ cfg_if! {
 
 cfg_if! {
     if #[cfg(feature = "python")] {
-        impl Into<PyErr> for Error {
-            fn into(self) -> PyErr {
-                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(self.to_string())
+        impl From<Error> for PyErr {
+            fn from(value: Error) -> PyErr {
+                PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(value.to_string())
             }
         }
     }
 }
 
-type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
-fn raise_for<T>(result: GraphQlResponse<T, ErrorExt>) -> Result<T> {
+#[cfg_attr(feature = "tracing", tracing::instrument(level = "debug"))]
+fn raise_for<T: Debug>(result: GraphQlResponse<T, ErrorExt>) -> Result<T> {
     if let Some(errors) = result.errors {
         return Err(Error::ExtErrorsFound(errors));
     } else if let Some(data) = result.data {
@@ -86,20 +92,26 @@ fn raise_for<T>(result: GraphQlResponse<T, ErrorExt>) -> Result<T> {
     }
 }
 
-impl FlymodelClient {
+impl Client {
     pub async fn post<T: Serialize, R: DeserializeOwned>(&self, url: &str, data: T) -> Result<R> {
         let url = self.base_url.join(url)?;
-        #[cfg(debug_assertions)]
-        {
-            log(format!(
-                "[POST]: url={}, data={:#?}",
-                url.as_str(),
-                serde_json::to_string(&data)
-                    .expect("operation to serialize")
-                    .replace("\n", " ")
-            )
-            .as_str());
-        }
+
+        #[cfg(all(feature = "tracing", debug_assertions))]
+        tracing::trace! {
+            name: "request",
+            "{url} [{method}]: {data}",
+            url = url.as_str(),
+            method = "POST",
+            data = serde_json::to_string(&data).unwrap()
+        };
+        #[cfg(all(feature = "tracing", not(debug_assertions)))]
+        tracing::trace! {
+            name: "request",
+            "{url} [{method}]",
+            url = url.as_str(),
+            method = "POST"
+        };
+
         Ok(self
             .client
             .post(url)
@@ -110,13 +122,15 @@ impl FlymodelClient {
             .await?)
     }
 
+    #[cfg_attr(feature = "tracing", tracing::instrument(level = "info", skip(self)))]
     #[inline]
     pub async fn perform_mutation<Vars, M: MutationBuilder<Vars> + DeserializeOwned>(
         &self,
         model: Vars,
     ) -> Result<M>
     where
-        M: Serialize,
+        Vars: Debug,
+        M: Serialize + Debug,
         Operation<M, Vars>: Serialize,
     {
         let op = M::build(model);
@@ -129,20 +143,20 @@ impl FlymodelClient {
         model: Vars,
     ) -> Result<Q>
     where
-        Q: Serialize,
+        Q: Serialize + Debug,
         Operation<Q, Vars>: Serialize,
     {
         let op = Q::build(model);
         Ok(raise_for(self.post("/graphql", &op).await?)?)
     }
 
-    #[cfg(all(not(feature = "wasm"), not(feature = "python")))]
-    pub fn new(base_url: &str) -> Result<FlymodelClient> {
-        FlymodelClient::new_common(base_url)
+    #[cfg(not(feature = "wasm"))]
+    pub fn new(base_url: &str) -> Result<Client> {
+        Client::new_common(base_url)
     }
 
     #[inline]
-    fn new_common(base_url: &str) -> Result<Self> {
+    pub(crate) fn new_common(base_url: &str) -> Result<Self> {
         Ok(Self {
             base_url: base_url.parse()?,
             client: reqwest::ClientBuilder::new().build().expect("ok"),
@@ -150,27 +164,19 @@ impl FlymodelClient {
     }
 }
 
-cfg_if! {
-    if #[cfg(all(feature = "python", not(feature = "wasm")))] {
-        #[pymethods]
-        impl FlymodelClient {
-            #[new]
-            fn new(base_url: String) -> Result<Self> {
-                FlymodelClient::new_common(&base_url)
-            }
-        }
-    }
-}
-
 config_attr! {
     if #[cfg(feature = "wasm")] {
         #[wasm_bindgen]
     } for {
-        impl FlymodelClient {
+        impl Client {
             #[cfg(feature = "wasm")]
             #[wasm_bindgen(constructor)]
-            pub fn new(base_url: &str) -> Result<FlymodelClient> {
-                FlymodelClient::new_common(base_url)
+            pub fn new(base_url: &str) -> Result<Client> {
+                Client::new_common(base_url)
+            }
+
+            pub async fn create_namespace(&self, namespace: create_namespace::CreateNamespaceVariables) -> Result<create_namespace::CreateNamespace> {
+                self.perform_mutation(namespace).await
             }
 
             pub async fn create_model(

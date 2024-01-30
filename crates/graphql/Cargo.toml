@@ -20,7 +20,12 @@ crate-type = ["cdylib", "lib"]
 
 [features]
 default = ["python"]
-wasm = ["chrono/wasmbind", "dep:serde-wasm-bindgen", "tsify/wasm-bindgen"]
+wasm = [
+    "chrono/wasmbind",
+    "tsify/wasm-bindgen",
+    "dep:wasm-bindgen",
+    "dep:serde-wasm-bindgen",
+]
 
 wasm-web = ["wasm"]
 wasm-node = ["wasm", "chrono/js-sys", "tsify/js"]
@@ -42,8 +47,8 @@ cfg-if.workspace = true
 cynic = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
-tsify = { workspace = true }
-wasm-bindgen = { workspace = true }
+tsify = { workspace = true, optional = true }
+wasm-bindgen = { workspace = true, optional = true }
 serde-wasm-bindgen = { workspace = true, optional = true }
 pyo3 = { workspace = true, features = [
     "extension-module",
@@ -51,6 +56,8 @@ pyo3 = { workspace = true, features = [
     "serde",
     "experimental-inspect",
 ], optional = true }
+
+tracing = { workspace = true, default-features = false, features = ["log"] }
 
 [build-dependencies]
 cynic-codegen = { version = "3", features = ["rkyv"] }
