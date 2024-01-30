@@ -57,10 +57,10 @@ A scalar that can represent any JSON value.
 scalar JSON
 
 enum Lifecycle {
-  prod
-  qa
-  stage
-  test
+  TEST
+  QA
+  STAGE
+  PROD
 }
 
 type Model {
@@ -118,10 +118,18 @@ type ModelVersionTag {
 
 type Mutation {
   createNamespace(name: String!, description: String): Namespace!
+  deleteNamespace(id: Int!): Boolean!
+  updateNamespace(id: Int!, name: String, description: String): Namespace!
+  deleteBucket(id: Int!): Boolean!
   createBucket(namespace: Int!, name: String!, region: String, role: Lifecycle!): Bucket!
   createModel(namespace: Int!, name: String!): Model!
+  deleteModel(id: Int!): Boolean!
+  updateModel(id: Int!, name: String!): Model!
   createModelVersion(model: Int!, name: String!): ModelVersion!
+  deleteModelVersion(id: Int!, hard: Boolean!): Boolean!
+  updateModelVersionState(id: Int!, state: Lifecycle!): ModelState!
   createExperiment(modelVersion: Int!, name: String!): Experiment!
+  deleteExperiment(id: Int!): Boolean!
 }
 
 type Namespace {

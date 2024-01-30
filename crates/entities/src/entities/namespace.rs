@@ -104,6 +104,35 @@ impl DbLoader<Model> {
         filter_like(sel, Column::Name, name)
     }
 
+    pub async fn update_namespace(
+        &self,
+        id: i64,
+        name: Option<String>,
+        description: Option<String>,
+    ) -> Result<Model, async_graphql::Error> {
+        let mut ns = ActiveModel {
+            id: ActiveValue::Set(id),
+            ..Default::default()
+        };
+        if let Some(name) = name {
+            ns.name = ActiveValue::Set(name);
+        }
+        if let Some(description) = description {
+            ns.description = ActiveValue::Set(description);
+        }
+        ns.update(&self.db)
+            .await
+            .map_err(|it| FlymodelError::DbOperationError(it).into_graphql_error())
+    }
+
+    pub async fn delete_namespace(&self, id: i64) -> Result<bool, async_graphql::Error> {
+        let res = Entity::delete_by_id(id)
+            .exec(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbOperationError(err).into_graphql_error())?;
+        Ok(res.rows_affected == 1)
+    }
+
     pub async fn create_namespace<'ctx>(
         &self,
         name: String,

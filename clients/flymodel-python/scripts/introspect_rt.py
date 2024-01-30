@@ -2,11 +2,11 @@ from pathlib import Path
 
 from flymodel_client import models
 
-path = Path(__file__).parent.parent / "src" / "flymodel_client" / "models"
+path = Path(__file__).parent.parent / "src" / "flymodel" / "models"
 
 
 def model_import_stmt_pyi(name: str):
-    return f"import flymodel_client.models.{name} as {name}"
+    return f"import flymodel.models.{name} as {name}"
 
 
 def imports_for_mod(mod):

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pytest
-from flymodel_client import models
+from flymodel import models
 
 from .fixture import client
 

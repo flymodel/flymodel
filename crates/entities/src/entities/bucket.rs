@@ -130,6 +130,11 @@ impl DbLoader<Model> {
         self.load_paginated(filters, page).await
     }
 
+    pub async fn delete_bucket(&self, id: i64) -> QueryResult<bool> {
+        let deleted = Entity::delete_by_id(id).exec(&self.db).await?;
+        Ok(deleted.rows_affected == 1)
+    }
+
     pub async fn create_bucket(
         &self,
         namespace: i64,

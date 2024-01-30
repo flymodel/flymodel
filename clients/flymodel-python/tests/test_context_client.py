@@ -1,5 +1,5 @@
 import pytest
-from flymodel_client import Client, client_context, context, current_client
+from flymodel import Client, client_context, context, current_client
 
 from .fixture import client
 
@@ -33,3 +33,19 @@ async def test_client_context_provider_args(client: Client):
         assert isinstance(client, Client)
 
     await some_main(1, "b")
+
+
+@pytest.mark.asyncio
+async def test_context_nesting(client):
+    parent = client_context(client)
+    new_client = client_context(Client(base_url="http://localhost:9009"))
+    async with parent() as parent:
+        assert isinstance(client, Client)
+        top = current_client()
+        assert isinstance(parent, Client)
+        assert id(top) == id(parent)
+        async with new_client() as new_client:
+            child = current_client()
+            assert isinstance(client, Client)
+            assert id(parent) != id(new_client)
+            assert id(child) == id(new_client)

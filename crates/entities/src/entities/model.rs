@@ -163,6 +163,26 @@ impl DbLoader<Model> {
         self.load_paginated(sel, page).await
     }
 
+    pub async fn update_model(&self, id: i64, name: String) -> Result<Model, async_graphql::Error> {
+        let model = ActiveModel {
+            id: ActiveValue::Set(id),
+            name: ActiveValue::Set(name),
+            ..Default::default()
+        };
+        model
+            .update(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbOperationError(err).into_graphql_error())
+    }
+
+    pub async fn delete_model(&self, id: i64) -> Result<bool, async_graphql::Error> {
+        let res = Entity::delete_by_id(id)
+            .exec(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbOperationError(err).into_graphql_error())?;
+        Ok(res.rows_affected == 1)
+    }
+
     pub async fn create_model(
         &self,
         namespace: i64,

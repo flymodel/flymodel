@@ -15,6 +15,8 @@ use sea_orm::DbErr;
 use std::{error::Error, str::FromStr, sync::Arc};
 use thiserror::Error;
 
+use crate::lifecycle::Lifecycle;
+
 #[derive(Error, Debug)]
 pub enum FlymodelError {
     #[error("Failed to connect to database")]
@@ -74,7 +76,12 @@ pub enum FlymodelError {
 
     #[error("Internal Error: {0}")]
     InternalError(anyhow::Error),
-    // TransactionError(TransactionError<FlymodelError>)
+
+    #[error("Invalid State Transition: {current} -> {requested}")]
+    InvalidTransition {
+        current: Lifecycle,
+        requested: Lifecycle,
+    },
 }
 
 impl FlymodelError {
@@ -98,6 +105,7 @@ impl FlymodelError {
             Self::NonDeterministicError(_) => 16,
             Self::InvalidResourceId(_) => 17,
             Self::InternalError(_) => 18,
+            Self::InvalidTransition { .. } => 19,
         } + 9008)
     }
 
@@ -118,6 +126,7 @@ impl FlymodelError {
             Self::UploadError(..) => "UploadError",
             Self::NonDeterministicError(..) => "NonDeterministicBehaviourError",
             Self::InvalidResourceId(..) => "InvalidResourceId",
+            Self::InvalidTransition { .. } => "InvalidTransition",
             _ => "SystemError",
         }
     }
@@ -148,6 +157,13 @@ impl FlymodelError {
             Self::InvalidResourceId(id) => {
                 format!("{id} could not be found")
             }
+            Self::InvalidTransition { current, requested } => {
+                let base = format!("{current} cannot transition to {requested}.");
+                match current {
+                    Lifecycle::Prod => base + &format!(" prod is immutable."),
+                    _ => base,
+                }
+            }
             _ => "A system error occured".to_string(),
         }
     }
@@ -169,9 +185,9 @@ impl actix_web::error::ResponseError for FlymodelError {
     fn status_code(&self) -> StatusCode {
         match self {
             Self::IdParsingError(..) => StatusCode::BAD_REQUEST,
-            Self::IntegrityError { .. } | Self::ContraintError(..) => {
-                StatusCode::EXPECTATION_FAILED
-            }
+            Self::IntegrityError { .. }
+            | Self::ContraintError(..)
+            | Self::InvalidTransition { .. } => StatusCode::EXPECTATION_FAILED,
             Self::InvalidPermission(..) => StatusCode::FORBIDDEN,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         }

@@ -113,6 +113,14 @@ impl DbLoader<Model> {
         sel.filter(Column::VersionId.eq(version_id))
     }
 
+    pub async fn delete_experiment(&self, id: i64) -> Result<bool, async_graphql::Error> {
+        let res = Entity::delete_by_id(id)
+            .exec(&self.db)
+            .await
+            .map_err(|err| FlymodelError::DbOperationError(err).into_graphql_error())?;
+        Ok(res.rows_affected == 1)
+    }
+
     pub async fn create_experiment(
         &self,
         version_id: i64,

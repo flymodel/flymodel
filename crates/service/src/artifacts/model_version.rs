@@ -79,7 +79,6 @@ pub async fn upload_model_version_artifact(
     storage: Data<Arc<StorageOrchestrator>>,
     namespaces: Data<DataLoader<DbLoader<entities::namespace::Model>>>,
     versions: Data<DataLoader<DbLoader<entities::model_version::Model>>>,
-    _artifact: Data<DataLoader<DbLoader<entities::model_artifact::Model>>>,
     buckets: Data<DataLoader<DbLoader<entities::bucket::Model>>>,
     blobs: Data<DataLoader<DbLoader<entities::object_blob::Model>>>,
 ) -> actix_web::Result<impl Responder> {

@@ -10,12 +10,12 @@ use crate::schema;
     tsify(from_wasm_abi, into_wasm_abi)
 )]
 pub enum Lifecycle {
-    #[cynic(rename = "prod")]
+    #[cynic(rename = "PROD")]
     Prod,
-    #[cynic(rename = "qa")]
+    #[cynic(rename = "QA")]
     Qa,
-    #[cynic(rename = "stage")]
+    #[cynic(rename = "STAGE")]
     Stage,
-    #[cynic(rename = "test")]
+    #[cynic(rename = "TEST")]
     Test,
 }

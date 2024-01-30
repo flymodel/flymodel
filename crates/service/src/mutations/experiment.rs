@@ -19,4 +19,16 @@ impl ExperimentMutations {
         // user validation here
         db.create_experiment(model_version, name).await
     }
+
+    pub async fn delete_experiment<'ctx>(
+        &self,
+        ctx: &Context<'ctx>,
+        id: i64,
+    ) -> Result<bool, async_graphql::Error> {
+        let db = DbLoader::<entities::experiment::Model>::with_context(ctx)
+            .map_err(|err| err.into_graphql_error())?
+            .loader();
+        // user validation here
+        db.delete_experiment(id).await
+    }
 }

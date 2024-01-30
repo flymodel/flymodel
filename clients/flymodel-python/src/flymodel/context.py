@@ -1,24 +1,24 @@
+from flymodel import Client
+
+
 from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from typing import Callable, Optional, ParamSpec, TypeVar
 
-from .flymodel_client import Client
-from .flymodel_client import models as models
-
 P = ParamSpec("P")
 T = TypeVar("T")
 
-CTX: ContextVar[Optional[Client]] = ContextVar("flymodel_client")
+Context: ContextVar[Optional[Client]] = ContextVar("flymodel_client")
 
 
 def client_context(client: Client):
     @asynccontextmanager
     async def context():
-        token = CTX.set(client)
+        token = Context.set(client)
         try:
             yield client
         finally:
-            CTX.reset(token)
+            Context.reset(token)
 
     return context
 
@@ -30,7 +30,7 @@ class ContextError(BaseException):
 
 
 def current_client() -> Optional[Client]:
-    client = CTX.get()
+    client = Context.get()
     if client:
         return client
     else:

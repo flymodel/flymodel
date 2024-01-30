@@ -8,6 +8,18 @@ pub struct BucketMutations;
 
 #[Object]
 impl BucketMutations {
+    pub async fn delete_bucket<'ctx>(
+        &self,
+        ctx: &Context<'ctx>,
+        id: i64,
+    ) -> Result<bool, async_graphql::Error> {
+        let db = DbLoader::<entities::bucket::Model>::with_context(ctx)
+            .map_err(|err| err.into_graphql_error())?
+            .loader();
+        // user validation here
+        db.delete_bucket(id).await
+    }
+
     pub async fn create_bucket<'ctx>(
         &self,
         ctx: &Context<'ctx>,

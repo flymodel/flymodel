@@ -1,7 +1,7 @@
 from asyncio import gather
 
 import pytest
-from flymodel_client import Client, models
+from flymodel import Client, models
 
 from .fixture import client
 
