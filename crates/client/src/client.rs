@@ -1,9 +1,7 @@
 #![allow(non_snake_case)]
-use std::{fmt::Debug};
+use std::fmt::Debug;
 
-use reqwest::{
-    Url,
-};
+use reqwest::Url;
 
 use cfg_if::cfg_if;
 use cynic::{GraphQlError, GraphQlResponse, MutationBuilder, Operation, QueryBuilder};

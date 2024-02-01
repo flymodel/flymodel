@@ -3,7 +3,7 @@ use flymodel::errs::FlymodelError;
 use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction};
 use tracing::warn;
 
-use crate::{bulk_loader, db::DbLoader, paginated};
+use crate::{bulk_loader, db::DbLoader, paginated, utils::handle::constraint_or_db_operational};
 
 use super::upload::UploadBlobRequestParams;
 
@@ -19,7 +19,7 @@ use super::upload::UploadBlobRequestParams;
 )]
 #[graphql(name = "ModelArtifact")]
 #[graphql(complex)]
-#[sea_orm(table_name = "model_artifact")]
+#[sea_orm(table_name = "")]
 pub struct Model {
     #[sea_orm(primary_key)]
     #[serde(skip_deserializing)]
@@ -91,14 +91,19 @@ impl DbLoader<Model> {
             id: ActiveValue::NotSet,
         };
         Ok(Entity::insert(this)
-            .on_conflict(
-                sea_query::OnConflict::columns(vec![Column::VersionId, Column::Name])
-                    .update_columns(vec![Column::Blob, Column::Extra])
-                    .to_owned(),
-            )
             .exec_with_returning(conn)
             .await
-            .map_err(|err| FlymodelError::DbOperationError(err))?)
+            .map_err(|err| {
+                constraint_or_db_operational(
+                    "model_artifact_version_idx",
+                    err,
+                    format!(
+                        "Artifact with name {name} for the model {id} already exists.",
+                        name = args.artifact_name,
+                        id = version.id
+                    ),
+                )
+            })?)
     }
 }
 

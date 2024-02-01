@@ -1,9 +1,7 @@
-use crate::{bulk_loader, db::DbLoader, paginated};
+use crate::{bulk_loader, db::DbLoader, paginated, utils::handle::constraint_or_db_operational};
 use async_graphql::{ComplexObject, SimpleObject};
 use flymodel::errs::FlymodelError;
 use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction};
-
-
 
 use super::upload::UploadBlobRequestParams;
 
@@ -104,14 +102,19 @@ impl DbLoader<Model> {
             id: ActiveValue::NotSet,
         };
         let ret = Entity::insert(this)
-            // .on_conflict(
-            //     sea_query::OnConflict::columns(vec![Column::ExperimentId, Column::Name])
-            //         .update_columns(vec![Column::Blob])
-            //         .to_owned(),
-            // )
             .exec_with_returning(conn)
             .await
-            .map_err(|err| FlymodelError::DbOperationError(err))?;
+            .map_err(|err| {
+                constraint_or_db_operational(
+                    "experiment_artifact_name_idx",
+                    err,
+                    format!(
+                        "Artifact with name {name} for the experiment {id} already exists.",
+                        name = args.artifact_name,
+                        id = version.id
+                    ),
+                )
+            })?;
 
         Ok(ret)
     }
