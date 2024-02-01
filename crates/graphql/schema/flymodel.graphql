@@ -1,15 +1,32 @@
-enum ArchivalFormat {
+enum ArchiveCompression {
   GZIP
+  LZ_4
   SNAPPY
   TAR
   TZG
+  UNCOMPRESSED
   ZIP
+  ZSTD
 }
 
-enum ArchiveEncoding {
-  FEATHER
+enum ArchiveFormat {
+  ARROW
+  CSV
+  HTML
+  JPEG
   JSON
+  JSONL
+  MD
+  MOV
+  MP_4
+  MSGPACK
   PARQUET
+  PDF
+  PNG
+  TXT
+  WAV
+  XLS
+  XML
 }
 
 type Bucket {
@@ -149,8 +166,8 @@ type ObjectBlob {
   versionId: String!
   size: Int!
   sha256: String!
-  archive: ArchivalFormat
-  encode: ArchiveEncoding
+  encode: ArchiveCompression
+  format: ArchiveFormat
   createdAt: DateTime!
 }
 

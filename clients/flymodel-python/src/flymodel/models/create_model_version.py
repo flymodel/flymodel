@@ -1,0 +1,5 @@
+
+from flymodel.client.models import create_model_version
+CreateModelVersion = create_model_version.CreateModelVersion
+CreateModelVersionVariables = create_model_version.CreateModelVersionVariables
+ModelVersion = create_model_version.ModelVersion

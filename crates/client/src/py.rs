@@ -1,4 +1,4 @@
-use crate::{client::Result, trace::init_subscriber};
+use crate::{artifacts, client::Result, trace::init_subscriber, Client};
 use flymodel_graphql::gql::*;
 use pyo3::prelude::*;
 use std::{
@@ -6,22 +6,28 @@ use std::{
     sync::{Arc, Once},
 };
 
-static INIT: Once = Once::new();
+pub mod experiment;
+pub mod fsm;
 
-use crate::Client;
+static INIT: Once = Once::new();
 
 tokio::task_local! {
     static TASKS: once_cell::unsync::OnceCell<pyo3_asyncio::TaskLocals>;
 }
 
 #[pymodule]
-fn flymodel_client(py: Python, m: &PyModule) -> PyResult<()> {
+fn client(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PythonClient>()?;
+    m.add_class::<experiment::Experiment>()?;
+    m.add_class::<artifacts::UploadExperimentArgs>()?;
+    m.add_class::<artifacts::UploadModelVersionArgs>()?;
+    m.add_class::<artifacts::UploadRequestParams>()?;
+
     m.add_submodule(flymodel_graphql::py::submodule(py)?)?;
     Ok(())
 }
 
-struct Runtime {
+pub(crate) struct Runtime {
     _rt: Option<tokio::runtime::Runtime>,
     handle: tokio::runtime::Handle,
 }
@@ -62,7 +68,11 @@ impl Runtime {
         Self { handle, _rt: None }
     }
 
-    fn pyfut<'a, F: Future<Output = PyResult<T>> + Send + 'static, T: IntoPy<PyObject>>(
+    pub(crate) fn pyfut<
+        'a,
+        F: Future<Output = PyResult<T>> + Send + 'static,
+        T: IntoPy<PyObject>,
+    >(
         &self,
         py: Python<'a>,
         fut: F,
@@ -116,6 +126,7 @@ impl pyo3_asyncio::generic::ContextExt for Runtime {
     }
 }
 
+#[derive(Clone)]
 #[pyo3::prelude::pyclass(name = "Client")]
 pub struct PythonClient {
     shared: Arc<Client>,
@@ -161,6 +172,12 @@ macro_rules! impl_associated_futures {
                 )*
             }
     };
+}
+
+impl PythonClient {
+    pub(crate) fn runtime(&self) -> &Runtime {
+        &self.rt
+    }
 }
 
 impl_associated_futures! {

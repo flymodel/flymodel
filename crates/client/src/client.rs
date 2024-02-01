@@ -1,7 +1,9 @@
 #![allow(non_snake_case)]
-use std::fmt::Debug;
+use std::{fmt::Debug};
 
-use reqwest::Url;
+use reqwest::{
+    Url,
+};
 
 use cfg_if::cfg_if;
 use cynic::{GraphQlError, GraphQlResponse, MutationBuilder, Operation, QueryBuilder};
@@ -15,6 +17,8 @@ use wasm_bindgen::prelude::*;
 
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
+
+use crate::{artifacts::CommandDescriptor, maybe::Result as ServerResult};
 
 #[hybrid_feature_class(wasm = true, py_getters = false)]
 pub struct Client {
@@ -42,6 +46,12 @@ pub enum Error {
 
     #[error("Base url error: {0}")]
     BaseUrlError(#[from] url::ParseError),
+
+    #[error("Upload error: {0}")]
+    UploadError(reqwest::Error),
+
+    #[error("Serialization error: {0}")]
+    SerializationError(#[from] serde_json::Error),
 
     #[cfg(feature = "python")]
     #[error("Python implementation error: {0}")]
@@ -82,6 +92,23 @@ fn raise_for<T: Debug>(result: GraphQlResponse<T, ErrorExt>) -> Result<T> {
 }
 
 impl Client {
+    pub async fn upload<'a, D: Serialize, R: DeserializeOwned>(
+        &self,
+        url: &str,
+        command: CommandDescriptor<D, R>,
+    ) -> Result<ServerResult<R>> {
+        let url = self.base_url.join(url)?;
+        let form = command.try_into()?;
+        Ok(self
+            .client
+            .post(url)
+            .multipart(form)
+            .send()
+            .await?
+            .json()
+            .await?)
+    }
+
     pub async fn post<T: Serialize, R: DeserializeOwned>(&self, url: &str, data: T) -> Result<R> {
         let url = self.base_url.join(url)?;
 

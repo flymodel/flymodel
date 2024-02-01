@@ -1,0 +1,24 @@
+query ExperimentArtifacts($id: Int!, $page: Page) {
+  experiment(id: $id) {
+    data {
+      artifacts(page: $page) {
+        page {
+          page
+          size
+        }
+        totalPages
+        totalItems
+        data {
+          id
+          versionId
+          name
+          object {
+            encode
+            format
+            createdAt
+          }
+        }
+      }
+    }
+  }
+}

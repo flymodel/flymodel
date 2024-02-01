@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from typing import Callable, Optional, ParamSpec, TypeVar
 
-from .flymodel_client import Client
+from flymodel import Client
 
 P = ParamSpec("P")
 T = TypeVar("T")

@@ -1,7 +1,7 @@
 use crate::{bulk_loader, db::DbLoader, paginated};
 
 use super::{
-    enums::{ArchiveEncoding, ArchiveFormat},
+    enums::{ArchiveCompression, ArchiveFormat},
     upload::UploadBlobRequestParams,
 };
 
@@ -33,8 +33,8 @@ pub struct Model {
     pub version_id: String,
     pub size: i64,
     pub sha256: String,
-    pub archive: Option<ArchiveFormat>,
-    pub encode: Option<ArchiveEncoding>,
+    pub encode: Option<ArchiveCompression>,
+    pub format: Option<ArchiveFormat>,
     #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
     pub created_at: DateTime<Utc>,
 }
@@ -97,7 +97,7 @@ impl DbLoader<Model> {
             bucket_id: ActiveValue::Set(bucket_id),
             key: ActiveValue::Set(key),
             version_id: ActiveValue::Set(version_id),
-            archive: ActiveValue::Set(args.archive),
+            format: ActiveValue::Set(args.format),
             encode: ActiveValue::Set(args.encode),
             created_at: ActiveValue::Set(Utc::now()),
             size: ActiveValue::Set(size),

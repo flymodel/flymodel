@@ -1,9 +1,9 @@
+use crate::{bulk_loader, db::DbLoader, paginated};
 use async_graphql::{ComplexObject, SimpleObject};
 use flymodel::errs::FlymodelError;
 use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction};
-use tracing::warn;
 
-use crate::{bulk_loader, db::DbLoader, paginated};
+
 
 use super::upload::UploadBlobRequestParams;
 
@@ -103,15 +103,17 @@ impl DbLoader<Model> {
             blob: ActiveValue::Set(blob.id),
             id: ActiveValue::NotSet,
         };
-        Ok(Entity::insert(this)
-            .on_conflict(
-                sea_query::OnConflict::columns(vec![Column::ExperimentId, Column::Name])
-                    .update_columns(vec![Column::Blob])
-                    .to_owned(),
-            )
+        let ret = Entity::insert(this)
+            // .on_conflict(
+            //     sea_query::OnConflict::columns(vec![Column::ExperimentId, Column::Name])
+            //         .update_columns(vec![Column::Blob])
+            //         .to_owned(),
+            // )
             .exec_with_returning(conn)
             .await
-            .map_err(|err| FlymodelError::DbOperationError(err))?)
+            .map_err(|err| FlymodelError::DbOperationError(err))?;
+
+        Ok(ret)
     }
 
     pub async fn model_version(
@@ -146,12 +148,10 @@ impl Model {
                     .db,
             )
             .await.map_err(|err| {
-                warn!("error while loading object for experiment artifact: {}", err);
-                async_graphql::Error::new("query could not be executed")
+                FlymodelError::from(err).into_graphql_error()
             })?
             .ok_or_else(|| {
-                warn!("non-deterministic behaviour detected: object not found for experiment artifact {}", self.id);
-                async_graphql::Error::new("object not found")
+                FlymodelError::NonDeterministicError(format!("non-deterministic behaviour detected: object not found for experiment artifact {}", self.id)).into_graphql_error()
             })
     }
 }

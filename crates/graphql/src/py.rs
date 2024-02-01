@@ -37,6 +37,8 @@ pub fn submodule<'py>(py: Python<'py>) -> PyResult<&'py PyModule> {
         m,
         enums,
         enums::Lifecycle,
+        enums::ArchiveCompression,
+        enums::ArchiveFormat,
     }
 
     submodule_model! {

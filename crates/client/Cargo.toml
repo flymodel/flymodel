@@ -18,7 +18,7 @@ name = "flymodel_client"
 crate-type = ["cdylib", "lib"]
 
 [features]
-default = []
+default = ["python"]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 
 wasm = [
@@ -36,7 +36,7 @@ wasm-web = ["wasm", "flymodel-graphql/wasm-web"]
 wasm-node = ["wasm", "flymodel-graphql/wasm-node"]
 python = [
     "flymodel-graphql/python",
-    "dep:pyo3",
+    "pyo3/extension-module",
     "dep:pyo3-asyncio",
     "dep:tokio",
     "tracing",
@@ -47,13 +47,16 @@ python = [
 flymodel-macros = { path = "../macros" }
 flymodel-graphql = { path = "../graphql" }
 
+futures = "*"
+rust-fsm = { version = "0.6", features = ["dsl"] }
 paste.workspace = true
 anyhow.workspace = true
 serde.workspace = true
+bytes.workspace = true
 thiserror.workspace = true
 cfg-if.workspace = true
 cynic = { workspace = true, features = ["http-reqwest"] }
-reqwest.workspace = true
+reqwest = { workspace = true, features = ["multipart"] }
 serde_json.workspace = true
 tsify.workspace = true
 url.workspace = true
@@ -62,10 +65,11 @@ getrandom = { version = "0.2", optional = true }
 wasm-bindgen = { workspace = true, optional = true }
 wasm-bindgen-futures = { workspace = true, optional = true }
 wee_alloc = { workspace = true, optional = true }
-pyo3 = { workspace = true, features = ["extension-module"], optional = true }
+pyo3 = { workspace = true, features = ["serde"], optional = true }
 pyo3-asyncio = { version = "0.20", features = [
     "attributes",
     "tokio-runtime",
+
 ], optional = true }
 tokio = { workspace = true, optional = true }
 tracing = { workspace = true, optional = true }
@@ -78,9 +82,9 @@ once_cell = { version = "1.19", optional = true }
 
 [dev-dependencies]
 wasm-bindgen-test = { version = "0.3" }
-tokio.workspace = true
+tokio = { workspace = true, features = ["full"] }
 flymodel-dev = { path = "../dev" }
-
+anyhow = "*"
 
 [package.metadata.release]
 shared-version = true

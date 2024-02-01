@@ -3,7 +3,7 @@ set
 
 drop table namespace cascade;
 
-drop type archive_encoding cascade;
+drop type archive_compression cascade;
 
 drop type archive_format cascade;
 

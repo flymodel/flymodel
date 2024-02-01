@@ -10,6 +10,10 @@ pub mod py;
 #[cfg(feature = "tracing")]
 pub mod trace;
 
+pub mod artifacts;
+
 pub mod client;
 
 pub use client::{Client, Error};
+
+pub mod maybe;

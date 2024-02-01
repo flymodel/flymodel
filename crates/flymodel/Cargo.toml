@@ -41,3 +41,4 @@ features = ["runtime-tokio-native-tls", "sqlx-postgres"]
 workspace = true
 
 [features]
+client = []

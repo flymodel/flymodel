@@ -1,10 +1,10 @@
 use serde::Deserialize;
 
-use super::enums::{ArchiveEncoding, ArchiveFormat};
+use super::enums::{ArchiveCompression, ArchiveFormat};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct UploadBlobRequestParams {
     pub artifact_name: String,
-    pub archive: Option<ArchiveFormat>,
-    pub encode: Option<ArchiveEncoding>,
+    pub encode: Option<ArchiveCompression>,
+    pub format: Option<ArchiveFormat>,
 }

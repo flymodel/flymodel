@@ -10,6 +10,7 @@ pub mod delete_model_version;
 pub mod delete_namespace;
 pub mod query_buckets;
 pub mod query_experiment;
+pub mod query_experiment_artifacts;
 pub mod query_models;
 pub mod query_namespaces;
 pub mod update_model;

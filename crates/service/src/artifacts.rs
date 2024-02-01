@@ -18,7 +18,7 @@ use bytes::Bytes;
 use flymodel::{errs::FlymodelError, storage::StorageProvider};
 use flymodel_entities::entities::{
     self,
-    enums::{ArchiveEncoding, ArchiveFormat},
+    enums::{ArchiveCompression, ArchiveFormat},
 };
 use flymodel_registry::storage::StorageOrchestrator;
 use futures_util::Future;
@@ -137,26 +137,28 @@ pub(crate) async fn download_with_blob(
 
     let headers = resp.headers_mut();
 
-    if let Some(content_typ) = blobref.encode {
+    if let Some(content_typ) = blobref.format {
         headers.insert(
             header::CONTENT_TYPE,
             HeaderValue::from_static(match content_typ {
-                ArchiveEncoding::Feather => "application/arrow",
-                ArchiveEncoding::Json => "application/json",
-                ArchiveEncoding::Parquet => "application/parquet",
+                ArchiveFormat::Arrow => "application/arrow",
+                ArchiveFormat::Json => "application/json",
+                ArchiveFormat::Parquet => "application/parquet",
+                _ => todo!("{:?}", content_typ),
             }),
         );
     }
 
-    if let Some(encoding) = blobref.archive {
+    if let Some(encoding) = blobref.encode {
         headers.insert(
             header::CONTENT_ENCODING,
             HeaderValue::from_static(match encoding {
-                ArchiveFormat::Gzip => "gzip",
-                ArchiveFormat::Snappy => "snappy",
-                ArchiveFormat::Tar => "tar",
-                ArchiveFormat::Tzg => "tar, gzip",
-                ArchiveFormat::Zip => "zip",
+                ArchiveCompression::Gzip => "gzip",
+                ArchiveCompression::Snappy => "snappy",
+                ArchiveCompression::Tar => "tar",
+                ArchiveCompression::Tzg => "tar, gzip",
+                ArchiveCompression::Zip => "zip",
+                _ => todo!("{:?}", encoding),
             }),
         );
     }

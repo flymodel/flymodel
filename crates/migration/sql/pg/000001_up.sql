@@ -4,10 +4,39 @@ set
 create type lifecycle as enum ('test', 'qa', 'stage', 'prod');
 
 -- storing models or test data
-create type archive_format as enum ('zip', 'gzip', 'tar', 'tzg', 'snappy');
+create type archive_compression as enum (
+    'uncompressed',
+    'zip',
+    'gzip',
+    'tar',
+    'tzg',
+    'snappy',
+    'lz4',
+    'zstd'
+);
 
 -- when we want to store test data for reproducibility
-create type archive_encoding as enum ('json', 'feather', 'parquet');
+create type archive_format as enum (
+    -- data
+    'json',
+    'jsonl',
+    'arrow',
+    'parquet',
+    'msgpack',
+    'xml',
+    'csv',
+    'xls',
+    -- misc train / artifacts
+    'jpeg',
+    'png',
+    'wav',
+    'mov',
+    'mp4',
+    'pdf',
+    'html',
+    'txt',
+    'md'
+);
 
 create table namespace (
     id bigserial primary key not null,
@@ -88,8 +117,8 @@ create table object_blob (
     -- validation & version checking metadata
     sha256 varchar(256) not null,
     -- null implies raw archives
-    archive archive_format,
-    encode archive_encoding,
+    encode archive_compression,
+    format archive_format,
     -- blob info
     created_at timestamptz not null default now() -- we do not allow modifications so there's nothing else to track
 );
