@@ -1,9 +1,8 @@
 use std::str::FromStr;
 
 use proc_macro::TokenStream;
-use proc_macro2::Ident;
 use quote::{quote, ToTokens};
-use syn::{parse_macro_input, Data, DeriveInput, Type};
+use syn::{parse_macro_input, Data, DeriveInput};
 
 pub(crate) fn with_context_impl(args: TokenStream) -> TokenStream {
     let input = parse_macro_input!(args as DeriveInput);
