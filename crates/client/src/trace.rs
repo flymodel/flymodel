@@ -10,5 +10,8 @@ pub(crate) fn init_subscriber() {
 #[cfg(feature = "wasm")]
 pub(crate) fn init_subscriber() {
     console_error_panic_hook::set_once();
+    #[cfg(feature = "wasm-web")]
     tracing_wasm::set_as_global_default();
+    #[cfg(feature = "wasm-node")]
+    wasm_logger::init(wasm_logger::Config::default());
 }

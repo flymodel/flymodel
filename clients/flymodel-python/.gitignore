@@ -1,7 +1,0 @@
-*.so
-*.DS_Store
-*.pyc
-
-.pytest*
-__py*__
-.benchmarks

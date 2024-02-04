@@ -56,3 +56,49 @@ macro_rules! paginated {
         }
     };
 }
+
+#[macro_export]
+macro_rules! tags_meta {
+    () => {
+        pub async fn meta(
+            &self,
+            ctx: &async_graphql::Context<'_>,
+        ) -> $crate::db::QueryResult<super::namespace_tag::Model> {
+            let loader: &$crate::db::DbLoader<super::namespace_tag::Model> =
+                $crate::db::DbLoader::with_context(ctx)?.loader();
+            super::namespace_tag::Entity::find()
+                .filter(super::namespace_tag::Column::Id.eq(self.tag.clone()))
+                .one(&loader.db)
+                .await
+                .map_err(|err| {
+                    flymodel::errs::FlymodelError::DbLoaderError(std::sync::Arc::new(err))
+                })?
+                .ok_or_else(|| {
+                    flymodel::errs::FlymodelError::NonDeterministicError(format!(
+                        "must have a super tag: {}",
+                        self.id
+                    ))
+                    .into_graphql_error()
+                })
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! tags_of {
+    ($mod: ident, $col: ident) => {
+        pub async fn tags(
+            &self,
+            ctx: &async_graphql::Context<'_>,
+            page: Option<PageInput>,
+        ) -> PaginatedResult<super::$mod::Model> {
+            let loader: &DbLoader<super::$mod::Model> = DbLoader::with_context(ctx)?.loader();
+            loader
+                .load_paginated(
+                    super::$mod::Entity::find().filter(super::$mod::Column::$col.eq(self.id)),
+                    page.unwrap_or_default(),
+                )
+                .await
+        }
+    };
+}

@@ -68,6 +68,19 @@ impl PageOutput {
     name = "PaginatedExperimentArtifact",
     params(crate::entities::experiment_artifact::Model)
 ))]
+#[graphql(concrete(
+    name = "PaginatedExperimentTag",
+    params(crate::entities::experiment_tag::Model)
+))]
+#[graphql(concrete(
+    name = "PaginatedNamespaceTag",
+    params(crate::entities::namespace_tag::Model)
+))]
+#[graphql(concrete(
+    name = "PaginatedModelVersionTag",
+    params(crate::entities::model_version_tag::Model)
+))]
+#[graphql(concrete(name = "PaginatedModelTag", params(crate::entities::model_tag::Model)))]
 pub struct Paginated<T>
 where
     T: OutputType + Send + Clone,

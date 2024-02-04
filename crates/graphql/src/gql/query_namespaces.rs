@@ -7,13 +7,8 @@ use crate::{fragments::*, jsvalue};
 use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 #[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
 pub struct QueryNamespacesVariables {
     pub page: Option<Page>,
 }
@@ -24,26 +19,16 @@ crate::new_for! {
     page: Option<Page>,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Query", variables = "QueryNamespacesVariables")]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 pub struct QueryNamespaces {
     #[arguments(page: $page)]
     pub namespace: PaginatedNamespace,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 pub struct PaginatedNamespace {
     pub page: CurrentPage,
     pub total_pages: i32,
@@ -51,13 +36,8 @@ pub struct PaginatedNamespace {
     pub data: Vec<Namespace>,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 
 pub struct Namespace {
     pub id: i32,

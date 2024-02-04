@@ -3,7 +3,6 @@ set
 
 create type lifecycle as enum ('test', 'qa', 'stage', 'prod');
 
--- storing models or test data
 create type archive_compression as enum (
     'uncompressed',
     'zip',
@@ -17,7 +16,7 @@ create type archive_compression as enum (
 
 -- when we want to store test data for reproducibility
 create type archive_format as enum (
-    -- data
+    -- structured data
     'json',
     'jsonl',
     'arrow',
@@ -181,6 +180,36 @@ comment on table experiment is 'a single experiment associated with a single mod
 
 -- we want experiments to be uniquely identificable per model version
 create unique index experiment_name_idx on experiment (version_id, name);
+
+create type run_state as enum (
+    'created',
+    'running',
+    'failed',
+    'passed'
+);
+
+create table experiment_state (
+    id bigserial primary key not null,
+    experiment_id bigint references experiment(id) on delete cascade on update cascade not null,
+    state run_state not null,
+    retry int,
+    last_modified timestamptz not null default now()
+);
+
+comment on table experiment_state is 'the state of an experiment';
+
+create unique index experiment_state_experiment_idx on experiment_state (experiment_id);
+
+create table experiment_result (
+    id bigserial primary key not null,
+    experiment_id bigint references experiment(id) on delete cascade on update cascade not null,
+    state run_state not null,
+    retries int not null,
+    duration_ms bigint not null,
+    finished_at timestamptz not null default now()
+);
+
+create unique index unique_experiment_results_per_experiment on experiment_result(experiment_id);
 
 create table experiment_artifact (
     id bigserial primary key not null,

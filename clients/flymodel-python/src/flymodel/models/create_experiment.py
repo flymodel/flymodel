@@ -1,5 +1,0 @@
-
-from flymodel.client.models import create_experiment
-CreateExperiment = create_experiment.CreateExperiment
-CreateExperimentVariables = create_experiment.CreateExperimentVariables
-Experiment = create_experiment.Experiment

@@ -3,7 +3,6 @@ use std::fmt::Debug;
 
 use reqwest::Url;
 
-use cfg_if::cfg_if;
 use cynic::{GraphQlError, GraphQlResponse, MutationBuilder, Operation, QueryBuilder};
 use flymodel_graphql::gql::*;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -16,7 +15,10 @@ use wasm_bindgen::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 
-use crate::{artifacts::CommandDescriptor, maybe::Result as ServerResult};
+use crate::{
+    artifacts::{self, CommandDescriptor},
+    maybe::Result as ServerResult,
+};
 
 #[hybrid_feature_class(wasm = true, py_getters = false)]
 pub struct Client {
@@ -28,6 +30,7 @@ pub struct Client {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ErrorExt {
     #[serde(flatten)]
+    #[cfg_attr(feature = "wasm", tsify(type = "Object"))]
     pub rest: serde_json::Value,
 }
 
@@ -51,28 +54,31 @@ pub enum Error {
     #[error("Serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),
 
+    #[error("Server error: {0}")]
+    ServerError(crate::maybe::ServerError),
+
     #[cfg(feature = "python")]
     #[error("Python implementation error: {0}")]
     PyErr(#[from] pyo3::PyErr),
 }
 
-cfg_if! {
-    if #[cfg(feature = "wasm")] {
-        impl Into<wasm_bindgen::JsValue> for Error {
-            fn into(self) -> JsValue {
-                JsValue::from_str(&self.to_string())
-            }
-        }
+impl From<crate::maybe::ServerError> for Error {
+    fn from(value: crate::maybe::ServerError) -> Self {
+        Self::ServerError(value)
     }
 }
 
-cfg_if! {
-    if #[cfg(feature = "python")] {
-        impl From<Error> for pyo3::PyErr {
-            fn from(value: Error) -> PyErr {
-                pyo3::PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(value.to_string())
-            }
-        }
+#[cfg(feature = "wasm")]
+impl Into<wasm_bindgen::JsValue> for Error {
+    fn into(self) -> JsValue {
+        JsValue::from_str(&self.to_string())
+    }
+}
+
+#[cfg(feature = "python")]
+impl From<Error> for pyo3::PyErr {
+    fn from(value: Error) -> PyErr {
+        pyo3::PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(value.to_string())
     }
 }
 
@@ -186,6 +192,20 @@ impl Client {
         Client::new_common(base_url)
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "uploadExperimentArtifact"))]
+    pub async fn upload_experiment_artifact(
+        &self,
+        artifact: crate::artifacts::UploadExperimentArgs,
+        data: Vec<u8>,
+    ) -> Result<artifacts::ExperimentResponse> {
+        let command = crate::artifacts::UploadExperiment::new(artifact, data);
+        Ok(self
+            .upload("/upload/experiment-artifact", command)
+            .await?
+            .map_err(Error::from)?)
+    }
+
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "createBucket"))]
     pub async fn create_bucket(
         &self,
         bucket: create_bucket::CreateBucketVariables,
@@ -193,6 +213,7 @@ impl Client {
         self.perform_mutation(bucket).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "deleteBucket"))]
     pub async fn delete_bucket(
         &self,
         bucket: delete_bucket::DeleteBucketVariables,
@@ -200,6 +221,7 @@ impl Client {
         self.perform_mutation(bucket).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "createNamespace"))]
     pub async fn create_namespace(
         &self,
         namespace: create_namespace::CreateNamespaceVariables,
@@ -207,6 +229,7 @@ impl Client {
         self.perform_mutation(namespace).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "deleteNamespace"))]
     pub async fn delete_namespace(
         &self,
         namespace: delete_namespace::DeleteNamespaceVariables,
@@ -214,6 +237,7 @@ impl Client {
         self.perform_mutation(namespace).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "updateNamespace"))]
     pub async fn update_namespace(
         &self,
         namespace: update_namespace::UpdateNamespaceVariables,
@@ -221,6 +245,7 @@ impl Client {
         self.perform_mutation(namespace).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "createModel"))]
     pub async fn create_model(
         &self,
         model: create_model::CreateModelVariables,
@@ -228,6 +253,7 @@ impl Client {
         self.perform_mutation(model).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "deleteModel"))]
     pub async fn delete_model(
         &self,
         model: delete_model::DeleteModelVariables,
@@ -235,6 +261,7 @@ impl Client {
         self.perform_mutation(model).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "updateModel"))]
     pub async fn update_model(
         &self,
         model: update_model::UpdateModelVariables,
@@ -242,6 +269,7 @@ impl Client {
         self.perform_mutation(model).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "createModelVersion"))]
     pub async fn create_model_version(
         &self,
         version: create_model_version::CreateModelVersionVariables,
@@ -249,6 +277,7 @@ impl Client {
         self.perform_mutation(version).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "deleteModelVersion"))]
     pub async fn delete_model_version(
         &self,
         version: delete_model_version::DeleteModelVersionVariables,
@@ -256,6 +285,7 @@ impl Client {
         self.perform_mutation(version).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "updateModelVersionState"))]
     pub async fn update_model_version_state(
         &self,
         state: update_model_version_state::UpdateModelVersionStateVariables,
@@ -263,6 +293,7 @@ impl Client {
         self.perform_mutation(state).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "createExperiment"))]
     pub async fn create_experiment(
         &self,
         experiment: create_experiment::CreateExperimentVariables,
@@ -270,6 +301,7 @@ impl Client {
         self.perform_mutation(experiment).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "deleteExperiment"))]
     pub async fn delete_experiment(
         &self,
         experiment: delete_experiment::DeleteExperimentVariables,
@@ -277,6 +309,7 @@ impl Client {
         self.perform_mutation(experiment).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "queryNamespaces"))]
     pub async fn query_namespaces(
         &self,
         vars: query_namespaces::QueryNamespacesVariables,
@@ -284,6 +317,7 @@ impl Client {
         self.perform_query(vars).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "queryBuckets"))]
     pub async fn query_buckets(
         &self,
         vars: query_buckets::QueryBucketsVariables,
@@ -291,6 +325,7 @@ impl Client {
         self.perform_query(vars).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "queryNamespaceModels"))]
     pub async fn query_namespace_models(
         &self,
         vars: query_models::NamespaceModelsVariables,
@@ -298,6 +333,7 @@ impl Client {
         self.perform_query(vars).await
     }
 
+    #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "queryExperiment"))]
     pub async fn query_experiment(
         &self,
         vars: query_experiment::QueryExperimentVariables,

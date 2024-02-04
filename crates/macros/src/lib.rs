@@ -15,11 +15,12 @@ mod with_context;
 ///
 /// Good to remember:
 ///     - This is only used for common serialization methods
-///     - rename_ts_into / rename_ts_from MUST not conflict with the De / Ser methods that the server expects
+///     - rename_into_ts / rename_from_ts MUST not conflict with the De / Ser methods that the server expects
 #[proc_macro_attribute]
 pub fn hybrid_feature_class(args: TokenStream, item: TokenStream) -> TokenStream {
     hybrid_feature_class_impl(args, item)
 }
+
 #[proc_macro_derive(HybridEnum)]
 pub fn hybrid_enum(args: TokenStream) -> TokenStream {
     hybrid_enum_impl(args)

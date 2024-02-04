@@ -1,5 +1,9 @@
-use async_graphql::SimpleObject;
+use async_graphql::{ComplexObject, SimpleObject};
+use chrono::{DateTime, Utc};
+
 use sea_orm::entity::prelude::*;
+
+use crate::{bulk_loader, paginated, tags_meta};
 
 #[derive(
     Clone,
@@ -12,13 +16,14 @@ use sea_orm::entity::prelude::*;
     serde::Deserialize,
 )]
 #[sea_orm(table_name = "experiment_tag")]
-#[graphql(name = "ExperimentTag")]
+#[graphql(name = "ExperimentTag", complex)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: i64,
     pub experiment_id: i64,
     pub tag: i64,
-    pub created_at: DateTimeWithTimeZone,
+    #[serde(skip_deserializing, default = "chrono::offset::Utc::now")]
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -54,3 +59,17 @@ impl Related<super::namespace_tag::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+bulk_loader! {
+    Model
+}
+
+paginated! {
+    Model,
+    Entity
+}
+
+#[ComplexObject]
+impl Model {
+    tags_meta! {}
+}

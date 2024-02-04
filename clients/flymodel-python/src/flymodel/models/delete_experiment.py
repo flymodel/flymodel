@@ -1,4 +1,0 @@
-
-from flymodel.client.models import delete_experiment
-DeleteExperiment = delete_experiment.DeleteExperiment
-DeleteExperimentVariables = delete_experiment.DeleteExperimentVariables

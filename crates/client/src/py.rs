@@ -7,7 +7,6 @@ use std::{
 };
 
 pub mod experiment;
-pub mod fsm;
 
 static INIT: Once = Once::new();
 

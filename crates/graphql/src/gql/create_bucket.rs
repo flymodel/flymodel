@@ -2,9 +2,8 @@ use crate::{enums::*, jsvalue, scalars::*, schema};
 use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, from_ts = true, rename_from_ts = true)]
 #[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(from_wasm_abi))]
 pub struct CreateBucketVariables {
     pub name: String,
     pub namespace_id: i32,
@@ -12,26 +11,16 @@ pub struct CreateBucketVariables {
     pub role: Lifecycle,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Mutation", variables = "CreateBucketVariables")]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 pub struct CreateBucket {
     #[arguments(namespace: $namespace_id, name: $name, role: $role, region: $region)]
     pub create_bucket: Bucket,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 pub struct Bucket {
     pub id: i32,
     pub name: String,

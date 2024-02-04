@@ -4,6 +4,8 @@ pub mod bucket;
 pub mod enums;
 pub mod experiment;
 pub mod experiment_artifact;
+pub mod experiment_result;
+pub mod experiment_state;
 pub mod experiment_tag;
 pub mod macros;
 pub mod model;

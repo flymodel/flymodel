@@ -74,6 +74,7 @@ pub fn submodule<'py>(py: Python<'py>) -> PyResult<&'py PyModule> {
         gql::create_experiment::Experiment,
         gql::create_experiment::CreateExperiment,
         gql::create_experiment::CreateExperimentVariables,
+        gql::create_experiment::CreateExperimentVariablesWithContext,
     }
 
     submodule_model! {

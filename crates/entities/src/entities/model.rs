@@ -1,6 +1,6 @@
 use super::page::{PageInput, PaginatedResult};
 use crate::{
-    bulk_loader, db::DbLoader, filters::filter_like, paginated,
+    bulk_loader, db::DbLoader, filters::filter_like, paginated, tags_of,
     utils::sql_errs::parse_column_contraint_violation,
 };
 use async_graphql::SimpleObject;
@@ -82,6 +82,11 @@ paginated! {
 
 #[async_graphql::ComplexObject]
 impl Model {
+    tags_of! {
+        model_tag,
+        ModelId
+    }
+
     async fn namespace(
         &self,
         ctx: &async_graphql::Context<'_>,
@@ -105,20 +110,6 @@ impl Model {
             query = db.find_by_version(query, version);
         }
         db.load_paginated(query, page.unwrap_or_default()).await
-    }
-
-    async fn tags(
-        &self,
-        ctx: &async_graphql::Context<'_>,
-    ) -> crate::db::QueryResult<Vec<super::model_tag::Model>> {
-        self.find_related(super::model_tag::Entity)
-            .all(
-                &DbLoader::<super::model_tag::Model>::with_context(ctx)?
-                    .loader()
-                    .db,
-            )
-            .await
-            .map_err(|it| FlymodelError::DbOperationError(it).into_graphql_error())
     }
 }
 

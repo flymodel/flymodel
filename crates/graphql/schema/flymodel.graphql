@@ -56,6 +56,8 @@ type Experiment {
   versionId: Int!
   name: String!
   createdAt: DateTime!
+  state: ExperimentState!
+  result: ExperimentResult
   artifacts(page: Page): PaginatedExperimentArtifact!
 }
 
@@ -66,6 +68,23 @@ type ExperimentArtifact {
   blob: Int!
   name: String!
   object: ObjectBlob!
+}
+
+type ExperimentResult {
+  id: Int!
+  experimentId: Int!
+  state: RunState!
+  retries: Int!
+  durationMs: Int!
+  finishedAt: DateTime!
+}
+
+type ExperimentState {
+  id: Int!
+  experimentId: Int!
+  state: RunState!
+  retry: Int
+  lastModified: DateTime!
 }
 
 """
@@ -88,7 +107,6 @@ type Model {
   lastModified: DateTime!
   namespace: Namespace
   versions(version: String, page: Page): PaginatedModelVersion!
-  tags: [ModelTag!]!
 }
 
 type ModelArtifact {
@@ -108,13 +126,6 @@ type ModelState {
   version: ModelVersion!
 }
 
-type ModelTag {
-  id: Int!
-  modelId: Int!
-  tag: Int!
-  createdAt: DateTime!
-}
-
 type ModelVersion {
   id: Int!
   modelId: Int!
@@ -123,14 +134,6 @@ type ModelVersion {
   artifacts(page: Page): PaginatedModelArtifact!
   experiments(page: Page): PaginatedExperiment!
   state: ModelState
-  tags: [ModelVersionTag!]!
-}
-
-type ModelVersionTag {
-  id: Int!
-  versionId: Int!
-  tag: Int!
-  createdAt: DateTime!
 }
 
 type Mutation {
@@ -231,6 +234,13 @@ type Query {
   model(id: [Int!], page: Page, name: String, namespace: [Int!], role: [Lifecycle!]): PaginatedModel!
   experiment(id: [Int!], modelId: Int, page: Page, name: String): PaginatedExperiment!
   _service: _Service!
+}
+
+enum RunState {
+  CREATED
+  RUNNING
+  PASSED
+  FAILED
 }
 
 type _Service {

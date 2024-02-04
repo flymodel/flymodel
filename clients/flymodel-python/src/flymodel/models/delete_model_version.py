@@ -1,4 +1,0 @@
-
-from flymodel.client.models import delete_model_version
-DeleteModelVersion = delete_model_version.DeleteModelVersion
-DeleteModelVersionVariables = delete_model_version.DeleteModelVersionVariables

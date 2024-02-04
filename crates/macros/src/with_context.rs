@@ -1,19 +1,13 @@
 use std::str::FromStr;
 
 use proc_macro::TokenStream;
-use proc_macro2::{Ident, Punct, TokenTree};
+use proc_macro2::Ident;
 use quote::{quote, ToTokens};
-use syn::{parse_macro_input, AttrStyle, Data, DeriveInput, Type};
-
-struct ContextVars {
-    var: Ident,
-    ty: Type,
-}
+use syn::{parse_macro_input, Data, DeriveInput, Type};
 
 pub(crate) fn with_context_impl(args: TokenStream) -> TokenStream {
     let input = parse_macro_input!(args as DeriveInput);
     let name = &input.ident;
-    // panic!("{:#?}", input);
 
     let data = match input.data {
         Data::Struct(ok) => ok,
@@ -137,17 +131,29 @@ pub(crate) fn with_context_impl(args: TokenStream) -> TokenStream {
         })
         .collect();
 
-    let gen = quote! {
+    quote! {
         #to_replicate
         pub struct #ident_with_context {
             #fields
         }
 
+        #[cfg(feature = "python")]
+        #[pyo3::prelude::pymethods]
+        impl #ident_with_context {
+            #[new]
+            pub fn new( #as_new ) -> Self {
+                Self { #to_create }
+            }
+        }
+
+        #[cfg(not(feature = "python"))]
         impl #ident_with_context {
             pub fn new( #as_new ) -> Self {
                 Self { #to_create }
             }
+        }
 
+        impl #ident_with_context {
             pub fn with_context(self, #to_saturate) -> #name {
                 #name {
                     #to_move
@@ -155,7 +161,6 @@ pub(crate) fn with_context_impl(args: TokenStream) -> TokenStream {
                 }
             }
         }
-    };
-    // panic!("{:#?}", gen);
-    gen.into()
+    }
+    .into()
 }

@@ -1,11 +1,15 @@
 use crate::{jsvalue, schema};
-use flymodel_macros::hybrid_feature_class;
+use flymodel_macros::{hybrid_feature_class, WithContext};
 use serde::{Deserialize, Serialize};
 
-#[hybrid_feature_class(python = true)]
-#[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(from_wasm_abi))]
+#[hybrid_feature_class(python = true, from_ts = true, rename_from_ts = true)]
+#[derive(cynic::QueryVariables, Debug, Clone, Deserialize, WithContext)]
+#[context_needs(
+    #[hybrid_feature_class(python = true, from_ts = true, rename_from_ts = true)],
+    #[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
+)]
 pub struct DeleteNamespaceVariables {
+    #[context]
     pub id: i32,
 }
 
@@ -14,14 +18,9 @@ crate::new_for! {
     id: i32,
 }
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 #[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Mutation", variables = "DeleteNamespaceVariables")]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
 pub struct DeleteNamespace {
     #[arguments(id: $id)]
     pub delete_namespace: bool,

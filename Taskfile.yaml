@@ -9,10 +9,6 @@ includes:
     taskfile: ./crates/client/Taskfile.yaml
     dir: ./crates/client
 
-  dist-clients:
-    taskfile: ./clients/Taskfile.yaml
-    dir: ./clients
-
 tasks:
   python-dev:
     cmds:

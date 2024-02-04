@@ -36,6 +36,19 @@ The following layers / services:
 
 ## Data Model
 
+For data storage, we utilize SQL as a mechanism to integrate with existing infrastructure. All changes will be performed via migration based cli, which must offer migration-to and rollback-from for each subsequent change.
+
 ### Postgres
 
 ![rels](./docs/rels.png)
+
+## Protocols Used
+
+### Graphql
+
+Graphql is used over e.g. grpc for the following reasons:
+
+- Ability to utilize http 2 / 3
+- Dynamic querying of attributes without statically defined methods
+
+This allows for combinations of operations to occur simultaneously across different threads / servers without overhead of unneccesary fields.

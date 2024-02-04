@@ -1,9 +1,14 @@
+use crate::{
+    bulk_loader,
+    db::{DbLoader, QueryResult},
+    filters::filter_like,
+    paginated, tags_of,
+};
 use async_graphql::{ComplexObject, SimpleObject};
 use chrono::{DateTime, Utc};
 use flymodel::errs::FlymodelError;
 use sea_orm::{entity::prelude::*, ActiveValue};
-
-use crate::{bulk_loader, db::DbLoader, filters::filter_like, paginated};
+use std::sync::Arc;
 
 use super::page::{PageInput, PaginatedResult};
 
@@ -35,6 +40,10 @@ pub struct Model {
 pub enum Relation {
     #[sea_orm(has_many = "super::experiment_artifact::Entity")]
     ExperimentArtifact,
+    #[sea_orm(has_many = "super::experiment_result::Entity")]
+    ExperimentResult,
+    #[sea_orm(has_many = "super::experiment_state::Entity")]
+    ExperimentState,
     #[sea_orm(has_many = "super::experiment_tag::Entity")]
     ExperimentTag,
     #[sea_orm(
@@ -72,6 +81,45 @@ paginated! {
 
 #[ComplexObject]
 impl Model {
+    tags_of! {
+        experiment_tag,
+        ExperimentId
+    }
+
+    pub async fn state(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> QueryResult<super::experiment_state::Model> {
+        let loader: &DbLoader<super::experiment_state::Model> =
+            DbLoader::with_context(ctx)?.loader();
+
+        super::experiment_state::Entity::find()
+            .filter(super::experiment_state::Column::ExperimentId.eq(self.id))
+            .one(&loader.db)
+            .await
+            .map_err(|err| FlymodelError::DbLoaderError(Arc::new(err)).into_graphql_error())
+            .and_then(|ok| {
+                ok.ok_or_else(|| {
+                    FlymodelError::NonDeterministicError(format!("should have state: {}", self.id))
+                        .into_graphql_error()
+                })
+            })
+    }
+
+    pub async fn result(
+        &self,
+        ctx: &async_graphql::Context<'_>,
+    ) -> QueryResult<Option<super::experiment_result::Model>> {
+        let loader: &DbLoader<super::experiment_result::Model> =
+            DbLoader::with_context(ctx)?.loader();
+
+        super::experiment_result::Entity::find()
+            .filter(super::experiment_result::Column::ExperimentId.eq(self.id))
+            .one(&loader.db)
+            .await
+            .map_err(|err| FlymodelError::DbLoaderError(Arc::new(err)).into_graphql_error())
+    }
+
     pub async fn artifacts(
         &self,
         ctx: &async_graphql::Context<'_>,

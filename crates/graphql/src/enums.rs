@@ -2,13 +2,8 @@ use flymodel_macros::{hybrid_feature_class, HybridEnum};
 
 use crate::schema;
 
-#[hybrid_feature_class(python = true)]
 #[derive(HybridEnum, cynic::Enum, Clone, Copy, Debug)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 pub enum Lifecycle {
     Prod,
     Qa,
@@ -16,13 +11,8 @@ pub enum Lifecycle {
     Test,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(HybridEnum, cynic::Enum, Clone, Copy, Debug)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 pub enum ArchiveCompression {
     Gzip,
     #[cynic(rename = "LZ_4")]
@@ -35,13 +25,8 @@ pub enum ArchiveCompression {
     Zstd,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(HybridEnum, cynic::Enum, Clone, Copy, Debug)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 pub enum ArchiveFormat {
     Arrow,
     Csv,

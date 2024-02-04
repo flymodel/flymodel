@@ -2,9 +2,8 @@ use crate::{fragments::*, jsvalue, scalars::*, schema};
 use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, from_ts = true, rename_from_ts = true)]
 #[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(from_wasm_abi))]
 pub struct NamespaceModelsVariables {
     pub model_id: Option<i32>,
     pub model_name: Option<String>,
@@ -21,22 +20,16 @@ crate::new_for! {
     page: Option<Page>,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Query", variables = "NamespaceModelsVariables")]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 pub struct NamespaceModels {
     #[arguments(id: $model_id, page: $page, name: $model_name, namespace: $model_namespace)]
     pub model: PaginatedModel,
 }
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 #[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(into_wasm_abi))]
 pub struct PaginatedModel {
     pub page: CurrentPage,
     pub total_pages: i32,
@@ -44,13 +37,8 @@ pub struct PaginatedModel {
     pub data: Vec<Model>,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, ts = true, rename_ts = true)]
 pub struct Model {
     pub id: i32,
     pub name: String,

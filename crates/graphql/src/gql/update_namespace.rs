@@ -2,9 +2,8 @@ use crate::{jsvalue, scalars::DateTime, schema};
 use flymodel_macros::hybrid_feature_class;
 use serde::{Deserialize, Serialize};
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, from_ts = true, rename_from_ts = true)]
 #[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(from_wasm_abi))]
 pub struct UpdateNamespaceVariables {
     pub id: i32,
     pub name: Option<String>,
@@ -19,19 +18,17 @@ crate::new_for! {
     description: Option<String>
 }
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 #[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Mutation", variables = "UpdateNamespaceVariables")]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(into_wasm_abi))]
 
 pub struct UpdateNamespace {
     #[arguments(id: $id, name: $name, description: $description)]
     pub update_namespace: Namespace,
 }
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 #[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(into_wasm_abi))]
 pub struct Namespace {
     pub id: i32,
     pub name: String,

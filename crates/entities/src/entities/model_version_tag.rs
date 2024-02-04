@@ -1,5 +1,7 @@
-use async_graphql::SimpleObject;
+use async_graphql::{ComplexObject, SimpleObject};
 use sea_orm::entity::prelude::*;
+
+use crate::{bulk_loader, paginated, tags_meta};
 
 #[derive(
     Clone,
@@ -12,7 +14,7 @@ use sea_orm::entity::prelude::*;
     serde::Deserialize,
 )]
 #[sea_orm(table_name = "model_version_tag")]
-#[graphql(name = "ModelVersionTag")]
+#[graphql(name = "ModelVersionTag", complex)]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: i64,
@@ -54,3 +56,17 @@ impl Related<super::namespace_tag::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+bulk_loader! {
+    Model
+}
+
+paginated! {
+    Model,
+    Entity
+}
+
+#[ComplexObject]
+impl Model {
+    tags_meta! {}
+}

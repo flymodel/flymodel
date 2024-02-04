@@ -17,3 +17,12 @@ pub mod client;
 pub use client::{Client, Error};
 
 pub mod maybe;
+
+pub mod experiment;
+
+#[cfg(all(feature = "tracing", feature = "wasm"))]
+#[wasm_bindgen::prelude::wasm_bindgen(start)]
+pub fn start() -> Result<(), wasm_bindgen::JsValue> {
+    crate::trace::init_subscriber();
+    Ok(())
+}

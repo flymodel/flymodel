@@ -1,5 +1,6 @@
 use crate::{
-    bulk_loader, db::DbLoader, paginated, utils::sql_errs::parse_column_contraint_violation,
+    bulk_loader, db::DbLoader, paginated, tags_of,
+    utils::sql_errs::parse_column_contraint_violation,
 };
 use async_graphql::{ComplexObject, SimpleObject};
 use flymodel::{errs::FlymodelError, lifecycle::Lifecycle};
@@ -22,7 +23,6 @@ use super::page::{PageInput, PaginatedResult};
 #[sea_orm(table_name = "model_version")]
 #[graphql(name = "ModelVersion")]
 #[graphql(complex)]
-
 pub struct Model {
     #[sea_orm(primary_key)]
     #[serde(skip_deserializing)]
@@ -177,6 +177,11 @@ impl DbLoader<Model> {
 
 #[ComplexObject]
 impl Model {
+    tags_of! {
+        model_version_tag,
+        VersionId
+    }
+
     pub async fn model(
         &self,
         ctx: &async_graphql::Context<'_>,
@@ -227,19 +232,5 @@ impl Model {
             .state(self)
             .await
             .map_err(|err| err.into_graphql_error())
-    }
-
-    async fn tags(
-        &self,
-        ctx: &async_graphql::Context<'_>,
-    ) -> crate::db::QueryResult<Vec<super::model_version_tag::Model>> {
-        self.find_related(super::model_version_tag::Entity)
-            .all(
-                &DbLoader::<super::model_version_tag::Model>::with_context(ctx)?
-                    .loader()
-                    .db,
-            )
-            .await
-            .map_err(|it| FlymodelError::DbOperationError(it).into_graphql_error())
     }
 }

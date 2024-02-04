@@ -1,12 +1,13 @@
+#![allow(non_snake_case)]
 use std::marker::PhantomData;
 
 use flymodel_graphql::enums::*;
-use flymodel_macros::hybrid_feature_class;
+use flymodel_macros::{hybrid_feature_class, WithContext};
 use reqwest::multipart::{Form, Part};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-#[hybrid_feature_class(wasm = true, python = true)]
-#[derive(Serialize, Clone, Debug)]
+#[hybrid_feature_class(python = true, from_ts = true)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UploadRequestParams {
     pub artifact_name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -79,15 +80,19 @@ macro_rules! upload_impl {
         $(#[$($m: tt)*])*
         $arg: ident: $typ: ty)), + $(,)?]) => {
         paste::paste! {
-            #[hybrid_feature_class(wasm = true, python = true)]
-            #[derive(Serialize, Clone, Debug)]
+            #[hybrid_feature_class(python = true, from_ts = true)]
+            #[derive(Serialize, Deserialize, Clone, Debug, WithContext)]
+            #[context_needs(
+                #[hybrid_feature_class(python = true, from_ts = true)],
+                #[derive(Serialize, Deserialize, Clone, Debug)]
+            )]
             pub struct [<Upload $name Args>] {
+                #[serde(flatten)]
+                pub blob: UploadRequestParams,
                 $(
                     $(#[$($m)*])*
                     pub $arg: $typ,
                 )*
-                #[serde(flatten)]
-                pub blob: UploadRequestParams,
             }
 
 
@@ -95,7 +100,6 @@ macro_rules! upload_impl {
             #[pyo3::prelude::pymethods]
             impl [<Upload $name Args>] {
                 #[new]
-
                 fn new(
                     params: UploadRequestParams,
                     $(
@@ -116,8 +120,8 @@ macro_rules! upload_impl {
     };
 }
 
-#[hybrid_feature_class(wasm = true, python = true)]
-#[derive(Deserialize, Debug)]
+#[hybrid_feature_class(python = true, into_ts = true)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct ExperimentResponse {
     pub blob: i64,
     pub experiment_id: i64,
@@ -126,21 +130,28 @@ pub struct ExperimentResponse {
     pub version_id: i64,
 }
 
-#[derive(Deserialize)]
+#[hybrid_feature_class(python = true, into_ts = true)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct ModelVersionResponse {
-    #[serde(flatten)]
-    pub value: serde_json::Value,
+    pub id: i64,
+    pub model_id: i64,
+    pub version: String,
 }
 
 upload_impl!(Experiment, [
-    (experiment: i64),
+    (#[context] experiment: i64),
 ]);
 
 upload_impl!(ModelVersion, [
-    (model_version: i64), (
+    (#[context] model_version: i64), (
     #[serde(skip_serializing_if = "Option::is_none")]
     extra: Option<Vec<u8>>
 )]);
+
+flymodel_graphql::jsvalue! {
+    ExperimentResponse,
+    ModelVersionResponse,
+}
 
 #[cfg(test)]
 mod test {
@@ -161,8 +172,21 @@ mod test {
             vec![],
         );
 
+        let b = super::UploadModelVersionArgsWithContext::new(
+            super::UploadRequestParams {
+                artifact_name: "Some Name".into(),
+                format: None,
+                encode: None,
+            },
+            None,
+        );
+
+        let up2 = UploadModelVersion::new(b.with_context(1), vec![]);
+
         let ser = serde_json::to_string(&up.artifact)?;
+        let ser2 = serde_json::to_string(&up2.artifact)?;
         assert_eq!(ser, r#"{"model_version":1,"artifact_name":"Some Name"}"#);
+        assert_eq!(ser, ser2);
         Ok(())
     }
 
@@ -180,8 +204,16 @@ mod test {
             vec![],
         );
 
+        let up2 = super::UploadExperimentArgsWithContext {
+            blob: up.artifact.blob.clone(),
+        };
+
+        let up2 = super::UploadExperiment::new(up2.with_context(1), vec![]);
+
         let ser = serde_json::to_string(&up.artifact)?;
+        let ser2 = serde_json::to_string(&up2.artifact)?;
         assert_eq!(ser, r#"{"experiment":1,"artifact_name":"Some Name"}"#);
+        assert_eq!(ser, ser2);
         Ok(())
     }
 }

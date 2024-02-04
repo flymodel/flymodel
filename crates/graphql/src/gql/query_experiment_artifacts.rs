@@ -3,9 +3,8 @@ use flymodel_macros::hybrid_feature_class;
 
 use serde::{Deserialize, Serialize};
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, from_ts = true, rename_from_ts = true)]
 #[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(from_wasm_abi))]
 pub struct ExperimentArtifactsVariables {
     pub id: i32,
     pub page: Option<Page>,
@@ -18,27 +17,24 @@ crate::new_for! {
     page: Option<Page>
 }
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 #[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Query", variables = "ExperimentArtifactsVariables")]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(into_wasm_abi))]
 pub struct ExperimentArtifacts {
     #[arguments(id: $id)]
     pub experiment: PaginatedExperiment,
 }
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 #[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
 #[cynic(variables = "ExperimentArtifactsVariables")]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(into_wasm_abi))]
 pub struct PaginatedExperiment {
     pub data: Vec<Experiment>,
 }
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 #[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
 #[cynic(variables = "ExperimentArtifactsVariables")]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(into_wasm_abi))]
 pub struct Experiment {
     #[arguments(page: $page)]
     pub artifacts: PaginatedExperimentArtifact,

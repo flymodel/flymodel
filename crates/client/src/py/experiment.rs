@@ -2,28 +2,25 @@ use std::sync::Arc;
 
 use crate::{
     artifacts::{UploadExperiment, UploadExperimentArgs},
+    experiment::experiment::ExperimentError,
     maybe,
 };
 
-use super::fsm::ExperimentStateInput;
+use crate::experiment::state::*;
 
+use flymodel_graphql::gql::create_experiment;
 use pyo3::{exceptions::PyRuntimeError, prelude::*};
 use rust_fsm::*;
 use tokio::sync::Mutex;
-
-use super::fsm::*;
+use tracing::debug;
 
 #[pyclass]
 #[derive(Clone)]
 pub struct Experiment {
-    client: Arc<super::PythonClient>,
+    experiment: Arc<Mutex<Option<flymodel_graphql::gql::create_experiment::Experiment>>>,
+    client: Arc<crate::py::PythonClient>,
     state: Arc<Mutex<StateMachine<ExperimentState>>>,
-}
-
-#[derive(thiserror::Error, Debug)]
-enum ExperimentError {
-    #[error("Transition error: {0}")]
-    TransitionError(#[from] TransitionImpossibleError),
+    args: Arc<create_experiment::CreateExperimentVariables>,
 }
 
 impl IntoPy<PyErr> for ExperimentError {
@@ -32,27 +29,43 @@ impl IntoPy<PyErr> for ExperimentError {
     }
 }
 
+impl From<ExperimentError> for PyErr {
+    fn from(value: ExperimentError) -> Self {
+        PyRuntimeError::new_err(value.to_string())
+    }
+}
+
+impl Experiment {
+    async fn consume(&self, state: ExperimentStateInput) -> Result<(), ExperimentError> {
+        self.state.clone().lock_owned().await.consume(&state)?;
+        Ok(())
+    }
+}
+
 #[pymethods]
 impl Experiment {
     #[new]
-    fn new(client: PyRef<super::PythonClient>) -> Self {
-        let this = Self {
-            client: Arc::new(client.clone()),
-            state: Arc::new(Mutex::new(StateMachine::new())),
-        };
-        this
+    pub fn new(
+        client: crate::py::PythonClient,
+        args: create_experiment::CreateExperimentVariables,
+    ) -> Self {
+        let state = Arc::new(Mutex::new(StateMachine::new()));
+        Self {
+            state,
+            client: Arc::new(client),
+            args: Arc::new(args),
+            experiment: Arc::new(Mutex::new(None)),
+        }
     }
 
     fn __aenter__<'py>(slf: PyRef<'py, Self>, py: Python<'py>) -> PyResult<&'py PyAny> {
-        let exp = slf.clone();
+        let re = slf.clone();
         slf.client.runtime().pyfut(py, async move {
-            let mut guard = exp.state.clone().lock_owned().await;
-            Python::with_gil(|py| {
-                guard
-                    .consume(&ExperimentStateInput::Started)
-                    .map_err(|err| ExperimentError::from(err).into_py(py))
-            })?;
-            Ok(exp)
+            re.consume(ExperimentStateInput::Started)
+                .await
+                .map_err(PyErr::from)?;
+            // let experiment = client.create_experiment(args).await?;
+            Ok(())
         })
     }
 
@@ -70,12 +83,15 @@ impl Experiment {
         data: Vec<u8>,
     ) -> PyResult<&'py PyAny> {
         let command = UploadExperiment::new(artifact, data);
-        let client = slf.client.shared.clone();
+        let re = slf.clone();
         slf.client.runtime().pyfut(py, async move {
-            let resp = client
+            let resp = re
+                .client
+                .shared
                 .upload("/upload/experiment-artifact", command)
                 .await?;
-            println!("{:#?}", resp);
+            #[cfg(debug_assertions)]
+            debug!("{:#?}", resp);
             Python::with_gil(|py| match resp {
                 maybe::Result::Ok(resp) => Ok(resp),
                 maybe::Result::Err(e) => Err(e.into_py(py)),
@@ -91,7 +107,12 @@ impl Experiment {
         traceback: Option<PyObject>,
     ) -> PyResult<&'py PyAny> {
         tracing::info!("{:#?}\n{:#?}\n{:#?}", exc_type, exc_value, traceback);
-        let _this = self.clone();
-        self.client.runtime().pyfut(py, async move { Ok(()) })
+        let this = self.clone();
+        self.client.runtime().pyfut(py, async move {
+            this.consume(ExperimentStateInput::WaitClose)
+                .await
+                .map_err(PyErr::from)?;
+            Ok(())
+        })
     }
 }

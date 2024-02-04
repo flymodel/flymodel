@@ -58,11 +58,12 @@ pyo3 = { workspace = true, features = [
 
 
 [build-dependencies]
-cynic-codegen = { version = "3", features = ["rkyv"] }
+cynic-codegen = { workspace = true, features = ["rkyv"] }
 
 [dev-dependencies]
 prettytable.workspace = true
 flymodel-dev = { path = "../dev" }
+wasm-bindgen-test.workspace = true
 
 
 [profile.dev.package]

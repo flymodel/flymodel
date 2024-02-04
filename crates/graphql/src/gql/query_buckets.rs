@@ -3,9 +3,8 @@ use flymodel_macros::hybrid_feature_class;
 
 use serde::{Deserialize, Serialize};
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, from_ts = true, rename_from_ts = true)]
 #[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]
-#[cfg_attr(feature = "wasm", derive(tsify::Tsify), tsify(from_wasm_abi))]
 pub struct QueryBucketsVariables {
     pub id: Option<i32>,
     pub namespace: Option<i32>,
@@ -22,26 +21,16 @@ crate::new_for! {
     role: Option<Lifecycle>,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Debug, Clone, Serialize)]
 #[cynic(graphql_type = "Query", variables = "QueryBucketsVariables")]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 pub struct QueryBuckets {
     #[arguments(page: $page, id: $id, namespace: $namespace, role: $role)]
     pub bucket: PaginatedBucket,
 }
 
-#[hybrid_feature_class(python = true)]
 #[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 pub struct PaginatedBucket {
     pub page: CurrentPage,
     pub total_pages: i32,
@@ -49,13 +38,8 @@ pub struct PaginatedBucket {
     pub data: Vec<Bucket>,
 }
 
-#[hybrid_feature_class(python = true)]
+#[hybrid_feature_class(python = true, into_ts = true, rename_into_ts = true)]
 #[derive(cynic::QueryFragment, Clone, Debug, Serialize)]
-#[cfg_attr(
-    feature = "wasm",
-    derive(tsify::Tsify),
-    tsify(from_wasm_abi, into_wasm_abi)
-)]
 pub struct Bucket {
     pub id: i32,
     pub name: String,
