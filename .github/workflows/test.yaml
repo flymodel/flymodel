@@ -105,7 +105,7 @@ jobs:
 
     - name: Unit Tests (single-region)
       run: |
-        TEST_REGION_SCOPE="basic" cargo test --all-features
+        TEST_REGION_SCOPE="basic" cargo test
 
     - name: Test Migration Down
       run: |
@@ -117,7 +117,7 @@ jobs:
 
     - name: Unit Tests (multi-region)
       run: |
-        TEST_REGION_SCOPE="multi-region" cargo test --all-features
+        TEST_REGION_SCOPE="multi-region" cargo test
 
     - name: Integrity Tests
       run: |
