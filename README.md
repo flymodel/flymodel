@@ -35,10 +35,8 @@ Supplement the below $TEST_DATA with the desired test case
 
 <br/>
 
-<sub>
-> [!Note]
+> [!NOTE]
 > You can run `task reset` and skip the below steps
-</sub>
 
 <br/>
 
