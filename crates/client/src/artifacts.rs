@@ -185,7 +185,7 @@ mod test {
 
         let ser = serde_json::to_string(&up.artifact)?;
         let ser2 = serde_json::to_string(&up2.artifact)?;
-        assert_eq!(ser, r#"{"model_version":1,"artifact_name":"Some Name"}"#);
+        assert_eq!(ser, r#"{"artifact_name":"Some Name","model_version":1}"#);
         assert_eq!(ser, ser2);
         Ok(())
     }
@@ -212,7 +212,7 @@ mod test {
 
         let ser = serde_json::to_string(&up.artifact)?;
         let ser2 = serde_json::to_string(&up2.artifact)?;
-        assert_eq!(ser, r#"{"experiment":1,"artifact_name":"Some Name"}"#);
+        assert_eq!(ser, r#"{"artifact_name":"Some Name","experiment":1}"#);
         assert_eq!(ser, ser2);
         Ok(())
     }
