@@ -27,7 +27,7 @@ mod test_exportable {
 
     #[wasm_bindgen_test::wasm_bindgen_test]
     fn test_to_js() {
-        JsValue::from(CreateBucketVariables {
+        let _ = JsValue::from(CreateBucketVariables {
             name: "".into(),
             namespace_id: 1,
             region: None,
