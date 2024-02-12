@@ -33,7 +33,8 @@ tokio = { workspace = true, features = ["full"] }
 tokio-stream = { version = "0.1.14", features = ["full"] }
 actix.workspace = true
 tracing-actix-web.workspace = true
-actix-web.workspace = true
+actix-web = { workspace = true, features = ["openssl"] }
+openssl = "0.10"
 anyhow.workspace = true
 async-graphql-actix-web.workspace = true
 async-trait.workspace = true

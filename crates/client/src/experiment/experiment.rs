@@ -4,8 +4,6 @@ use flymodel_graphql::gql::create_experiment;
 use rust_fsm::*;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-#[cfg(feature = "wasm")]
-use wasm_bindgen::convert::{FromWasmAbi, IntoWasmAbi};
 
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
@@ -19,7 +17,7 @@ export type ExperimentFunction =
 "#;
 
 #[derive(Clone)]
-#[cfg_attr(feature = "wasm", wasm_bindgen(final))]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
 pub struct Experiment {
     experiment: Arc<flymodel_graphql::gql::create_experiment::Experiment>,
     client: Arc<crate::client::Client>,

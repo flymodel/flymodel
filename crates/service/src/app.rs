@@ -75,8 +75,7 @@ where
         None
     };
     let store = store.clone();
-
-    HttpServer::new(move || {
+    let server = HttpServer::new(move || {
         let temp_dir = temp_dir.clone();
         let store = store.clone();
         let base = App::new()
@@ -132,9 +131,10 @@ where
                     .to(graphql_ws),
             )
             .service(web::resource("/").guard(guard::Get()).to(graphql_idx))
-    })
-    .bind(bind)?
-    .run()
-    .await
-    .map_err(|e| anyhow::anyhow!(e))
+    });
+    server
+        .bind(bind)?
+        .run()
+        .await
+        .map_err(|e| anyhow::anyhow!(e))
 }
