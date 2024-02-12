@@ -34,10 +34,6 @@ impl UploadRequestParams {
     }
 }
 
-trait Command<D: Serialize, R: DeserializeOwned> {
-    const NAME: &'static str;
-}
-
 pub struct CommandDescriptor<D: Serialize, R: DeserializeOwned> {
     pub(crate) artifact: D,
     data: Vec<u8>,
