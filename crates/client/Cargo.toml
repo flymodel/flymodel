@@ -74,7 +74,7 @@ pyo3-asyncio = { workspace = true, features = [
     "tokio-runtime",
 
 ], optional = true }
-tokio = { workspace = true, features = ["sync"], default-features = false }
+tokio = { workspace = true, features = ["sync"] }
 tracing = { workspace = true, optional = true }
 tracing-wasm = { workspace = true, optional = true }
 wasm-logger = { version = "0.2.0", optional = true }
@@ -84,7 +84,7 @@ tracing-subscriber = { workspace = true, optional = true, features = [
 console_error_panic_hook = { workspace = true, optional = true }
 once_cell = { workspace = true, optional = true }
 serde-wasm-bindgen = { workspace = true, optional = true }
-
+partial-context = { workspace = true }
 
 [dev-dependencies]
 wasm-bindgen-test.workspace = true

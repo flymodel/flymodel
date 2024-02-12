@@ -1,5 +1,5 @@
 use super::state::*;
-use crate::artifacts::{self, UploadExperimentArgsWithContext};
+use crate::artifacts::{self, PartialUploadExperimentArgs};
 use flymodel_graphql::gql::create_experiment;
 use rust_fsm::*;
 use std::sync::Arc;
@@ -40,8 +40,13 @@ pub enum ExperimentError {
     #[error("Read state error: {0}")]
     StateReadError(#[from] tokio::sync::TryLockError),
 
+    #[cfg(feature = "wasm")]
     #[error("Js runtime error: {0}")]
     JsRuntimeError(String),
+
+    #[cfg(feature = "python")]
+    #[error("Invalid state call: {0}")]
+    InvalidStateCaller(&'static str),
 }
 
 #[cfg(feature = "wasm")]
@@ -85,13 +90,13 @@ impl Experiment {
 
     #[allow(dead_code)]
     async fn consume(&self, state: ExperimentStateInput) -> Result<(), ExperimentError> {
-        self.state.clone().lock_owned().await.consume(&state)?;
-        Ok(())
+        consume_mu(self.state.clone(), state).await
     }
 
     #[cfg(feature = "wasm")]
     async fn run_unguarded(self, experiment_fn: &js_sys::Function) -> Result<(), ExperimentError> {
         self.consume(ExperimentStateInput::Started).await?;
+        self.consume(ExperimentStateInput::Entered).await?;
         let value = wasm_bindgen::JsValue::null();
         tracing::debug!("function: {:#?}", experiment_fn);
         let fut = experiment_fn
@@ -117,22 +122,21 @@ impl Experiment {
     #[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "saveArtifact"))]
     pub async fn save_artifact(
         &self,
-        artifact: UploadExperimentArgsWithContext,
+        artifact: PartialUploadExperimentArgs,
         data: Vec<u8>,
     ) -> Result<artifacts::ExperimentResponse, ExperimentError> {
-        let state = self.state.clone();
-        let state = state.try_lock()?;
-        #[cfg(feature = "tracing")]
-        tracing::debug!("state: {:#?}", state.state());
-        Ok(match state.state() {
-            ExperimentStateState::Running => self
-                .client
-                .upload_experiment_artifact(artifact.with_context(self.experiment.id.into()), data)
-                .await
-                .map_err(ExperimentError::from),
-            state => Err(ExperimentError::InvalidStateError(format!(
-                "Cannot save an artifact in non-started state: {state}"
-            ))),
-        }?)
+        if !matches!(
+            self.state.clone().try_lock()?.state(),
+            ExperimentStateState::Tests
+        ) {
+            return Err(ExperimentError::InvalidStateError(format!(
+                "Cannot save an artifact in non-started state",
+            )));
+        }
+        Ok(self
+            .client
+            .upload_experiment_artifact(artifact.with_context(self.experiment.id.into()), data)
+            .await
+            .map_err(ExperimentError::from)?)
     }
 }

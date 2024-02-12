@@ -1,9 +1,10 @@
 use crate::{jsvalue, schema};
-use flymodel_macros::{hybrid_feature_class, WithContext};
+use flymodel_macros::hybrid_feature_class;
+use partial_context::PartialContext;
 use serde::{Deserialize, Serialize};
 
 #[hybrid_feature_class(python = true, from_ts = true, rename_from_ts = true)]
-#[derive(cynic::QueryVariables, Debug, Clone, Deserialize, WithContext)]
+#[derive(cynic::QueryVariables, Debug, Clone, Deserialize, PartialContext)]
 #[context_needs(
     #[hybrid_feature_class(python = true, from_ts = true, rename_from_ts = true)],
     #[derive(cynic::QueryVariables, Debug, Clone, Deserialize)]

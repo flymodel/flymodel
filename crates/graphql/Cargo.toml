@@ -55,7 +55,7 @@ pyo3 = { workspace = true, features = [
     "serde",
     "experimental-inspect",
 ], optional = true }
-
+partial-context.workspace = true
 
 [build-dependencies]
 cynic-codegen = { workspace = true, features = ["rkyv"] }

@@ -1,10 +1,10 @@
 #![allow(non_snake_case)]
-use std::marker::PhantomData;
-
 use flymodel_graphql::enums::*;
-use flymodel_macros::{hybrid_feature_class, WithContext};
+use flymodel_macros::hybrid_feature_class;
+
 use reqwest::multipart::{Form, Part};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::marker::PhantomData;
 
 #[hybrid_feature_class(python = true, from_ts = true)]
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -81,7 +81,7 @@ macro_rules! upload_impl {
         $arg: ident: $typ: ty)), + $(,)?]) => {
         paste::paste! {
             #[hybrid_feature_class(python = true, from_ts = true)]
-            #[derive(Serialize, Deserialize, Clone, Debug, WithContext)]
+            #[derive(Serialize, Deserialize, Clone, Debug, partial_context::PartialContext)]
             #[context_needs(
                 #[hybrid_feature_class(python = true, from_ts = true)],
                 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -172,7 +172,7 @@ mod test {
             vec![],
         );
 
-        let b = super::UploadModelVersionArgsWithContext::new(
+        let b = super::PartialUploadModelVersionArgs::new(
             super::UploadRequestParams {
                 artifact_name: "Some Name".into(),
                 format: None,
@@ -204,7 +204,7 @@ mod test {
             vec![],
         );
 
-        let up2 = super::UploadExperimentArgsWithContext {
+        let up2 = super::PartialUploadExperimentArgs {
             blob: up.artifact.blob.clone(),
         };
 

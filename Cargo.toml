@@ -68,6 +68,7 @@ tracing-wasm = "0.2.1"
 console_error_panic_hook = "0.1"
 getrandom = "0.2"
 cynic-codegen = "3"
+partial-context = "0.1"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]

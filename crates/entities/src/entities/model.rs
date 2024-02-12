@@ -105,7 +105,8 @@ impl Model {
         page: Option<PageInput>,
     ) -> PaginatedResult<super::model_version::Model> {
         let db = DbLoader::<super::model_version::Model>::with_context(ctx)?.loader();
-        let mut query = super::model_version::Entity::find();
+        let mut query = super::model_version::Entity::find()
+            .filter(super::model_version::Column::ModelId.eq(self.id));
         if let Some(version) = version {
             query = db.find_by_version(query, version);
         }

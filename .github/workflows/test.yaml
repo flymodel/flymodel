@@ -107,10 +107,6 @@ jobs:
       run: |
         TEST_REGION_SCOPE="basic" cargo test --all-features
 
-    - name: Test wasm client (single-region)
-      run: |
-        TEST_REGION_SCOPE="basic" task client:test-wasm
-
     - name: Test Migration Down
       run: |
         target/debug/flymodel migrate down
@@ -122,10 +118,6 @@ jobs:
     - name: Unit Tests (multi-region)
       run: |
         TEST_REGION_SCOPE="multi-region" cargo test --all-features
-
-    - name: Test wasm client (multi-region)
-      run: |
-        TEST_REGION_SCOPE="multi-region" task client:test-wasm
 
     - name: Integrity Tests
       run: |

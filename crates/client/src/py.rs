@@ -19,7 +19,9 @@ fn client(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PythonClient>()?;
     m.add_class::<experiment::Experiment>()?;
     m.add_class::<artifacts::UploadExperimentArgs>()?;
+    m.add_class::<artifacts::PartialUploadExperimentArgs>()?;
     m.add_class::<artifacts::UploadModelVersionArgs>()?;
+    m.add_class::<artifacts::PartialUploadModelVersionArgs>()?;
     m.add_class::<artifacts::UploadRequestParams>()?;
 
     m.add_submodule(flymodel_graphql::py::submodule(py)?)?;

@@ -13,7 +13,7 @@ use sea_orm::entity::prelude::*;
     serde::Serialize,
     serde::Deserialize,
 )]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[graphql(name = "ArchiveCompression")]
 #[sea_orm(
     rs_type = "String",
@@ -51,6 +51,7 @@ pub enum ArchiveCompression {
     serde::Serialize,
     serde::Deserialize,
 )]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[graphql(name = "ArchiveFormat")]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "archive_format")]
 pub enum ArchiveFormat {
@@ -103,6 +104,7 @@ pub enum ArchiveFormat {
     serde::Serialize,
     serde::Deserialize,
 )]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[graphql(name = "RunState")]
 #[sea_orm(rs_type = "String", db_type = "Enum", enum_name = "run_state")]
 pub enum RunState {
