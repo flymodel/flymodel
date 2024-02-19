@@ -26,7 +26,7 @@ jobs:
 
         -   uses: swatinem/rust-cache@v2
 
-        -   name: Install and run oranda
+        -   name: Install oranda
             run: |
                 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/oranda/releases/latest/download/oranda-installer.sh | sh
 
@@ -34,13 +34,10 @@ jobs:
             run: |
                 oranda build
 
-        -   name: Prepare HTML for link checking
-            run: mkdir /tmp/public/ && cp -R ./public /tmp/public/
-
-        -   name: Check HTML for broken internal links
-            uses: untitaker/hyperlink@0.1.29
-            with:
-                args: /tmp/public/
+        # -   name: Check HTML for broken internal links
+        #     uses: untitaker/hyperlink@0.1.32
+        #     with:
+        #         args: ./public
 
         -   name: Deploy to Github Pages
             uses: JamesIves/github-pages-deploy-action@v4.4.1

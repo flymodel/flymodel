@@ -9,14 +9,8 @@
     "artifacts": {
       "package_managers": {
         "preferred": {
-          "pnpm": "pnpm i @axodotdev/oranda -g",
-          "cargo": "cargo install oranda --locked --profile=dist"
-        },
-        "additional": {
-          "npx": "npx @axodotdev/oranda",
-          "binstall": "cargo binstall oranda",
-          "nix-env": "nix-env -i oranda",
-          "nix flake": "nix profile install github:axodotdev/oranda"
+          "pypi": "pip install flymodel",
+          "npm": "npm install -D flymodel-node"
         }
       }
     }
