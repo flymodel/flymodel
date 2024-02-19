@@ -22,7 +22,6 @@ use sea_orm::{DbErr, EntityTrait};
 use serde::Deserialize;
 
 use actix_multipart::form::{self, tempfile::TempFile, MultipartForm};
-use tracing::debug;
 
 params_for!(ModelVersion, [(model_version: i64), (extra: Option<serde_json::Value>)]);
 

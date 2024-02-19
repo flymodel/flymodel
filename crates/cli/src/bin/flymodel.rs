@@ -8,7 +8,7 @@ use flymodel_cli::{
 use flymodel_service::app::start_server;
 use futures_util::FutureExt;
 
-use tracing::{debug, level_filters::LevelFilter, Level};
+use tracing::{level_filters::LevelFilter, Level};
 
 use dotenv::dotenv;
 use tracing_subscriber::{
