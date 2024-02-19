@@ -42,8 +42,13 @@ jobs:
                     dev/
                 key: ${{ hashFiles('crates/**') }}
 
+        -   uses: actions/setup-go@v5
+            with:
+                go-version: stable
+
         -   name: Install Task
-            uses: arduino/setup-task@v1
+            run: |
+                go install github.com/go-task/task/v3/cmd/task@latest
 
         -   uses: actions-rust-lang/setup-rust-toolchain@v1
             with:
