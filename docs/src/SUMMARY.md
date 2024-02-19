@@ -8,3 +8,4 @@
     - [Model Versions](./concepts/model_versions.md)
     - [Experiments](./concepts/experiment.md)
     - [Artifacts](./concepts/artifacts.md)
+- [Cli](./cli.md)
