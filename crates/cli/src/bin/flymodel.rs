@@ -61,7 +61,7 @@ async fn run<S>(
 #[tokio::main]
 async fn main() -> ExitCode {
     let filter = filter::LevelFilter::WARN;
-    let (_filter, reload_handle): (
+    let (filter, reload_handle): (
         Layer<LevelFilter, tracing_subscriber::fmt::Subscriber>,
         Handle<LevelFilter, tracing_subscriber::fmt::Subscriber>,
     ) = reload::Layer::new(filter);
@@ -71,17 +71,21 @@ async fn main() -> ExitCode {
         .init();
 
     dotenv().ok();
-    match run(Cli::parse(), reload_handle)
+
+    run(Cli::parse(), reload_handle)
         .then(|res| async {
-            debug!("done");
-            res
+            let exit = match res {
+                Ok(()) => {
+                    tracing::info!(name: "exit", "exit success");
+                    ExitCode::SUCCESS
+                }
+                Err(e) => {
+                    tracing::error!(name: "exit", "exit error: {e}");
+                    ExitCode::FAILURE
+                }
+            };
+            drop(filter);
+            exit
         })
         .await
-    {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(e) => {
-            tracing::error!("{e}");
-            ExitCode::FAILURE
-        }
-    }
 }

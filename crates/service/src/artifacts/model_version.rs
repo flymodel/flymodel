@@ -22,10 +22,11 @@ use sea_orm::{DbErr, EntityTrait};
 use serde::Deserialize;
 
 use actix_multipart::form::{self, tempfile::TempFile, MultipartForm};
+use tracing::debug;
 
 params_for!(ModelVersion, [(model_version: i64), (extra: Option<serde_json::Value>)]);
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct CommonModelCte {
     model_version: entities::model_version::Model,
     bucket: entities::bucket::Model,
@@ -83,7 +84,6 @@ pub async fn upload_model_version_artifact(
     blobs: Data<DataLoader<DbLoader<entities::object_blob::Model>>>,
 ) -> actix_web::Result<impl Responder> {
     let data = form.artifact;
-
     let on_err = |err| FlymodelError::DbLoaderError(Arc::new(err));
     let on_missing = || FlymodelError::InvalidResourceId(data.model_version);
     let cte = get_common_from_model_version(
@@ -131,15 +131,16 @@ pub async fn upload_model_version_artifact(
                     hash,
                 )
                 .await?;
-                let created = DbLoader::<entities::model_artifact::Model>::create_new_artifact(
-                    tx,
-                    &cte.model_version,
-                    &blob,
-                    &data.blob,
-                    data.extra.clone(),
+                Ok(
+                    DbLoader::<entities::model_artifact::Model>::create_new_artifact(
+                        tx,
+                        &cte.model_version,
+                        &blob,
+                        &data.blob,
+                        data.extra.clone(),
+                    )
+                    .await?,
                 )
-                .await?;
-                Ok(created)
             })
         },
     )

@@ -1,6 +1,7 @@
 use async_graphql::{ComplexObject, SimpleObject};
 use flymodel::errs::FlymodelError;
-use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction};
+use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction, QueryTrait};
+use sea_query::{PostgresQueryBuilder, QueryStatementWriter};
 use tracing::warn;
 
 use crate::{bulk_loader, db::DbLoader, paginated, utils::handle::constraint_or_db_operational};
@@ -19,7 +20,7 @@ use super::upload::UploadBlobRequestParams;
 )]
 #[graphql(name = "ModelArtifact")]
 #[graphql(complex)]
-#[sea_orm(table_name = "")]
+#[sea_orm(table_name = "model_artifact")]
 pub struct Model {
     #[sea_orm(primary_key)]
     #[serde(skip_deserializing)]
@@ -90,6 +91,7 @@ impl DbLoader<Model> {
             extra: ActiveValue::Set(extra),
             id: ActiveValue::NotSet,
         };
+
         Ok(Entity::insert(this)
             .exec_with_returning(conn)
             .await

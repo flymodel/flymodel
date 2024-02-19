@@ -1,5 +1,5 @@
 {
   "experiment": 1,
-  "artifact_name": "ABC Test.json",
-  "format": "json"
+  "artifact_name": "Test experiment artifact.json",
+  "format": "JSON"
 }

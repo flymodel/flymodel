@@ -9,6 +9,7 @@ use async_graphql::SimpleObject;
 use chrono::{DateTime, Utc};
 use flymodel::errs::FlymodelError;
 use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction};
+use tracing::debug;
 
 #[derive(
     Clone,
@@ -104,6 +105,8 @@ impl DbLoader<Model> {
             sha256: ActiveValue::Set(sha256),
             ..Default::default()
         };
+
+        debug!(name: "upload-model", "{:#?}", this);
 
         this.insert(conn)
             .await

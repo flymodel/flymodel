@@ -10,7 +10,7 @@ HTTP 200
 [Asserts]
 jsonpath "$.blob" == 2
 jsonpath "$.id" == 1
-jsonpath "$.name" == "ABC Test.json"
+jsonpath "$.name" == "Test model artifact.json"
 jsonpath "$.version_id" == 1
 
 
@@ -20,7 +20,7 @@ HTTP 200
 
 [Asserts]
 header "Content-Type" contains "application/json"
-header "Content-Disposition" contains "attachment; filename=\"ABC Test.json\""
+header "Content-Disposition" contains "attachment; filename=\"Test model artifact.json\""
 header "Digest" contains "sha256=8507c46253d708fef9fab62512c6912858cbf734ad2797ac93d7209501c0060e"
 
 sha256 == hex,8507c46253d708fef9fab62512c6912858cbf734ad2797ac93d7209501c0060e;
