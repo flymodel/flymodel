@@ -9,4 +9,5 @@ test.svg
 expand.rs
 env/
 test.ipynb
+public/
 ./.mise.toml

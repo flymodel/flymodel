@@ -1,0 +1,6 @@
+[book]
+authors = ["joshua-auchincloss"]
+language = "en"
+multilingual = false
+src = "src"
+title = "flymodel"
