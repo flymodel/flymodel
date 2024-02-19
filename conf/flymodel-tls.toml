@@ -1,0 +1,55 @@
+[server.tls.certs]
+cert_file = "test-certs/localhost.crt"
+key_file = "test-certs/localhost.key"
+
+
+log.level = "info"
+
+[membership]
+address = "127.0.0.1:14426"
+
+[[membership.peers]]
+address = "127.0.0.1:14425"
+
+[retention]
+
+[[retention.prod]]
+
+[[retention.qa]]
+models = 365
+
+[[retention.stage]]
+models = 365
+
+[[retention.test]]
+models = 365
+runs = 28
+
+[storage]
+
+[[storage.s3]]
+bucket = "ml-test"
+endpoint = "http://localhost:9000"
+region = "ca-local"
+role = "test"
+
+[[storage.s3]]
+bucket = "ml-qa"
+endpoint = "http://localhost:9000"
+region = "ca-local"
+role = "qa"
+
+[[storage.s3]]
+bucket = "ml-stage"
+endpoint = "http://localhost:9000"
+region = "ca-local"
+role = "stage"
+
+[[storage.s3]]
+bucket = "ml-prod"
+endpoint = "http://localhost:9000"
+region = "ca-local"
+role = "prod"
+
+[tracing]
+otlp = { target = "localhost:4317" }

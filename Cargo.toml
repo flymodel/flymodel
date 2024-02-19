@@ -64,6 +64,11 @@ wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = "0.3"
 wee_alloc = "0.4"
+rustls = "0.22"
+rustls-pemfile = "2.1"
+actix-tls = "3.3"
+sha256 = "1.5.0"
+tokio-stream = "0.1.14"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
@@ -88,7 +93,7 @@ targets = [
   "aarch64-unknown-linux-musl",
   "x86_64-unknown-linux-musl",
   "x86_64-pc-windows-msvc",
-  "i686-pc-windows-msvc"
+  "i686-pc-windows-msvc",
 ]
 
 [workspace.package]

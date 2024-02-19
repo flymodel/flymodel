@@ -20,9 +20,9 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 async-graphql = { workspace = true, features = [
-    "tracing",
-    "dataloader",
-    "opentelemetry",
+  "tracing",
+  "dataloader",
+  "opentelemetry",
 ] }
 flymodel = { path = "../flymodel" }
 flymodel-entities = { path = "../entities" }
@@ -30,11 +30,11 @@ flymodel-registry = { path = "../registry" }
 flymodel-tracing = { path = "../trace" }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
-tokio-stream = { version = "0.1.14", features = ["full"] }
+tokio-stream = { workspace = true, features = ["full"] }
 actix.workspace = true
 tracing-actix-web.workspace = true
-actix-web = { workspace = true, features = ["openssl"] }
-openssl = "0.10"
+actix-web = { workspace = true, features = ["rustls-0_22"] }
+actix-tls = { workspace = true, features = ["accept", "rustls-0_22"] }
 anyhow.workspace = true
 async-graphql-actix-web.workspace = true
 async-trait.workspace = true
@@ -45,13 +45,13 @@ serde_json.workspace = true
 tracing.workspace = true
 actix-web-opentelemetry = { version = "0.16.0", features = ["metrics"] }
 opentelemetry = { workspace = true, features = [
-    "logs",
-    "metrics",
-    "logs_level_enabled",
+  "logs",
+  "metrics",
+  "logs_level_enabled",
 ] }
 paste.workspace = true
 bytes.workspace = true
 actix-multipart.workspace = true
-sha256 = "1.5.0"
+sha256.workspace = true
 
 [features]

@@ -34,6 +34,8 @@ url = { version = "2.5.0", features = ["serde"] }
 config = "0.14"
 actix-web.workspace = true
 serde_json.workspace = true
+rustls.workspace = true
+rustls-pemfile.workspace = true
 
 
 [dependencies.sea-orm-migration]

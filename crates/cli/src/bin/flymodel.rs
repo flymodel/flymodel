@@ -42,6 +42,8 @@ async fn serve_server<S>(
         conf.server.temp_dir,
         tracer,
         Arc::new(storage),
+        conf.server.tls,
+        cli.dry,
     )
     .await
 }
