@@ -8,7 +8,7 @@ use crate::{
 use async_graphql::{ComplexObject, SimpleObject};
 use chrono::Utc;
 use flymodel::{errs::FlymodelError, lifecycle::Lifecycle};
-use sea_orm::{entity::prelude::*, ActiveValue, Select};
+use sea_orm::{entity::prelude::*, ActiveValue};
 use sea_query::Alias;
 use tracing::debug;
 

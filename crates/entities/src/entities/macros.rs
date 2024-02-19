@@ -1,25 +1,30 @@
 #[macro_export]
 macro_rules! bulk_loader {
     ($model: ty) => {
-        #[async_trait::async_trait]
         impl async_graphql::dataloader::Loader<i64> for crate::db::DbLoader<$model> {
             type Value = $model;
             type Error = std::sync::Arc<DbErr>;
 
-            async fn load(
+            fn load(
                 &self,
                 keys: &[i64],
-            ) -> Result<std::collections::HashMap<i64, $model>, Self::Error> {
-                Entity::find()
-                    .filter(Column::Id.is_in(keys.iter().map(|it| *it as i64).collect::<Vec<_>>()))
-                    .all(&self.db)
-                    .await
-                    .map(|re| {
-                        std::collections::HashMap::from_iter(
-                            re.iter().map(|it| (it.id as i64, it.to_owned())),
+            ) -> impl futures_util::Future<
+                Output = Result<std::collections::HashMap<i64, Self::Value>, Self::Error>,
+            > + Send {
+                async move {
+                    Entity::find()
+                        .filter(
+                            Column::Id.is_in(keys.iter().map(|it| *it as i64).collect::<Vec<_>>()),
                         )
-                    })
-                    .map_err(std::sync::Arc::new)
+                        .all(&self.db)
+                        .await
+                        .map(|re| {
+                            std::collections::HashMap::from_iter(
+                                re.iter().map(|it| (it.id as i64, it.to_owned())),
+                            )
+                        })
+                        .map_err(std::sync::Arc::new)
+                }
             }
         }
     };

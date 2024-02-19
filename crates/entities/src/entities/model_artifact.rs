@@ -1,7 +1,6 @@
 use async_graphql::{ComplexObject, SimpleObject};
 use flymodel::errs::FlymodelError;
-use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction, QueryTrait};
-use sea_query::QueryStatementWriter;
+use sea_orm::{entity::prelude::*, ActiveValue, DatabaseTransaction};
 use tracing::warn;
 
 use crate::{bulk_loader, db::DbLoader, paginated, utils::handle::constraint_or_db_operational};

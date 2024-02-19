@@ -39,7 +39,6 @@ pub(crate) async fn consume_mu(
 #[cfg(test)]
 mod test {
     use super::*;
-    use rust_fsm::StateMachine;
 
     #[test]
     fn test_ok_path() {
