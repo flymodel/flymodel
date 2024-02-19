@@ -13,3 +13,5 @@
   - [Logs](./configuration/logs.md)
   - [Retention](./configuration/retention.md)
   - [Storage](./configuration/storage.md)
+  - [Server](./configuration/server.md)
+  - [Tracing](./configuration/tracing.md)

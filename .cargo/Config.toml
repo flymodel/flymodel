@@ -4,6 +4,7 @@ cli = "run --package flymodel-cli --bin flymodel"
 migrate-down = "cli migrate down --config ./conf/flymodel.toml"
 migrate-up = "cli migrate up --config ./conf/flymodel.toml"
 serve = "cli serve --config ./conf/flymodel.toml"
+serve-tls = "cli serve --config ./conf/flymodel-tls.toml"
 storage = "cli setup-storage --config ./conf/flymodel.toml"
 yamlconf = "cli setup-storage --config ./conf/flymodel.yaml"
 

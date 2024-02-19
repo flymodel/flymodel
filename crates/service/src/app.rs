@@ -11,6 +11,7 @@ use actix_web::{
 
 use async_graphql::{http::GraphiQLSource, Schema};
 use async_graphql_actix_web::{GraphQL, GraphQLSubscription};
+use flymodel::tls::TlsConf;
 use flymodel_entities::{db::DbLoader, entities};
 use flymodel_registry::storage::StorageOrchestrator;
 use flymodel_tracing::tracer::{OtlpTracer, OtlpTracerConfig};
@@ -61,6 +62,8 @@ pub async fn start_server<
     temp_dir: P,
     tracer: Option<OtlpTracerConfig>,
     store: Arc<StorageOrchestrator>,
+    tls: Option<TlsConf>,
+    dry: bool,
 ) -> anyhow::Result<()>
 where
     A: std::net::ToSocketAddrs + Display,
@@ -132,9 +135,27 @@ where
             )
             .service(web::resource("/").guard(guard::Get()).to(graphql_idx))
     });
-    server
-        .bind(bind)?
-        .run()
-        .await
-        .map_err(|e| anyhow::anyhow!(e))
+
+    if let Some(tls) = tls {
+        let tls = tls.server_config()?;
+        if !dry {
+            server
+                .bind_rustls_0_22(bind, tls)?
+                .run()
+                .await
+                .map_err(|e| anyhow::anyhow!(e))
+        } else {
+            Ok(())
+        }
+    } else {
+        if !dry {
+            server
+                .bind(bind)?
+                .run()
+                .await
+                .map_err(|e| anyhow::anyhow!(e))
+        } else {
+            Ok(())
+        }
+    }
 }

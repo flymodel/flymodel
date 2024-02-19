@@ -74,7 +74,12 @@ jobs:
             run: |
                 sudo apt-get install -y \
                   libpq-dev \
-                  protobuf-compiler
+                  protobuf-compiler \
+                  libssl-dev
+
+        -   name: Create local certs
+            run: |
+                task certs
 
         -   name: Pre Build & Cache
             run: |
@@ -133,3 +138,7 @@ jobs:
                 target/debug/flymodel migrate up --test-data multi_region
                 task hurl:multi-region
                 target/debug/flymodel migrate down
+
+        -   name: Test Server TLS Configurations
+            run: |
+                target/debug/flymodel serve --config ./conf/flymodel-tls.toml --dry

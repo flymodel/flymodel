@@ -4,7 +4,10 @@ use crate::{
 };
 use clap::{Parser, Subcommand};
 use config::Config;
-use flymodel::config::auth::{AuthConfiguration, AuthHandlers};
+use flymodel::{
+    config::auth::{AuthConfiguration, AuthHandlers},
+    tls::TlsConf,
+};
 use flymodel_members::server::MembershipConfig;
 use flymodel_migration::Migrator;
 use flymodel_registry::storage::StorageConfig;
@@ -21,6 +24,9 @@ pub struct Cli {
 
     #[arg(short, long, global = true, default_value = "./flymodel.toml")]
     pub config: PathBuf,
+
+    #[arg(long, global = true, default_value = "false")]
+    pub dry: bool,
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -77,6 +83,8 @@ pub struct Conf {
 pub struct ServerConfig {
     #[serde(default = "default_temp_dir")]
     pub temp_dir: PathBuf,
+
+    pub tls: Option<TlsConf>,
 }
 
 fn default_temp_dir() -> PathBuf {
@@ -117,6 +125,7 @@ mod test {
         let cli = super::Cli {
             command: super::Commands::SetupStorage,
             config: "../../conf/flymodel.toml".into(),
+            dry: false,
         };
         let _conf = cli.load_config()?;
         Ok(())
@@ -127,6 +136,7 @@ mod test {
         let cli = super::Cli {
             command: super::Commands::SetupStorage,
             config: "../../conf/flymodel.yaml".into(),
+            dry: false,
         };
         let _ = cli.load_config()?;
         Ok(())

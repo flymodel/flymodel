@@ -12,6 +12,7 @@ Commands:
 
 Options:
   -c, --config <CONFIG>  [default: ./flymodel.toml]
+      --dry
   -h, --help             Print help
   -V, --version          Print version
 ```
