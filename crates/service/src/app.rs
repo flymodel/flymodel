@@ -1,12 +1,9 @@
-use std::{
-    fmt::Display,
-    sync::Arc,
-};
+use std::{fmt::Display, sync::Arc};
 
 use actix_multipart::form::tempfile::TempFileConfig;
 // use crate::schema::{build_schema, };
 use actix_web::{
-    dev::{Service},
+    dev::Service,
     guard,
     web::{self, Data},
     App, HttpRequest, HttpResponse, HttpServer, Result,

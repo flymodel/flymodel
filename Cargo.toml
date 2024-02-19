@@ -1,4 +1,13 @@
-# The profile that 'cargo dist' will build with
+[workspace.package]
+authors = ["Joshua A. <joshua.auchincloss@proton.me>"]
+description = "ml model registry"
+documentation = "https://github.com/flymodel/flymodel"
+edition = "2021"
+homepage = "https://github.com/flymodel/flymodel"
+license = "AGPLv3 AND MIT AND BSD-2-Clause"
+repository = "https://github.com/flymodel/flymodel"
+rust-version = "1.75.0"
+version = "0.1.0-beta1"
 
 [profile.dist]
 inherits = "release"
@@ -95,14 +104,3 @@ targets = [
   "x86_64-pc-windows-msvc",
   "i686-pc-windows-msvc",
 ]
-
-[workspace.package]
-authors = ["Joshua A. <joshua.auchincloss@proton.me>"]
-description = "ml model registry"
-documentation = "https://github.com/flymodel/flymodel"
-edition = "2021"
-homepage = "https://github.com/flymodel/flymodel"
-license = "AGPLv3 AND MIT AND BSD-2-Clause"
-repository = "https://github.com/flymodel/flymodel"
-rust-version = "1.75.0"
-version = "0.1.0"
