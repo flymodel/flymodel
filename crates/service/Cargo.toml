@@ -1,6 +1,6 @@
 [package]
 name = "flymodel-service"
-readme = "README.md"
+readme = "../../README.md"
 authors.workspace = true
 version.workspace = true
 description.workspace = true

@@ -1,5 +1,9 @@
 # FlyModel
 
+|       |                                                                                                                                                                                                                                                                               |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI/CD | [![Release](https://github.com/flymodel/flymodel/actions/workflows/release.yml/badge.svg)](https://github.com/flymodel/flymodel/actions) [![Tests](https://github.com/flymodel/flymodel/actions/workflows/test.yaml/badge.svg)](https://github.com/flymodel/flymodel/actions) |
+
 ## Overview
 
 Flymodel is a Machine Learning model Version Control & Content Management System with an emphasis on immutability and state validation. It is built in rust, and offers type-validated client libraries in Python and Node.

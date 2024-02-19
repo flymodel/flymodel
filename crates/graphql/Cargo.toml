@@ -1,6 +1,6 @@
 [package]
 name = "flymodel-graphql"
-readme = "README.md"
+readme = "../../README.md"
 authors.workspace = true
 description.workspace = true
 documentation.workspace = true

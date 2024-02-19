@@ -6,7 +6,7 @@
 
 [package]
 name = "flymodel-dev"
-readme = "README.md"
+readme = "../../README.md"
 authors.workspace = true
 publish = false
 license.workspace = true

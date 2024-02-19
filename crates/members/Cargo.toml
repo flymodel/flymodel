@@ -1,6 +1,6 @@
 [package]
 name = "flymodel-members"
-readme = "README.md"
+readme = "../../README.md"
 authors.workspace = true
 description.workspace = true
 documentation.workspace = true
@@ -13,7 +13,6 @@ version.workspace = true
 shared-version = true
 repository.workspace = true
 rust-version.workspace = true
-
 
 [badges]
 maintenance = { status = "actively-developed" }

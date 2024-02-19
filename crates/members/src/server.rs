@@ -60,3 +60,7 @@ impl Server {
             .await?)
     }
 }
+
+pub async fn default_with_main() -> anyhow::Result<()> {
+    Server::new(MembershipConfig::default()).serve().await
+}
