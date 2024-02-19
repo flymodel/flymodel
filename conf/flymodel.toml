@@ -1,7 +1,10 @@
 log.level = "info"
 
-[tracing]
-otlp = { target = "localhost:4317" }
+[membership]
+address = "127.0.0.1:14426"
+
+[[membership.peers]]
+address = "127.0.0.1:14425"
 
 [retention]
 
@@ -43,7 +46,5 @@ endpoint = "http://localhost:9000"
 region = "ca-local"
 role = "prod"
 
-[membership]
-address = "127.0.0.1:14426"
-[[membership.peers]]
-address = "127.0.0.1:14425"
+[tracing]
+otlp = {target = "localhost:4317"}

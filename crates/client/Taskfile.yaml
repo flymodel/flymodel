@@ -1,22 +1,22 @@
 version: '3'
 
 tasks:
-  wasm:
-    cmds:
-    - rm -rf ./pkg/*
-    - wasm-pack build --out-name index --target nodejs --features wasm-node,tracing
-    - wasm-pack pack
-    - cp -r ./pkg/* ../../../node-sdk/libs/wasm/src/lib
+    wasm:
+        cmds:
+        -   rm -rf ./pkg/*
+        -   wasm-pack build --out-name index --target nodejs --features wasm-node,tracing
+        -   wasm-pack pack
+        -   cp -r ./pkg/* ../../../node-sdk/libs/wasm/src/lib
 
-  test-wasm:
-    cmds:
-    - wasm-pack test --node --features wasm-node
+    test-wasm:
+        cmds:
+        -   wasm-pack test --node --features wasm-node
 
-  test-sys:
-    cmds:
-    - cargo test --package flymodel-client
+    test-sys:
+        cmds:
+        -   cargo test --package flymodel-client
 
-  test:
-    cmds:
-    - task: test-wasm
-    - task: test-sys
+    test:
+        cmds:
+        -   task: test-wasm
+        -   task: test-sys

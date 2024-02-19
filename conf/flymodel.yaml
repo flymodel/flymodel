@@ -1,42 +1,42 @@
 log:
-  level: info
+    level: info
 
 tracing:
-  otlp:
-    target: localhost:4317
+    otlp:
+        target: localhost:4317
 
 retention:
-  test:
-    runs: 28
-    models: 365
-  qa:
-    runs: 28
-    models: 365
-  stage:
-  prod:
+    test:
+        runs: 28
+        models: 365
+    qa:
+        runs: 28
+        models: 365
+    stage:
+    prod:
 storage:
-  s3:
-  - bucket: ml-test
-    role: test
-    region: ca-local
-    endpoint: http://localhost:9000
+    s3:
+    -   bucket: ml-test
+        role: test
+        region: ca-local
+        endpoint: http://localhost:9000
 
-  - bucket: ml-qa
-    role: qa
-    region: ca-local
-    endpoint: http://localhost:9000
+    -   bucket: ml-qa
+        role: qa
+        region: ca-local
+        endpoint: http://localhost:9000
 
-  - bucket: ml-stage
-    role: stage
-    region: ca-local
-    endpoint: http://localhost:9000
+    -   bucket: ml-stage
+        role: stage
+        region: ca-local
+        endpoint: http://localhost:9000
 
-  - bucket: ml-prod
-    role: prod
-    region: ca-local
-    endpoint: http://localhost:9000
+    -   bucket: ml-prod
+        role: prod
+        region: ca-local
+        endpoint: http://localhost:9000
 
 membership:
-  address: 127.0.0.1:14426
-  peers:
-  - address: 127.0.0.1:14425
+    address: 127.0.0.1:14426
+    peers:
+    -   address: 127.0.0.1:14425

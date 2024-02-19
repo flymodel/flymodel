@@ -1,71 +1,71 @@
 namespaces:
-- name: canada
-  description: Flymodel Canada
+-   name: canada
+    description: Flymodel Canada
 
-- name: usa
-  description: Flymodel USA
+-   name: usa
+    description: Flymodel USA
 
 buckets:
-- namespace: 1
-  name: ml-test
-  region: ca-local
-  role: test
+-   namespace: 1
+    name: ml-test
+    region: ca-local
+    role: test
 
-- namespace: 1
-  name: ml-qa
-  region: ca-local
-  role: qa
+-   namespace: 1
+    name: ml-qa
+    region: ca-local
+    role: qa
 
-- namespace: 1
-  name: ml-stage
-  region: ca-local
-  role: stage
+-   namespace: 1
+    name: ml-stage
+    region: ca-local
+    role: stage
 
-- namespace: 1
-  name: ml-prod
-  region: ca-local
-  role: prod
+-   namespace: 1
+    name: ml-prod
+    region: ca-local
+    role: prod
 
-- namespace: 2
-  name: ml-test
-  region: ca-local
-  role: test
+-   namespace: 2
+    name: ml-test
+    region: ca-local
+    role: test
 
-- namespace: 2
-  name: ml-qa
-  region: ca-local
-  role: qa
+-   namespace: 2
+    name: ml-qa
+    region: ca-local
+    role: qa
 
-- namespace: 2
-  name: ml-stage
-  region: ca-local
-  role: stage
+-   namespace: 2
+    name: ml-stage
+    region: ca-local
+    role: stage
 
-- namespace: 2
-  name: ml-prod
-  region: ca-local
-  role: prod
+-   namespace: 2
+    name: ml-prod
+    region: ca-local
+    role: prod
 
 models:
-- namespace_id: 1
-  name: llm.lg
-- namespace_id: 1
-  name: llm.med
-- namespace_id: 1
-  name: llm.sm
+-   namespace_id: 1
+    name: llm.lg
+-   namespace_id: 1
+    name: llm.med
+-   namespace_id: 1
+    name: llm.sm
 
 versions:
-- model_id: 1
-  version: v1.0.0
-- model_id: 2
-  version: v1.0.0
-- model_id: 3
-  version: v1.0.0
+-   model_id: 1
+    version: v1.0.0
+-   model_id: 2
+    version: v1.0.0
+-   model_id: 3
+    version: v1.0.0
 
 states:
-- version_id: 1
-  state: test
-- version_id: 2
-  state: test
-- version_id: 3
-  state: test
+-   version_id: 1
+    state: test
+-   version_id: 2
+    state: test
+-   version_id: 3
+    state: test

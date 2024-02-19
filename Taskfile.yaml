@@ -2,94 +2,94 @@ version: '3'
 set: [pipefail]
 
 includes:
-  hurl:
-    taskfile: ./hurl/Taskfile.yaml
-    dir: hurl
-  client:
-    taskfile: ./crates/client/Taskfile.yaml
-    dir: ./crates/client
+    hurl:
+        taskfile: ./hurl/Taskfile.yaml
+        dir: hurl
+    client:
+        taskfile: ./crates/client/Taskfile.yaml
+        dir: ./crates/client
 
 tasks:
-  python-dev:
-    cmds:
-    - task: dist-clients:python-dev
+    python-dev:
+        cmds:
+        -   task: dist-clients:python-dev
 
-  python-build:
-    cmds:
-    - task: dist-clients:build-python
+    python-build:
+        cmds:
+        -   task: dist-clients:build-python
 
-  python-build-release:
-    cmds:
-    - task: dist-clients:build-python
-      vars: {FLAGS: --release}
+    python-build-release:
+        cmds:
+        -   task: dist-clients:build-python
+            vars: {FLAGS: --release}
 
-  gen:
-    cmds:
-    - echo $(echo $TGT | sed -e 's/.graphql/.rs/g')
-    - cynic querygen --schema crates/graphql/schema/flymodel.graphql --query $TGT > $(echo $TGT | sed -e 's/\.graphql/\.rs/g')
+    gen:
+        cmds:
+        -   echo $(echo $TGT | sed -e 's/.graphql/.rs/g')
+        -   cynic querygen --schema crates/graphql/schema/flymodel.graphql --query $TGT > $(echo $TGT | sed -e 's/\.graphql/\.rs/g')
 
-  client:
-    cmds:
-    - task: schema_diff
-      silent: true
-    - find ./crates/graphql/gql/*  -iname '*.graphql'  | xargs -I '{}' bash -c "TGT="{}" task gen"
+    client:
+        cmds:
+        -   task: schema_diff
+            silent: true
+        -   find ./crates/graphql/gql/*  -iname '*.graphql'  | xargs -I '{}' bash -c "TGT="{}" task gen"
 
-  act-test:
-    cmds:
-    - act --pull=false -W .github/workflows/test.yaml
+    act-test:
+        cmds:
+        -   act --pull=false -W .github/workflows/test.yaml
 
-  env:
-    cmds:
-    - docker-compose up
-
-  schema:
-    cmds:
-    - cynic introspect http://localhost:9009/graphql -o crates/graphql/schema/flymodel.graphql
-
-  schema_diff:
-    generates: [crates/graphql/schema/flymodel.graphql]
-    cmds:
-    - cp crates/graphql/schema/flymodel.graphql crates/graphql/schema/flymodel.graphql.bk
-    - task: schema
-      silent: true
-    - diff -bB crates/graphql/schema/flymodel.graphql.bk crates/graphql/schema/flymodel.graphql
-
-  visualize-schema:
-    cmds:
-    - docker run --rm -v ./vis/:/output/diagrams/ -it schemaspy/schemaspy:latest -host host.docker.internal -port 5432 --user postgres --password postgres -db mlops -imageformat png -renderer :cairo -t pgsql
-    - convert ./vis/summary/relationships.real.large.png -gravity South -chop 0x45 ./docs/rels.png
-    - rm -rf ./vis
-
-  alpine:
-    cmds:
-    - docker build -f ./docker/alpine.Dockerfile -t flymodel:latest-alpine .
-
-  reset:
     env:
-      TEST_DATA: basic
-    cmds:
-    - cargo migrate-down
-    - cargo migrate-up --test-data $TEST_DATA
+        cmds:
+        -   docker-compose up
 
-  integrity:
-    cmds:
-    - cmd: TEST_DATA=multi_region task reset
-      silent: true
-    - task: hurl:multi-region
-    - cmd: TEST_DATA=basic task reset
-      silent: true
-    - task: hurl:single-region
-    - cmd: cargo migrate-down
-      silent: true
+    schema:
+        cmds:
+        -   cynic introspect http://localhost:9009/graphql -o crates/graphql/schema/flymodel.graphql
 
-  build:
-    cmds:
-    - cargo build --package flymodel-cli
-    - task: python-build
-    - task: client:wasm-clients
+    schema_diff:
+        generates: [crates/graphql/schema/flymodel.graphql]
+        cmds:
+        -   cp crates/graphql/schema/flymodel.graphql crates/graphql/schema/flymodel.graphql.bk
+        -   task: schema
+            silent: true
+        -   diff -bB crates/graphql/schema/flymodel.graphql.bk crates/graphql/schema/flymodel.graphql
 
-  build-release:
-    cmds:
-    - cargo build --release --package flymodel-cli
-    - task: python-build-release
-    - task: client:wasm-clients
+    visualize-schema:
+        cmds:
+        -   docker run --rm -v ./vis/:/output/diagrams/ -it schemaspy/schemaspy:latest -host host.docker.internal -port 5432 --user postgres --password postgres -db mlops -imageformat png -renderer :cairo -t pgsql
+        -   convert ./vis/summary/relationships.real.large.png -gravity South -chop 0x45 ./docs/rels.png
+        -   rm -rf ./vis
+
+    alpine:
+        cmds:
+        -   docker build -f ./docker/alpine.Dockerfile -t flymodel:latest-alpine .
+
+    reset:
+        env:
+            TEST_DATA: basic
+        cmds:
+        -   cargo migrate-down
+        -   cargo migrate-up --test-data $TEST_DATA
+
+    integrity:
+        cmds:
+        -   cmd: TEST_DATA=multi_region task reset
+            silent: true
+        -   task: hurl:multi-region
+        -   cmd: TEST_DATA=basic task reset
+            silent: true
+        -   task: hurl:single-region
+        -   cmd: cargo migrate-down
+            silent: true
+
+    build:
+        cmds:
+        -   cargo build --package flymodel-cli
+        -   task: python-build
+        -   task: client:wasm-clients
+
+    build-release:
+        cmds:
+        -   cargo build --release --package flymodel-cli
+        -   task: python-build-release
+        -   task: client:wasm-clients

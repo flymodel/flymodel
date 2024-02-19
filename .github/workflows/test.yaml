@@ -1,130 +1,130 @@
 name: Test
 
 on:
-  pull_request:
-  push:
+    pull_request:
+    push:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  tests:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-    steps:
-    - uses: actions/checkout@v4
+    tests:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest]
+        steps:
+        -   uses: actions/checkout@v4
 
-    - name: Setup Temp Data
-      run: |
-        rm -rf ./tmp
-        mkdir -p ./tmp/postgres
-        mkdir -p ./tmp/minio
-        mkdir -p ./tmp/fs
-        chmod -R g+rwx ./tmp
+        -   name: Setup Temp Data
+            run: |
+                rm -rf ./tmp
+                mkdir -p ./tmp/postgres
+                mkdir -p ./tmp/minio
+                mkdir -p ./tmp/fs
+                chmod -R g+rwx ./tmp
 
-    - name: Install tools
-      if: startsWith(matrix.os, 'macos-')
-      run: |
-        brew install --cask docker
-        brew install protobuf libpq
+        -   name: Install tools
+            if: startsWith(matrix.os, 'macos-')
+            run: |
+                brew install --cask docker
+                brew install protobuf libpq
 
-    - uses: actions/cache@v3
-      with:
-        path: |
-          target/
-          crates/
-          Cargo.toml
-          docker-compose.yaml
-          dev/
-        key: ${{ hashFiles('crates/**') }}
+        -   uses: actions/cache@v3
+            with:
+                path: |
+                    target/
+                    crates/
+                    Cargo.toml
+                    docker-compose.yaml
+                    dev/
+                key: ${{ hashFiles('crates/**') }}
 
-    - name: Install Task
-      uses: arduino/setup-task@v1
+        -   name: Install Task
+            uses: arduino/setup-task@v1
 
-    - uses: actions-rust-lang/setup-rust-toolchain@v1
-      with:
-        toolchain: 1.75.0
-        components: rustfmt
-        cache: false
+        -   uses: actions-rust-lang/setup-rust-toolchain@v1
+            with:
+                toolchain: 1.75.0
+                components: rustfmt
+                cache: false
 
-    - name: Add wasm targets
-      run: |
-        rustup target add wasm32-unknown-unknown
+        -   name: Add wasm targets
+            run: |
+                rustup target add wasm32-unknown-unknown
 
-    - name: Install Hurl
-      uses: gacts/install-hurl@v1
+        -   name: Install Hurl
+            uses: gacts/install-hurl@v1
 
-    - uses: cargo-bins/cargo-binstall@main
+        -   uses: cargo-bins/cargo-binstall@main
 
-    - name: Install cargo tools
-      run: |
-        cargo binstall -y cynic-cli wasm-pack
+        -   name: Install cargo tools
+            run: |
+                cargo binstall -y cynic-cli wasm-pack
 
-    - name: Install tools
-      if: startsWith(matrix.os, 'ubuntu-')
-      run: |
-        sudo apt-get install -y \
-          libpq-dev \
-          protobuf-compiler
+        -   name: Install tools
+            if: startsWith(matrix.os, 'ubuntu-')
+            run: |
+                sudo apt-get install -y \
+                  libpq-dev \
+                  protobuf-compiler
 
-    - name: Pre Build & Cache
-      run: |
-        RUSTFLAGS="-Awarnings" cargo build
+        -   name: Pre Build & Cache
+            run: |
+                RUSTFLAGS="-Awarnings" cargo build
 
-    - uses: isbang/compose-action@v1.5.1
-      with:
-        compose-file: ./docker-compose.yaml
+        -   uses: isbang/compose-action@v1.5.1
+            with:
+                compose-file: ./docker-compose.yaml
 
-    - name: Wait for database start
-      run: |
-        while ! nc -z localhost 5432; do
-          sleep 0.5
-        done
+        -   name: Wait for database start
+            run: |
+                while ! nc -z localhost 5432; do
+                  sleep 0.5
+                done
 
-        # sleep an extra 5s just in case
-        sleep 5
+                # sleep an extra 5s just in case
+                sleep 5
 
-    - name: Test Migration Up (basic)
-      run: |
-        target/debug/flymodel migrate up --test-data basic
+        -   name: Test Migration Up (basic)
+            run: |
+                target/debug/flymodel migrate up --test-data basic
 
-    - name: Setup Storage (multi-tenant)
-      run: |
-        target/debug/flymodel setup-storage --config ./conf/flymodel.toml
+        -   name: Setup Storage (multi-tenant)
+            run: |
+                target/debug/flymodel setup-storage --config ./conf/flymodel.toml
 
-    - name: Startup Server & Validate Introspection
-      run: |
-        set -eux pipefail
-        target/debug/flymodel serve  --config ./conf/flymodel.toml &
-        sleep 10
-        task schema_diff
+        -   name: Startup Server & Validate Introspection
+            run: |
+                set -eux pipefail
+                target/debug/flymodel serve  --config ./conf/flymodel.toml &
+                sleep 10
+                task schema_diff
 
-    - name: Unit Tests (single-region)
-      run: |
-        TEST_REGION_SCOPE="basic" cargo test
+        -   name: Unit Tests (single-region)
+            run: |
+                TEST_REGION_SCOPE="basic" cargo test
 
-    - name: Test Migration Down
-      run: |
-        target/debug/flymodel migrate down
+        -   name: Test Migration Down
+            run: |
+                target/debug/flymodel migrate down
 
-    - name: Test Migration Up (multi-region)
-      run: |
-        target/debug/flymodel migrate up --test-data multi_region
+        -   name: Test Migration Up (multi-region)
+            run: |
+                target/debug/flymodel migrate up --test-data multi_region
 
-    - name: Unit Tests (multi-region)
-      run: |
-        TEST_REGION_SCOPE="multi-region" cargo test
+        -   name: Unit Tests (multi-region)
+            run: |
+                TEST_REGION_SCOPE="multi-region" cargo test
 
-    - name: Integrity Tests
-      run: |
-        target/debug/flymodel migrate down
-        target/debug/flymodel migrate up --test-data basic
-        task hurl:single-region
-        target/debug/flymodel migrate down
-        target/debug/flymodel migrate up --test-data multi_region
-        task hurl:multi-region
-        target/debug/flymodel migrate down
+        -   name: Integrity Tests
+            run: |
+                target/debug/flymodel migrate down
+                target/debug/flymodel migrate up --test-data basic
+                task hurl:single-region
+                target/debug/flymodel migrate down
+                target/debug/flymodel migrate up --test-data multi_region
+                task hurl:multi-region
+                target/debug/flymodel migrate down

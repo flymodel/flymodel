@@ -1,47 +1,52 @@
 name: docs
 
 permissions:
-  contents: write
+    contents: write
 
 on:
-  push:
-    branches:
-    - main
+    push:
+        branches:
+        -   main
 
-  workflow_run:
-    workflows: [Release]
-    types:
-    - completed
+    workflow_run:
+        workflows: [Release]
+        types:
+        -   completed
 
 jobs:
-  web:
-    name: Build and deploy site and docs
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - uses: dtolnay/rust-toolchain@stable
-    - uses: swatinem/rust-cache@v2
+    web:
+        name: Build and deploy site and docs
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v3
+            with:
+                fetch-depth: 0
 
-    - name: Install and run oranda
-      run: |
-        curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/oranda/releases/latest/download/oranda-installer.sh | sh
-        oranda build
+        -   uses: dtolnay/rust-toolchain@stable
 
-    - name: Prepare HTML for link checking
-      run: mkdir /tmp/public/ && cp -R public /tmp/public/oranda
+        -   uses: swatinem/rust-cache@v2
 
-    - name: Check HTML for broken internal links
-      uses: untitaker/hyperlink@0.1.29
-      with:
-        args: /tmp/public/
+        -   name: Install and run oranda
+            run: |
+                curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/oranda/releases/latest/download/oranda-installer.sh | sh
 
-    - name: Deploy to Github Pages
-      uses: JamesIves/github-pages-deploy-action@v4.4.1
-      if: ${{ github.ref == 'refs/heads/main' }}
-      with:
-        branch: gh-pages
-        folder: public
-        token: ${{ secrets.GITHUB_TOKEN }}
-        single-commit: true
+        -   name: Build Docs
+            run: |
+                oranda build
+
+        -   name: Prepare HTML for link checking
+            run: mkdir /tmp/public/ && cp -R ./public /tmp/public/
+
+        -   name: Check HTML for broken internal links
+            uses: untitaker/hyperlink@0.1.29
+            with:
+                args: /tmp/public/
+
+        -   name: Deploy to Github Pages
+            uses: JamesIves/github-pages-deploy-action@v4.4.1
+            if: ${{ github.ref == 'refs/heads/main' }}
+            with:
+                branch: gh-pages
+                folder: public
+                token: ${{ secrets.GITHUB_TOKEN }}
+                single-commit: true

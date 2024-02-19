@@ -2,15 +2,15 @@ version: '3'
 set: [pipefail]
 
 vars:
-  FLAGS: --test --verbose --noproxy localhost,http://localhost --path-as-is
+    FLAGS: --test --verbose --noproxy localhost,http://localhost --path-as-is
 
 tasks:
-  multi-region:
-    dir: multi-region
-    cmds:
-    - hurl {{ .FLAGS }} ./namespace.hurl
+    multi-region:
+        dir: multi-region
+        cmds:
+        -   hurl {{ .FLAGS }} ./namespace.hurl
 
-  single-region:
-    dir: single-region
-    cmds:
-    - hurl {{ .FLAGS }} ./namespace.hurl ./experiment.hurl ./model_artifact.hurl
+    single-region:
+        dir: single-region
+        cmds:
+        -   hurl {{ .FLAGS }} ./namespace.hurl ./experiment.hurl ./model_artifact.hurl

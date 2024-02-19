@@ -1,63 +1,63 @@
 name: Check and Lint
 
 on:
-  pull_request:
-  push:
+    pull_request:
+    push:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  check:
-    name: Check
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/cache@v3
-      with:
-        path: |
-          target/
-        key: ${{ hashFiles('crates/**') }}
+    check:
+        name: Check
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v4
+        -   uses: actions/cache@v3
+            with:
+                path: |
+                    target/
+                key: ${{ hashFiles('crates/**') }}
 
-    - uses: actions-rust-lang/setup-rust-toolchain@v1
-      with:
-        toolchain: nightly
-        cache: false
-        components: cargo
+        -   uses: actions-rust-lang/setup-rust-toolchain@v1
+            with:
+                toolchain: nightly
+                cache: false
+                components: cargo
 
-    - name: Install tools
-      run: |
-        sudo apt-get install -y \
-          libpq-dev \
-          protobuf-compiler
+        -   name: Install tools
+            run: |
+                sudo apt-get install -y \
+                  libpq-dev \
+                  protobuf-compiler
 
-    - name: Cargo Check
-      run: |
-        cargo check --all-features
+        -   name: Cargo Check
+            run: |
+                cargo check --all-features
 
-  fmt:
-    name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
+    fmt:
+        name: Rustfmt
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v4
 
-    - uses: actions/cache@v3
-      with:
-        path: |
-          docs/
-        key: ${{ hashFiles('crates/**') }}
+        -   uses: actions/cache@v3
+            with:
+                path: |
+                    docs/
+                key: ${{ hashFiles('crates/**') }}
 
-    - uses: actions-rust-lang/setup-rust-toolchain@v1
-      with:
-        toolchain: nightly
-        components: rustfmt
-        cache: false
+        -   uses: actions-rust-lang/setup-rust-toolchain@v1
+            with:
+                toolchain: nightly
+                components: rustfmt
+                cache: false
 
-    - run: rustup component add rustfmt
-    - name: Cargo Check Fmt
-      run: |
-        cargo +nightly fmt --all -- --check
+        -   run: rustup component add rustfmt
+        -   name: Cargo Check Fmt
+            run: |
+                cargo +nightly fmt --all -- --check
 
   # clippy:
   #   name: Clippy
