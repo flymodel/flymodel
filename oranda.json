@@ -1,10 +1,7 @@
 {
-  "build": {
-    "path_prefix": "oranda"
-  },
+  "build": {},
   "styles": {
-    "theme": "axodark",
-    "favicon": "https://www.axo.dev/favicon.ico"
+    "theme": "axodark"
   },
   "marketing": {},
   "components": {
