@@ -1,11 +1,21 @@
 {
+  "project": {
+    "name": "flymodel",
+    "description": "Multi-language ML Version Management",
+    "repository": "https://github.com/flymodel/flymodel",
+    "readme_path": "README.docs.md",
+    "license": "BSD-2-Clause license"
+  },
   "build": {},
   "styles": {
     "theme": "axodark"
   },
   "marketing": {},
   "components": {
-    "changelog": true,
+    "changelog": false,
+    "mdbook": {
+      "path": "./docs"
+    },
     "artifacts": {
       "package_managers": {
         "preferred": {

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Flymodel is a WIP model & versioning system with an emphasis on immutability and state validation. It is built in rust, and offers type-validated client libraries in Python and Node.
+Flymodel is a Machine Learning model Version Control & Content Management System with an emphasis on immutability and state validation. It is built in rust, and offers type-validated client libraries in Python and Node.
 
 ## Features
 
